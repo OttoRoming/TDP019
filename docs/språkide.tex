@@ -1,0 +1,128 @@
+\documentclass{TDP003mall}
+
+\usepackage{float}
+\usepackage{minted}
+
+\newcommand{\version}{Version 1.0}
+\author{Otto Roming, \url{ottro821@student.liu.se}}
+\title{Språkspec - språkidé}
+\date{2026-02-18}
+\rhead{Otto Roming}
+
+\begin{document}
+\projectpage
+\section{Revisionshistorik}
+\begin{table}[!h]
+\begin{tabularx}{\linewidth}{|l|X|l|}
+\hline
+Ver. & Revisionsbeskrivning & Datum \\\hline
+1.0 & Första version av språkspecifikationen (språkidé) & 2025-02-18 \\\hline
+\end{tabularx}
+\end{table}
+
+\section{Språket}
+Det programspråket som utvecklas kommer att vara ett interpreterat språk med fokus på imperativ programmering för att lösa generella problem. Denna interpretator kommer vara skriven i programspråket \textit{Rust} och ha en egen parser skriven specifikt för endamålet att läsa detta programspråk. Språket kommer att vara typat, det vill säga att när en variabel eller parameter är deklarerad kommer den inte kunna byta typ senare i koden.  Denna typning kommer hanteras av en typ analysator som går igenom syntaxträdet innan exekvering.
+
+\section{Syntaxexempel}
+Här kommer kodexempel för hur språket skulle kunna se ut i framtiden.
+
+\subsection{Funktionsdeklarationer}
+Funktioner deklareras med hjälp av \texttt{fun} nyckelordet. Både typerna för parametrarna och returvärdet måste definieras. Det går att notera i detta exempel att alla uttryck i ett block behöver avslutas med semikolon. Vad som också att viktigt notera i detta exempel att språket ignorerar tomrum samt använder måsvingar för kodblock.
+\begin{minted}{text}
+fun foo(arg1 String): String {
+    puts('foo function');
+
+    return 'foo';
+}
+\end{minted}
+
+\subsection{If-satser}
+Tre olika nyckelord används för if-satser \texttt{if}, \texttt{elif}, \texttt{else}. Uttrycket som används för if-satsens test behöver inte omringas av parenteser
+
+\begin{minted}{text}
+if 1 == 2 {
+    puts('jag är i if grenen');
+} elif 1 == 3 {
+    puts('jag är i elif grenen');
+} else {
+    puts('jag hamnade i else grenen');
+}
+\end{minted}
+
+\subsection{Loopar}
+Språket kommer att innehålla två olika sorters loopar som använder \texttt{while} respektive \texttt{each} nyckelordet. En \textit{while-loop} tar in endast ett uttryck som ska evalueras till ett sant värde vid varje iteration. Den andra loopen \textit{each-loopen} kommer att vara mer komplex i sin funktion och hjälpa användaren enkelt iterera över ett itererbart värde så som till exempel en lista. Liknande if-satsen så behöver uttrycket inte omringas med parenteser
+
+\begin{minted}{text}
+while 1 == 2 {
+    puts('Hello, World')
+}
+
+each i : [1, 2, 3, 4] {
+    puts(i)
+}
+\end{minted}
+
+\subsection{Typer}
+Eftersom att språket är typat så behöver det gå att skriva dessa typer på något sätt i språket. Eftersom att listor i detta språk är homogena, det vill säga att endast värden av samma typ går att samlas i en lista så behöver listor vara generiska och typen den innehåller måste också deklareras inom mindre-än och mer-än tecken.
+\begin{minted}{text}
+String
+Bool
+Int
+Float
+List<Int> # en lista som innehåller heltal
+\end{minted}
+
+\subsection{Kommentarer}
+Att kommentera kod görs i språket genom att använda brädgårdstecken. Detta är smidigt eftersom så kallade shebangs kräver ett kommentartecken.
+\begin{minted}{text}
+#!/usr/bin/env language
+
+# this is a comment
+
+\end{minted}
+
+\subsection{Variabeldeklaration}
+Variabeldeklarationer görs med hjälp av \texttt{var} nyckelordet, därefter kan variabelns värde ändras med endast ett likamedtecken. Notera här att en av variabel deklarationerna i detta exempel saknar en typ. Detta är för att programspråket har stöd för typhärledning och kommer därför att lista ut vilken typ som är korrekt för variabeln
+\begin{minted}{text}
+var s = 'hello'
+var i: Int = 1
+\end{minted}
+
+\subsection{null}
+Null värden representeras med hjälp av \texttt{null} nyckelordet
+\begin{minted}{text}
+null
+\end{minted}
+
+\subsection{Litterära uttryck}
+Här kommer exempel på litterära uttryck för de olika typerna
+
+\subsubsection{String}
+Enkelfnuttar används för stängar eftersom att de är lättare att skriva på amerikanska tangentbord än dubbelfnuttar.
+\begin{minted}{text}
+'hello'
+\end{minted}
+
+\subsubsection{Int}
+En integer representeras av ett heltal
+\begin{minted}{text}
+10
+\end{minted}
+
+\subsubsection{Float}
+För att parsern ska hantera ett tal som ett flyttal så behöver decimaltecknet användas.
+\begin{minted}{text}
+10.0
+\end{minted}
+
+\subsubsection{List}
+Listor använder sig av hackparenteser med kommatecken som separerar värdena.
+\begin{minted}{text}
+[1, 2, 3, 4]
+\end{minted}
+
+
+% \bibliographystyle{IEEEtran}
+% \bibliography{references}
+
+\end{document}

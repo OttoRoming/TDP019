@@ -1,0 +1,83 @@
+= funktionssyntax
+```
+fun foo(arg1 String): String {
+    print('foo function')
+
+    return 'foo'
+}
+```
+
+= if syntax
+```
+if 1 == 2 {
+
+} elif 1 == 3 {
+
+} else {
+
+}
+```
+
+= loop syntax
+```
+loop {
+    puts('Hello, World')
+}
+```
+
+```
+while true {
+    puts('Hello, World')
+}
+```
+
+```
+each i : [1, 2, 3, 4] {
+    puts(i)
+}
+```
+
+= literära uttryck
+== string
+```
+'hello'
+```
+== integer
+```
+10
+```
+== float
+```
+10.0
+```
+== lista
+```
+[1, 2, 3, 4]
+```
+== map
+```
+{
+    'hello': 'world',
+    'hello2': 'world'
+}
+```
+
+= Variabel deklaration
+```
+var i = 1 # typen är frivillig
+var i: Int = 1
+```
+
+== null
+```
+null
+```
+
+= typer
+```
+String
+Int
+Float
+List<Int>
+Map<String, String>
+```
