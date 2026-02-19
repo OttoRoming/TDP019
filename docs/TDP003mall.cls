@@ -39,7 +39,7 @@
 \posttitle{\end{center}}
 \preauthor{\begin{center}\large Författare\end{center}\begin{center}\normalsize}
 \postauthor{\end{center}\vfill}
-\predate{\begin{center}Höstterminen 2025\\\version{}\end{center}\begin{center}}
+\predate{\begin{center}Vårterminen 2026\\\version{}\end{center}\begin{center}}
 \postdate{\end{center}}
 \lhead{\thedate}
 \chead{\thetitle}
