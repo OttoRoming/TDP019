@@ -35,7 +35,7 @@
     \node [anchor=south west] at (border.south west) {\includegraphics[width=\borderwidth]{ida}};
    \end{tikzpicture}
    }
-\pretitle{\begin{center}{\color{DarkBlue}\usefont{T1}{arial}{bx}{n}\fontsize{28pt}{1em}\selectfont TDP003 Projekt: Egna\\[.3em]datormiljön}\end{center}\vspace{100pt}\begin{center}\Huge\bfseries}
+\pretitle{\begin{center}{\color{DarkBlue}\usefont{T1}{arial}{bx}{n}\fontsize{28pt}{1em}\selectfont TDP019 Projekt: Datorspråk}\end{center}\vspace{100pt}\begin{center}\Huge\bfseries}
 \posttitle{\end{center}}
 \preauthor{\begin{center}\large Författare\end{center}\begin{center}\normalsize}
 \postauthor{\end{center}\vfill}
