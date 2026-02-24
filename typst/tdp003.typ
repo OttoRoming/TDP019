@@ -57,36 +57,33 @@
     ]
   ]
 
-  place(center, dx: sidew/2, dy: 100%-1cm)[
-    #set par(spacing: 0.5em)
+  place(center, dx: sidew/2, dy: 100%-1cm, {
+    set par(spacing: 0.5em)
 
-    #block(semester)
-    #block("Version " + version)
-    #v(0.5em)
-    #block(date)
-  ]
+    block(semester)
+    block("Version " + version)
+    v(0.5em)
+    block(date)
+  })
 
   pagebreak()
   counter(page).update(1)
   set page(
-    paper: "a4",
-    margin: (x: 2.5cm, y: 2.5cm),
-    header: [
-      #block(
-        width: 100%,
-        spacing: 0pt,
-      )[
-        #date
-        #h(1fr)
-        #title
-        #h(1fr)
-        #for author in authors [
+    header: {
+        date
+        h(1fr)
+        title
+        h(1fr)
+        for author in authors [
           #author.name
         ]
-        #line(length: 100%),
-      ]
-    ],
-    numbering: "1/1"
+        move(dy: -1em, line(length: 100%, stroke: 0.5pt))
+    },
+    footer: {
+        "Version " + version
+        h(1fr)
+        context(counter(page).display())
+    },
   )
 
 

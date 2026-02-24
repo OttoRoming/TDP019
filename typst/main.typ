@@ -12,6 +12,24 @@
   semester: "Vårterminen 2026",
 )
 
+= Revisionshistorik
+#table(
+  columns: (auto, 1fr, auto),
+  inset: (x: 10pt, y: 3pt),
+  align: horizon,
+  stroke: 0.5pt,
+  table.header(
+    [Ver.], [Revisionsbeskrivning], [Datum],
+  ),
+  [1.0],
+  [Första version av språkspecifikationen (språkidé)],
+  [2026-02-18],
+)
+
 
 = Inledning
-#lorem(1000)
+// #lorem(100)
+arstoeiarnsoetaersotnearst
+
+= Text
+#lorem(2000)
