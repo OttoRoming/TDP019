@@ -3,10 +3,10 @@
 \usepackage{float}
 \usepackage{minted}
 
-\newcommand{\version}{Version 1.0}
+\newcommand{\version}{Version 2.0}
 \author{Otto Roming, \url{ottro821@student.liu.se}}
-\title{Språkspec - språkidé}
-\date{2026-02-18}
+\title{Språkspec}
+\date{2026-02-25}
 \rhead{Otto Roming}
 
 \begin{document}
@@ -17,15 +17,89 @@
 \hline
 Ver. & Revisionsbeskrivning & Datum \\\hline
 1.0 & Första version av språkspecifikationen (språkidé) & 2026-02-18 \\\hline
+2.0 & Andra version av språkspecifikationen (utkast av grammatik) & 2026-02-25 \\\hline
 \end{tabularx}
 \end{table}
 
-\section{Språket}
-Det programspråket som utvecklas kommer att vara ett interpreterat språk med fokus på imperativ programmering för att lösa generella problem. Denna interpretator kommer vara skriven i programspråket \textit{Rust} och ha en egen parser skriven specifikt för endamålet att läsa detta programspråk. Språket kommer att vara typat, det vill säga att när en variabel eller parameter är deklarerad kommer den inte kunna byta typ senare i koden.  Denna typning kommer hanteras av en typ analysator som går igenom syntaxträdet innan exekvering.
+\section{Översikt}
+Det programspråket som utvecklas kommer att vara ett interpreterat språk med fokus på imperativ programmering för att lösa generella problem. Denna interpretator kommer vara skriven i programspråket \textit{Rust} och ha en egen parser skriven specifikt för ändamålet att läsa detta programspråk. Språket kommer att vara typat, det vill säga att när en variabel eller parameter är deklarerad kommer den inte kunna byta typ senare i koden.  Denna typning kommer hanteras av en typ analysator som går igenom syntaxträdet innan exekvering.
 
-\section{Syntaxexempel}
-Här kommer kodexempel för hur språket skulle kunna se ut i framtiden.
+\section{Typning}
+Språket kommer att vara statiskt typat så att när en variabel deklareras anges den en klass som den sedan ej kan bytas. Denna typkontrollering görs av interpretatorn innan evalueringen av programkoden så att utvecklaren snabbt kan hitta problem i hens programkod.
 
+\section{Referenser av värden}
+När komplexa datatyper så som till exempel listor skickas till funktioner via argument kommer detta ske via djup kopiering. Det kommer alltså inte delas en referens av samma underliggande datatyp. Detta är för att förebygga förvirring och onödig komplexitet.
+
+\section{Objektorienterade mönster}
+Språket kommer inte innehålla några objektorienterade mönster för att förebygga onödig komplexitet.
+
+\section{\textit{Scope}}
+Varje \textit{expression} och \textit{statement} i språket där måsvingar (\texttt{\{\}}) använder sitt egna \textit{scope}. Detta betyder att varje if-sats, loop, funktion osv har ett eget scope. När en funktion anropas så kommer funktionen endast ha tillgång till variabler i scope över funktionsdeklarationen samt de argument som skickades in. Detta kontrolleras innan koden evalueras av samma system som kontrollerar den statiska typningen.
+
+\begin{minted}{text}
+fun bar() {
+    puts(x) # Error: x är odenfinierad
+}
+
+fun foo() {
+    var x = 10
+    bar()
+}
+
+foo()
+\end{minted}
+
+En viktig sak att notera är att funktioner inte måste vara i språkets globala \textit{scope}. Detta skulle göra denna omskrivning av koden giltig.
+
+\begin{minted}{text}
+
+fun foo() {
+    var x = 10
+    fun bar() {
+        puts(x) # 10
+    }
+    bar()
+}
+\end{minted}
+
+\section{Grammatik}
+Detta är ett utkast av grammatiken i Backus–Naur form till språket. Alla språkfunktioner finns inte definierade i detta utkast och misstag kan uppstå. Till exempel saknas definitioner för litterära uttryck
+
+\begin{minted}{bnf}
+<block> ::= <statement> ";" <block> | <statement>
+<block> ::= <statement>
+<statement> ::= <assignment> | <if_statement> | <while_statement> | <each_statement> | <variable_declaration> | <function_declaration> | <return_statement> | <expression_statement>
+
+<assignment> ::= <identifier> "=" <expression>
+<if_statement> ::= "if" <expression> "{" <block> "}"
+<while_statement> ::= "while" "(" <expression> ")" "{" <block> "}"
+<each_statement> ::= "each" <identifier> ":" <expression> "{" <block> "}"
+<variable_declaration> ::= "var" <identifier> "=" <expression>
+<function_declaration> ::= "fun" <identifier> "(" <parameters> ")" "{" <block> "}"
+
+<parameters> ::= <parameters> "," <identifier>
+<parameters> ::= <identifier>
+<parameters> ::= ""
+
+<return_statement> ::= "return" <expression>
+
+<expression_statement> ::= <expression>
+<expression> ::= <binary_expression> | <unary_expression> | <literal> | <identifier> | <function_call> | <index_expression> | <parenthesized_expression>
+<binary_expression> ::= <expression> "+" <expression>
+<binary_expression> ::= <expression> "-" <expression>
+<binary_expression> ::= <expression> "/" <expression>
+<binary_expression> ::= <expression> "*" <expression>
+<binary_expression> ::= <expression> "&&" <expression>
+<binary_expression> ::= <expression> "||" <expression>
+
+<unary_expression> ::= "-" <expression>
+<unary_expression> ::= "!" <expression>
+
+<literal> ::= <int> | <float> | <string> | <boolean> | <list> | <null>
+\end{minted}
+
+\newpage
+\section{Kodexempel}
 \subsection{Funktionsdeklarationer}
 Funktioner deklareras med hjälp av \texttt{fun} nyckelordet. Både typerna för parametrarna och returvärdet måste definieras. Det går att notera i detta exempel att alla uttryck i ett block behöver avslutas med semikolon. Vad som också att viktigt notera i detta exempel att språket ignorerar tomrum samt använder måsvingar för kodblock.
 \begin{minted}{text}
@@ -120,6 +194,15 @@ Listor använder sig av hackparenteser med kommatecken som separerar värdena.
 \begin{minted}{text}
 [1, 2, 3, 4]
 \end{minted}
+
+\subsection{Append}
+För att \textit{append}a till en lista används \texttt{<<} operatorn.
+\begin{minted}{text}
+var list = [1, 2, 3, 4]
+list << 5
+puts(list) # [1, 2, 3, 4, 5]
+\end{minted}
+
 
 
 % \bibliographystyle{IEEEtran}
