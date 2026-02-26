@@ -19,21 +19,21 @@ impl fmt::Display for Level {
 }
 
 #[derive(Debug)]
-pub struct Error {
+pub struct Error<'a> {
     pub message: String,
     pub level: Level,
-    pub region: Option<Region>,
+    pub region: Option<Region<'a>>,
 }
 
-impl error::Error for Error {}
+impl<'a> error::Error for Error<'a> {}
 
-impl fmt::Display for Error {
+impl<'a> fmt::Display for Error<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} error: {}", self.level, self.message)
     }
 }
 
-impl From<io::Error> for Error {
+impl<'a> From<io::Error> for Error<'a> {
     fn from(value: io::Error) -> Self {
         Self {
             message: format!("{}", value),
@@ -43,7 +43,7 @@ impl From<io::Error> for Error {
     }
 }
 
-impl Error {
+impl<'a> Error<'a> {
     fn print_message(&self) {
         eprintln!(
             "{} {}: {}",

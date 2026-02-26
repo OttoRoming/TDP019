@@ -11,7 +11,7 @@ fn main() {
         .expect("no filename provided with cli arguments");
 
     let filepath = PathBuf::from(filepath_string);
-    match lexer::lex(filepath) {
+    match lexer::lex(&filepath) {
         Ok(tokens) => {
             dbg!(tokens);
         }
