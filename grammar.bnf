@@ -1,0 +1,30 @@
+<block> ::= <statement> ";" <block> | <statement>
+<block> ::= <statement>
+<statement> ::= <assignment> | <if_statement> | <while_statement> | <each_statement> | <variable_declaration> | <function_declaration> | <return_statement> | <expression_statement>
+
+<assignment> ::= <identifier> "=" <expression>
+<if_statement> ::= "if" <expression> "{" <block> "}"
+<while_statement> ::= "while" "(" <expression> ")" "{" <block> "}"
+<each_statement> ::= "each" <identifier> ":" <expression> "{" <block> "}"
+<variable_declaration> ::= "var" <identifier> "=" <expression>
+<function_declaration> ::= "fun" <identifier> "(" <parameters> ")" "{" <block> "}"
+
+<parameters> ::= <parameters> "," <identifier>
+<parameters> ::= <identifier>
+<parameters> ::= ""
+
+<return_statement> ::= "return" <expression>
+
+<expression_statement> ::= <expression>
+<expression> ::= <binary_expression> | <unary_expression> | <literal> | <identifier> | <function_call> | <index_expression> | <parenthesized_expression>
+<binary_expression> ::= <expression> "+" <expression>
+<binary_expression> ::= <expression> "-" <expression>
+<binary_expression> ::= <expression> "/" <expression>
+<binary_expression> ::= <expression> "*" <expression>
+<binary_expression> ::= <expression> "&&" <expression>
+<binary_expression> ::= <expression> "||" <expression>
+
+<unary_expression> ::= "-" <expression>
+<unary_expression> ::= "!" <expression>
+
+<literal> ::= <int> | <float> | <string> | <boolean> | <list> | <null>
