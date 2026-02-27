@@ -3,7 +3,7 @@
 \usepackage{float}
 \usepackage{minted}
 
-\newcommand{\version}{Version 2.0}
+\newcommand{\version}{Version 3.0}
 \author{Otto Roming, \url{ottro821@student.liu.se}}
 \title{Språkspec}
 \date{2026-02-25}
@@ -18,6 +18,7 @@
 Ver. & Revisionsbeskrivning & Datum \\\hline
 1.0 & Första version av språkspecifikationen (språkidé) & 2026-02-18 \\\hline
 2.0 & Andra version av språkspecifikationen (utkast av grammatik) & 2026-02-25 \\\hline
+3.0 & Tredje version av språkspecifikationen & 2026-xx-xx \\\hline
 \end{tabularx}
 \end{table}
 
@@ -65,40 +66,8 @@ fun foo() {
 \section{Grammatik}
 Detta är ett utkast av grammatiken i Backus–Naur form till språket. Alla språkfunktioner finns inte definierade i detta utkast och misstag kan uppstå. Till exempel saknas definitioner för litterära uttryck
 
-\begin{minted}{bnf}
-<block> ::= <statement> ";" <block> | <statement>
-<block> ::= <statement>
-<statement> ::= <assignment> | <if_statement> | <while_statement> | <each_statement> | <variable_declaration> | <function_declaration> | <return_statement> | <expression_statement>
+\inputminted{bnf}{grammar.bnf}
 
-<assignment> ::= <identifier> "=" <expression>
-<if_statement> ::= "if" <expression> "{" <block> "}"
-<while_statement> ::= "while" "(" <expression> ")" "{" <block> "}"
-<each_statement> ::= "each" <identifier> ":" <expression> "{" <block> "}"
-<variable_declaration> ::= "var" <identifier> "=" <expression>
-<function_declaration> ::= "fun" <identifier> "(" <parameters> ")" "{" <block> "}"
-
-<parameters> ::= <parameters> "," <identifier>
-<parameters> ::= <identifier>
-<parameters> ::= ""
-
-<return_statement> ::= "return" <expression>
-
-<expression_statement> ::= <expression>
-<expression> ::= <binary_expression> | <unary_expression> | <literal> | <identifier> | <function_call> | <index_expression> | <parenthesized_expression>
-<binary_expression> ::= <expression> "+" <expression>
-<binary_expression> ::= <expression> "-" <expression>
-<binary_expression> ::= <expression> "/" <expression>
-<binary_expression> ::= <expression> "*" <expression>
-<binary_expression> ::= <expression> "&&" <expression>
-<binary_expression> ::= <expression> "||" <expression>
-
-<unary_expression> ::= "-" <expression>
-<unary_expression> ::= "!" <expression>
-
-<literal> ::= <int> | <float> | <string> | <boolean> | <list> | <null>
-\end{minted}
-
-\newpage
 \section{Kodexempel}
 \subsection{Funktionsdeklarationer}
 Funktioner deklareras med hjälp av \texttt{fun} nyckelordet. Både typerna för parametrarna och returvärdet måste definieras. Det går att notera i detta exempel att alla uttryck i ett block behöver avslutas med semikolon. Vad som också att viktigt notera i detta exempel att språket ignorerar tomrum samt använder måsvingar för kodblock.
