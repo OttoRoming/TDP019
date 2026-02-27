@@ -102,3 +102,5 @@
                   | "try" <block> "catch" <block>
 
 <namespace_declaration> ::= "namespace" <identifier> <block>
+<identifier> ::= identifier_token
+               | <identifier> "." <identifier>
