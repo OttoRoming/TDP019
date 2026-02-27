@@ -19,3 +19,7 @@ Skrev version 2 av språkspecen och utkast av BNF-grammatiken
 ## 2026-02-26
 
 Påbörjade programmering av implementationen i Rust. Började skriva på lexern och datastrukturer för felmedelanden, tokens med mer
+
+## 2026-02-27
+
+Fick hjälp med att utveckla grammatiken på handledningstillfälle 2 och började arbeta för att färdigställa den
