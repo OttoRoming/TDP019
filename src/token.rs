@@ -2,8 +2,8 @@ use crate::util::Region;
 
 #[derive(Debug)]
 pub struct Token<'a> {
-    value: Value,
-    region: Region<'a>,
+    pub value: Value,
+    pub region: Region<'a>,
 }
 
 #[derive(Debug)]
@@ -21,16 +21,18 @@ pub enum Value {
     KeywordFalse,  // false
 
     // 2 char tokens
-    And,                 // &&
-    Or,                  // ||
-    AddAssign,           // +=
-    SubtractAssign,      // -=
-    MultiplyAssign,      // *=
-    DivideAssign,        // /=
-    ModAssign,           // %=
-    EqualsOperator,      // ==
-    LessThanOrEquals,    // <=
-    GreaterThanOrEquals, // >=
+    And,                // &&
+    Or,                 // ||
+    AddAssign,          // +=
+    SubtractAssign,     // -=
+    MultiplyAssign,     // *=
+    DivideAssign,       // /=
+    ModAssign,          // %=
+    EqualsOperator,     // ==
+    LessThanOrEqual,    // <=
+    GreaterThanOrEqual, // >=
+    Increment,          // ++
+    Decrement,          // --
 
     // 1 char tokens
     OpenBracket,      // [
@@ -44,7 +46,7 @@ pub enum Value {
     Subtract,         // -
     Multiply,         // *
     Divide,           // /
-    Mod,              // &
+    Mod,              // %
     Not,              // !
     LessThan,         // <
     GreaterThan,      // >

@@ -1,12 +1,13 @@
 use crate::{
     error::{self, Error},
     fs::File,
-    token::{self, Token},
+    token::{Token, Value},
     util::{Location, Region},
 };
 use std::{
     io::Read,
     iter::Peekable,
+    ops::AddAssign,
     path::{Path, PathBuf},
     str::Chars,
 };
@@ -48,23 +49,79 @@ impl<'a> Lexer<'a> {
         self.index >= self.source.len()
     }
 
-    fn tokenize(&mut self) -> Result<Token<'a>, Error<'a>> {
-        self.peek(0)
+    fn tokenize_string(&mut self) -> Result<Token<'a>, Error<'a>> {
+        let mut contents = String::new();
 
-        let t = match self.peek(0) {
-            '[' => Some(token::Value::OpenBracket),
-            ']' => Some(token::Value::CloseBracket),
-            '{' => Some(token::Value::OpenBrace),
-            '}' => Some(token::Value::CloseBrace),
-            '(' => Some(token::Value::OpenParenthesis),
-            ')' => Some(token::Value::CloseParenthesis),
-            '=' => Some(token::Value::SingleEquals),
-            '+' => Some(token::Value::Add),
-            '-' => Some(token::Value::Subtract),
-            '*' => Some(token::Value::Multiply),
-            '/' => Some(token::Value::Divide),
-            '!' => Some(token::Value::Not),
+        let start = self.location;
+        while self.peek(1) != '"' {
+            contents.push(self.peek(0));
+        }
+        let end = self.location;
+
+        Ok(Token {
+            value: Value::String(contents),
+            region: Region::new(start, end),
+        })
+    }
+
+    fn tokenize(&mut self) -> Result<Token<'a>, Error<'a>> {
+        let two_chars = format!("{}{}", self.peek(0), self.peek(1));
+        let mut token_value = match two_chars.as_str() {
+            "&&" => Some(Value::And),
+            "||" => Some(Value::Or),
+            "+=" => Some(Value::AddAssign),
+            "-=" => Some(Value::SubtractAssign),
+            "*=" => Some(Value::MultiplyAssign),
+            "/=" => Some(Value::DivideAssign),
+            "%=" => Some(Value::ModAssign),
+            "==" => Some(Value::EqualsOperator),
+            "<=" => Some(Value::LessThanOrEqual),
+            ">=" => Some(Value::GreaterThanOrEqual),
+            "++" => Some(Value::Increment),
+            "--" => Some(Value::Decrement),
+            _ => None,
         };
+        if let Some(value) = token_value {
+            let start = self.location;
+            self.advance();
+            let end = self.location;
+            self.advance();
+            let region = Region::new(start, end);
+
+            return Ok(Token { value, region });
+        }
+
+        token_value = match self.peek(0) {
+            '[' => Some(Value::OpenBracket),
+            ']' => Some(Value::CloseBracket),
+            '{' => Some(Value::OpenBrace),
+            '}' => Some(Value::CloseBrace),
+            '(' => Some(Value::OpenParenthesis),
+            ')' => Some(Value::CloseParenthesis),
+            '=' => Some(Value::SingleEquals),
+            '+' => Some(Value::Add),
+            '-' => Some(Value::Subtract),
+            '*' => Some(Value::Multiply),
+            '/' => Some(Value::Divide),
+            '%' => Some(Value::Mod),
+            '!' => Some(Value::Not),
+            '<' => Some(Value::LessThan),
+            '>' => Some(Value::GreaterThan),
+            _ => None,
+        };
+        if let Some(value) = token_value {
+            let region = self.current_region();
+            self.advance();
+            return Ok(Token { value, region });
+        }
+
+        match self.peek(0) {
+            '"' => self.tokenize_string(),
+            _ => Err(error(
+                self.current_region(),
+                format!("unxepceted character found ({})", self.peek(0)),
+            )),
+        }
     }
 
     fn run_analysis(&mut self) -> Result<Vec<Token<'a>>, Error<'a>> {
