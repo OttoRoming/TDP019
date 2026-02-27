@@ -95,7 +95,10 @@
 
 <statement> ::= <throw_statement>
               | <try_statement>
+              | <namespace_declaration>
 
 <throw_statement> ::= "throw" <expression>
 <try_statement> ::= "try" <block> "catch" "(" <identifier> ")" <block>
                   | "try" <block> "catch" <block>
+
+<namespace_declaration> ::= "namespace" <identifier> <block>
