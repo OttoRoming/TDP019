@@ -49,6 +49,7 @@
                | <function_call>
                | <index_expression>
                | <parenthesized_expression>
+               | <reference_expression>
                | <literal>
 
 <binary_expression> ::= <expression> "+" <expression>
@@ -67,6 +68,9 @@
 <unary_expression> ::= "-" <expression>
                      | "!" <expression>
 
+
+<index_expression> ::= <expression> "[" <expression> "]"
+<reference_expression> ::= "&" <identifier>
 
 <expressions> ::= <expressions> "," <expression>
                 | <expression>
