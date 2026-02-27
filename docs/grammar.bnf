@@ -92,7 +92,8 @@
                | "String"
                | "Bool"
                | <generic_type>
-<generic_type> ::= <type_specifier> "<" <type_specifier> ">"
+<generic_type> ::= "List" "<" <type_specifier> ">"
+                 | "Ref" "<" <type_specifier> ">"
 
 <identifier> ::= identifier_token
 
