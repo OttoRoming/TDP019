@@ -3,7 +3,8 @@
                | <statements> ";"
 <block> ::= "{" <statements> "}"
 
-<statement> ::= <assignment>
+<statement> ::= <assignment_statement>
+              | <update_statement>
               | <if_statement>
               | <else_statement>
               | <while_statement>
@@ -13,14 +14,15 @@
               | <return_statement>
               | <expression_statement>
 
-<assignment> ::= <identifier> "=" <expression>
-               | <identifier> "+=" <expression>
-               | <identifier> "-=" <expression>
-               | <identifier> "*=" <expression>
-               | <identifier> "/=" <expression>
-               | <identifier> "%=" <expression>
-               | <identifier> "++"
-               | <identifier> "--"
+<assignment_statement> ::= <identifier> "=" <expression>
+                         | <identifier> "+=" <expression>
+                         | <identifier> "-=" <expression>
+                         | <identifier> "*=" <expression>
+                         | <identifier> "/=" <expression>
+                         | <identifier> "%=" <expression>
+                    
+<update_statement> ::= <identifier> "++"
+                     | <identifier> "--"
 
 <if_statement> ::= "if" <expression> <block>
                  | <if_statement> "elif" <expression> <block>
