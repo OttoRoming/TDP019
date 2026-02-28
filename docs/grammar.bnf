@@ -20,7 +20,7 @@
                          | <identifier> "*=" <expression>
                          | <identifier> "/=" <expression>
                          | <identifier> "%=" <expression>
-                    
+
 <update_statement> ::= <identifier> "++"
                      | <identifier> "--"
 
