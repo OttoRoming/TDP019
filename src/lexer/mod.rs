@@ -198,6 +198,10 @@ impl<'a> Lexer<'a> {
             tokens.push(self.tokenize()?);
         }
 
+        tokens.push(Token {
+            value: Value::EOF,
+            region: self.current_region(),
+        });
         Ok(tokens)
     }
 

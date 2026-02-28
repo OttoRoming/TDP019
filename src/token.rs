@@ -57,4 +57,6 @@ pub enum Value {
     Int(i64),           // 1337
     Float(f64),         // 3.14
     Identifier(String), // i
+
+    EOF,
 }
