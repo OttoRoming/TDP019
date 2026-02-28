@@ -50,6 +50,7 @@ pub enum Value {
     Not,              // !
     LessThan,         // <
     GreaterThan,      // >
+    Ampersand,        // &
 
     // Special tokens
     String(String),     // "Hello, World"

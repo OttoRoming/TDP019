@@ -166,6 +166,7 @@ impl<'a> Lexer<'a> {
             '!' => Some(Value::Not),
             '<' => Some(Value::LessThan),
             '>' => Some(Value::GreaterThan),
+            '&' => Some(Value::Ampersand),
             _ => None,
         };
         if let Some(value) = token_value {
