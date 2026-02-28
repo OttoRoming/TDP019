@@ -1,6 +1,6 @@
 use std::{fmt, path::Path};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Region<'a> {
     start: Location<'a>,
     end: Location<'a>,
