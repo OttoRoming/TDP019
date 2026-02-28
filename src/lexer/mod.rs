@@ -1,16 +1,12 @@
 use crate::{
     error::{self, Error},
-    fs::File,
     token::{Token, Value},
     util::{Location, Region},
 };
-use std::{
-    io::Read,
-    iter::Peekable,
-    ops::AddAssign,
-    path::{Path, PathBuf},
-    str::Chars,
-};
+use std::path::Path;
+
+#[cfg(test)]
+mod test;
 
 fn error<'a>(region: Region<'a>, message: String) -> Error<'a> {
     Error {
@@ -50,18 +46,81 @@ impl<'a> Lexer<'a> {
     }
 
     fn tokenize_string(&mut self) -> Result<Token<'a>, Error<'a>> {
-        let mut contents = String::new();
-
         let start = self.location;
-        while self.peek(1) != '"' {
+        self.advance(); // skip the first "
+
+        let mut contents = String::new();
+        while self.peek(0) != '"' {
             contents.push(self.peek(0));
+            self.advance();
         }
+
+        self.advance(); // skip the second "
         let end = self.location;
 
         Ok(Token {
             value: Value::String(contents),
             region: Region::new(start, end),
         })
+    }
+
+    fn tokenize_int_or_float(&mut self) -> Result<Token<'a>, Error<'a>> {
+        let start = self.location;
+        let mut content = String::new();
+
+        while self.peek(0).is_digit(10) {
+            content.push(self.peek(0));
+            self.advance();
+        }
+
+        let end = self.location;
+        let region = Region::new(start, end);
+
+        let is_float = content.contains('.');
+        let value = if is_float {
+            Value::Float(
+                content
+                    .parse::<f64>()
+                    .map_err(|e| error(region, format!("failed to parse float token ({})", e)))?,
+            )
+        } else {
+            Value::Int(
+                content
+                    .parse::<i64>()
+                    .map_err(|e| error(region, format!("failed to parse int token ({})", e)))?,
+            )
+        };
+
+        Ok(Token { value, region })
+    }
+
+    fn tokenize_identifier_or_keyword(&mut self) -> Result<Token<'a>, Error<'a>> {
+        let start = self.location;
+
+        let mut content = String::new();
+        while self.peek(0).is_alphanumeric() {
+            content.push(self.peek(0));
+            self.advance();
+        }
+
+        let end = self.location;
+        let region = Region::new(start, end);
+
+        let value = match content.as_str() {
+            "if" => Value::KeywordIf,
+            "elif" => Value::KeywordElif,
+            "else" => Value::KeywordElse,
+            "fun" => Value::KeywordFun,
+            "while" => Value::KeywordWhile,
+            "each" => Value::KeywordEach,
+            "null" => Value::KeywordNull,
+            "return" => Value::KeywordReturn,
+            "true" => Value::KeywordTrue,
+            "false" => Value::KeywordFalse,
+            _ => Value::Identifier(content),
+        };
+
+        Ok(Token { value, region })
     }
 
     fn tokenize(&mut self) -> Result<Token<'a>, Error<'a>> {
@@ -84,8 +143,8 @@ impl<'a> Lexer<'a> {
         if let Some(value) = token_value {
             let start = self.location;
             self.advance();
-            let end = self.location;
             self.advance();
+            let end = self.location;
             let region = Region::new(start, end);
 
             return Ok(Token { value, region });
@@ -110,17 +169,24 @@ impl<'a> Lexer<'a> {
             _ => None,
         };
         if let Some(value) = token_value {
-            let region = self.current_region();
+            let start = self.location;
             self.advance();
+            let end = self.location;
+            let region = Region::new(start, end);
             return Ok(Token { value, region });
         }
 
-        match self.peek(0) {
-            '"' => self.tokenize_string(),
-            _ => Err(error(
+        if self.peek(0) == '"' {
+            self.tokenize_string()
+        } else if self.peek(0).is_digit(10) {
+            self.tokenize_int_or_float()
+        } else if self.peek(0).is_alphabetic() {
+            self.tokenize_identifier_or_keyword()
+        } else {
+            Err(error(
                 self.current_region(),
                 format!("unxepceted character found ({})", self.peek(0)),
-            )),
+            ))
         }
     }
 
@@ -147,12 +213,7 @@ impl<'a> Lexer<'a> {
     }
 }
 
-pub fn lex<'a>(filepath: &'a Path) -> Result<Vec<Token<'a>>, Error<'a>> {
-    let mut file = File::open(&filepath)?;
-
-    let mut source = String::new();
-    file.read_to_string(&mut source)?;
-
-    let mut lexer: Lexer<'a> = Lexer::new(filepath, &source);
+pub fn lex<'a>(source: &str, filepath: &'a Path) -> Result<Vec<Token<'a>>, Error<'a>> {
+    let mut lexer: Lexer<'a> = Lexer::new(filepath, source);
     lexer.run_analysis()
 }
