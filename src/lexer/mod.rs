@@ -45,6 +45,12 @@ impl<'a> Lexer<'a> {
         self.index >= self.source.len()
     }
 
+    fn skip_whitespace(&mut self) {
+        while self.peek(0).is_whitespace() && !self.is_finished() {
+            self.advance();
+        }
+    }
+
     fn tokenize_string(&mut self) -> Result<Token<'a>, Error<'a>> {
         let start = self.location;
         self.advance(); // skip the first "
@@ -194,8 +200,21 @@ impl<'a> Lexer<'a> {
     fn run_analysis(&mut self) -> Result<Vec<Token<'a>>, Error<'a>> {
         let mut tokens: Vec<Token<'a>> = vec![];
 
+        self.skip_whitespace();
         while !self.is_finished() {
+            // skip comments
+            if self.peek(0) == '#' {
+                while self.peek(0) != '\n' && !self.is_finished() {
+                    self.advance();
+                }
+                self.advance();
+                if self.is_finished() {
+                    break;
+                }
+            }
+
             tokens.push(self.tokenize()?);
+            self.skip_whitespace();
         }
 
         tokens.push(Token {
