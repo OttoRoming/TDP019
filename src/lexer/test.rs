@@ -18,7 +18,7 @@ fn lex_string() {
             },
             Token {
                 region: Region::new(Location::new(path, 1, 15), Location::new(path, 1, 15)),
-                value: Value::EOF
+                value: Value::Eof
             }
         ],
         tokens
@@ -32,7 +32,7 @@ fn lex_ignore_whitespace() {
     assert_eq!(
         vec![Token {
             region: Region::new(Location::new(path, 4, 1), Location::new(path, 4, 1)),
-            value: Value::EOF
+            value: Value::Eof
         }],
         tokens
     )
@@ -45,7 +45,7 @@ fn lex_ignore_comments() {
     assert_eq!(
         vec![Token {
             region: Region::new(Location::new(path, 2, 1), Location::new(path, 2, 1)),
-            value: Value::EOF
+            value: Value::Eof
         }],
         tokens
     )
@@ -58,7 +58,7 @@ fn lex_ignore_comments_without_newline() {
     assert_eq!(
         vec![Token {
             region: Region::new(Location::new(path, 1, 23), Location::new(path, 1, 23)),
-            value: Value::EOF
+            value: Value::Eof
         }],
         tokens
     )

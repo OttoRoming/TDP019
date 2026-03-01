@@ -10,7 +10,7 @@ mod test;
 
 fn error<'a>(region: Region<'a>, message: String) -> Error<'a> {
     Error {
-        message: message,
+        message,
         level: error::Level::Lexer,
         region: Some(region),
     }
@@ -83,7 +83,7 @@ impl<'a> Lexer<'a> {
         let start = self.location;
         let mut content = String::new();
 
-        while self.peek(0).is_digit(10) || self.peek(0) == '.' {
+        while self.peek(0).is_ascii_digit() || self.peek(0) == '.' {
             content.push(self.peek(0));
             self.advance();
         }
@@ -194,7 +194,7 @@ impl<'a> Lexer<'a> {
 
         if self.peek(0) == '"' {
             self.tokenize_string()
-        } else if self.peek(0).is_digit(10) {
+        } else if self.peek(0).is_ascii_digit() {
             self.tokenize_int_or_float()
         } else if self.peek(0).is_alphabetic() {
             self.tokenize_identifier_or_keyword()
@@ -218,7 +218,7 @@ impl<'a> Lexer<'a> {
         }
 
         tokens.push(Token {
-            value: Value::EOF,
+            value: Value::Eof,
             region: self.current_region(),
         });
         Ok(tokens)

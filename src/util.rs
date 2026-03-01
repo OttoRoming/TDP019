@@ -59,15 +59,15 @@ impl<'a> fmt::Display for Location<'a> {
 
 impl<'a> Ord for Location<'a> {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        match (self.line.cmp(&other.line), self.column.cmp(&other.column)) {
+            (Ordering::Equal, ord) => ord ,
+            (ord, _) => ord ,
+        }
     }
 }
 
 impl<'a> PartialOrd for Location<'a> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        match (self.line.cmp(&other.line), self.column.cmp(&other.column)) {
-            (Ordering::Equal, ord) => Some(ord),
-            (ord, _) => Some(ord),
-        }
+        Some(self.cmp(other))
     }
 }

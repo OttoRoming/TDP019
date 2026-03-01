@@ -58,5 +58,5 @@ pub enum Value {
     Float(f64),         // 3.14
     Identifier(String), // i
 
-    EOF,
+    Eof,
 }

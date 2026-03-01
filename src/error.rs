@@ -61,7 +61,7 @@ impl<'a> Error<'a> {
             let lines = source.lines();
 
             // skip to one line above the error
-            let skip_amount = region.start.line.checked_sub(2).unwrap_or(0);
+            let skip_amount = region.start.line.saturating_sub(2);
             let print_amount = region.end.line - region.start.line + 3;
             let gutter_width = (region.end.line.ilog10() + 1) as usize;
 
