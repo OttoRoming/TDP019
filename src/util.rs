@@ -60,8 +60,8 @@ impl<'a> fmt::Display for Location<'a> {
 impl<'a> Ord for Location<'a> {
     fn cmp(&self, other: &Self) -> Ordering {
         match (self.line.cmp(&other.line), self.column.cmp(&other.column)) {
-            (Ordering::Equal, ord) => ord ,
-            (ord, _) => ord ,
+            (Ordering::Equal, ord) => ord,
+            (ord, _) => ord,
         }
     }
 }
