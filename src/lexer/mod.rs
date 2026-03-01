@@ -74,7 +74,7 @@ impl<'a> Lexer<'a> {
         let start = self.location;
         let mut content = String::new();
 
-        while self.peek(0).is_digit(10) {
+        while self.peek(0).is_digit(10) || self.peek(0) == '.' {
             content.push(self.peek(0));
             self.advance();
         }
@@ -203,7 +203,7 @@ impl<'a> Lexer<'a> {
         self.skip_whitespace();
         while !self.is_finished() {
             // skip comments
-            if self.peek(0) == '#' {
+            while self.peek(0) == '#' {
                 while self.peek(0) != '\n' && !self.is_finished() {
                     self.advance();
                 }
