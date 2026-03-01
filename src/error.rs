@@ -48,7 +48,7 @@ impl<'a> Error<'a> {
         eprintln!(
             "{} {}: {}",
             self.level.yellow().bold(),
-            "error".red(),
+            "error".red().bold(),
             self.message.cyan()
         )
     }
