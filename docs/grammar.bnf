@@ -50,6 +50,7 @@
                | <index_expression>
                | <parenthesized_expression>
                | <reference_expression>
+               | <dereference_expression>
                | <literal>
 
 <binary_expression> ::= <expression> "+" <expression>
@@ -71,6 +72,7 @@
 
 <index_expression> ::= <expression> "[" <expression> "]"
 <reference_expression> ::= "&" <identifier>
+<dereference_expression> ::= "*" <identifier>
 
 <expressions> ::= <expressions> "," <expression>
                 | <expression>
