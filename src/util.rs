@@ -2,8 +2,8 @@ use std::{fmt, path::Path};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Region<'a> {
-    start: Location<'a>,
-    end: Location<'a>,
+    pub start: Location<'a>,
+    pub end: Location<'a>,
 }
 
 impl<'a> Region<'a> {

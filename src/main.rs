@@ -23,7 +23,7 @@ fn main() {
             dbg!(tokens);
         }
         Err(err) => {
-            err.print();
+            err.print(&source);
         }
     };
 }

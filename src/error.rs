@@ -52,7 +52,30 @@ impl<'a> Error<'a> {
             self.message.cyan()
         )
     }
-    pub fn print(&self) {
+    pub fn print(&self, source: &str) {
         self.print_message();
+
+        if let Some(region) = self.region {
+            eprintln!("  {} {}", "-->".dimmed(), region);
+            let lines = source.lines();
+
+            // skip to one line above the error
+            let skip_amount = region.start.line.checked_sub(2).unwrap_or(0);
+            let print_amount = region.end.line - region.start.line + 2;
+            let gutter_width = (region.end.line.ilog10() + 1) as usize;
+
+            // print the error lines + 2
+            let mut line_index = skip_amount;
+            for line in lines.skip(skip_amount).take(print_amount) {
+                eprintln!(
+                    "{:gutter_width$} {} {}",
+                    line_index.dimmed(),
+                    "|".dimmed(),
+                    line
+                );
+
+                line_index += 1;
+            }
+        }
     }
 }
