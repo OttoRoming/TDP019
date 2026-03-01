@@ -7,7 +7,7 @@ use std::{env, fs, io::Read, path::PathBuf};
 
 fn main() {
     let filepath_string = env::args()
-        .nth(2)
+        .nth(1)
         .expect("no filename provided with cli arguments");
 
     let filepath = PathBuf::from(filepath_string);
