@@ -51,6 +51,15 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    fn skip_comments(&mut self) {
+        while self.peek(0) == '#' {
+            while self.peek(0) != '\n' && !self.is_finished() {
+                self.advance();
+            }
+            self.advance();
+        }
+    }
+
     fn tokenize_string(&mut self) -> Result<Token<'a>, Error<'a>> {
         let start = self.location;
         self.advance(); // skip the first "
@@ -201,20 +210,11 @@ impl<'a> Lexer<'a> {
         let mut tokens: Vec<Token<'a>> = vec![];
 
         self.skip_whitespace();
+        self.skip_comments();
         while !self.is_finished() {
-            // skip comments
-            while self.peek(0) == '#' {
-                while self.peek(0) != '\n' && !self.is_finished() {
-                    self.advance();
-                }
-                self.advance();
-                if self.is_finished() {
-                    break;
-                }
-            }
-
             tokens.push(self.tokenize()?);
             self.skip_whitespace();
+            self.skip_comments();
         }
 
         tokens.push(Token {
