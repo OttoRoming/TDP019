@@ -4,6 +4,7 @@ use std::{convert::From, error, fmt, io};
 use owo_colors::OwoColorize;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum Level {
     IO,
     Lexer,
