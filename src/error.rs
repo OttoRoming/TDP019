@@ -1,4 +1,4 @@
-use crate::util::Region;
+use crate::util::{Location, Region};
 use std::{convert::From, error, fmt, io};
 
 use owo_colors::OwoColorize;
@@ -56,25 +56,33 @@ impl<'a> Error<'a> {
         self.print_message();
 
         if let Some(region) = self.region {
-            eprintln!("  {} {}", "-->".dimmed(), region);
+            eprintln!("  {} {}", "-->".blue().bold(), region);
             let lines = source.lines();
 
             // skip to one line above the error
             let skip_amount = region.start.line.checked_sub(2).unwrap_or(0);
-            let print_amount = region.end.line - region.start.line + 2;
+            let print_amount = region.end.line - region.start.line + 3;
             let gutter_width = (region.end.line.ilog10() + 1) as usize;
 
-            // print the error lines + 2
-            let mut line_index = skip_amount;
-            for line in lines.skip(skip_amount).take(print_amount) {
-                eprintln!(
-                    "{:gutter_width$} {} {}",
-                    line_index.dimmed(),
-                    "|".dimmed(),
-                    line
+            for (line_index_raw, line) in lines.skip(skip_amount).take(print_amount).enumerate() {
+                let line_index = line_index_raw + skip_amount + 1;
+                eprint!(
+                    "{:gutter_width$} {} ",
+                    line_index.blue().bold(),
+                    "|".blue().bold()
                 );
 
-                line_index += 1;
+                for (char_index, char) in line.chars().enumerate() {
+                    let location = Location::new(region.start.path, line_index, char_index + 1);
+                    if region.contains(location) {
+                        eprint!("{}", char.red().bold())
+                    } else {
+                        eprint!("{}", char)
+                    }
+                }
+                eprintln!();
+
+                // line_index += 1;
             }
         }
     }
