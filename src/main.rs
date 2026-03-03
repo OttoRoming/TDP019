@@ -18,7 +18,7 @@ fn main() {
     file.read_to_string(&mut source)
         .expect("failed to read source file content");
 
-    match lexer::lex(&source, &filepath) {
+    match lexer::lex(&source) {
         Ok(tokens) => {
             dbg!(tokens);
         }

@@ -3,28 +3,29 @@ use crate::{
     token::{Token, Value},
     util::{Location, Region},
 };
-use std::path::Path;
 
 #[cfg(test)]
 mod test;
 
-fn error(region: Region, filepath: &Path, message: String) -> Error {
+fn error(region: Region, message: String) -> Error {
     Error {
         message,
         level: error::Level::Lexer,
-        path: Some(filepath.to_path_buf()),
         region: Some(region),
     }
 }
 
-struct Lexer<'a> {
-    filepath: &'a Path,
+struct Lexer {
     location: Location,
     index: usize,
     source: Vec<char>,
 }
 
-impl<'a> Lexer<'a> {
+impl Lexer {
+    fn current_region(&self) -> Region {
+        Region::new(self.location, self.location)
+    }
+
     fn advance(&mut self) {
         if self.peek(0) == '\n' {
             self.location.line += 1;
@@ -68,8 +69,35 @@ impl<'a> Lexer<'a> {
 
         let mut contents = String::new();
         while self.peek(0) != '"' {
-            contents.push(self.peek(0));
-            self.advance();
+            if self.peek(0) == '\\' {
+                // Escape sequences taken from https://en.wikipedia.org/wiki/Escape_sequences_in_C
+                // Correct assci value taken from https://www.asciitable.com/
+                let escaped_char = match self.peek(1) {
+                    'a' => '\u{7}',   // bell
+                    'b' => '\u{101}', // backspace
+                    'e' => '\u{33}',  // escape
+                    'f' => '\u{12}',  // form feed
+                    'n' => '\n',      // newline
+                    'r' => '\r',      // carrige return
+                    't' => '\t',      // horizontal tab
+                    'v' => '\u{11}',  // vertical tab
+                    '\\' => '\\',
+                    '"' => '"',
+                    _ => {
+                        return Err(error(
+                            Region::new(start, self.location),
+                            format!("unknown string escape sequence (\\{})", self.peek(1)),
+                        ));
+                    }
+                };
+
+                contents.push(escaped_char);
+                self.advance();
+                self.advance();
+            } else {
+                contents.push(self.peek(0));
+                self.advance();
+            }
         }
 
         self.advance(); // skip the second "
@@ -96,15 +124,15 @@ impl<'a> Lexer<'a> {
         let is_float = content.contains('.');
         let value = if is_float {
             Value::Float(
-                content.parse::<f64>().map_err(|e| {
-                    error(region, self.filepath, format!("failed to parse float token ({})", e))
-                })?,
+                content
+                    .parse::<f64>()
+                    .map_err(|e| error(region, format!("failed to parse float token ({})", e)))?,
             )
         } else {
             Value::Int(
-                content.parse::<i64>().map_err(|e| {
-                    error(region, self.filepath, format!("failed to parse int token ({})", e))
-                })?,
+                content
+                    .parse::<i64>()
+                    .map_err(|e| error(region, format!("failed to parse int token ({})", e)))?,
             )
         };
 
@@ -203,7 +231,6 @@ impl<'a> Lexer<'a> {
         } else {
             Err(error(
                 self.current_region(),
-                self.filepath,
                 format!("unxepceted character found ({})", self.peek(0)),
             ))
         }
@@ -227,13 +254,8 @@ impl<'a> Lexer<'a> {
         Ok(tokens)
     }
 
-    fn current_region(&self) -> Region {
-        Region::new(self.location, self.location)
-    }
-
-    pub fn new(filepath: &'a Path, source: &str) -> Self {
+    pub fn new(source: &str) -> Self {
         Self {
-            filepath,
             location: Location::new(1, 1),
             index: 0,
             source: source.chars().collect(),
@@ -241,7 +263,7 @@ impl<'a> Lexer<'a> {
     }
 }
 
-pub fn lex(source: &str, filepath: &Path) -> Result<Vec<Token>, Error> {
-    let mut lexer = Lexer::new(filepath, source);
+pub fn lex(source: &str) -> Result<Vec<Token>, Error> {
+    let mut lexer = Lexer::new(source);
     lexer.run_analysis()
 }

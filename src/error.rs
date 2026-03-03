@@ -1,5 +1,5 @@
 use crate::util::{Location, Region};
-use std::{convert::From, error, fmt, io, path::PathBuf};
+use std::{convert::From, error, fmt, io};
 
 use owo_colors::OwoColorize;
 
@@ -23,7 +23,6 @@ impl fmt::Display for Level {
 pub struct Error {
     pub message: String,
     pub level: Level,
-    pub path: Option<PathBuf>,
     pub region: Option<Region>,
 }
 
@@ -40,7 +39,6 @@ impl From<io::Error> for Error {
         Self {
             message: format!("{}", value),
             level: Level::IO,
-            path: None,
             region: None,
         }
     }
@@ -60,15 +58,7 @@ impl Error {
         self.print_message();
 
         if let Some(region) = self.region {
-            match &self.path {
-                Some(path) => eprintln!(
-                    "  {} {}:{}",
-                    "-->".blue().bold(),
-                    path.as_os_str().to_string_lossy(),
-                    region
-                ),
-                None => eprintln!("  {} {}", "-->".blue().bold(), region),
-            }
+            eprintln!("  {} {}", "-->".blue().bold(), region);
 
             let lines = source.lines();
 
