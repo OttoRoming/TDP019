@@ -31,6 +31,8 @@ pub enum Value {
     EqualsOperator,     // ==
     LessThanOrEqual,    // <=
     GreaterThanOrEqual, // >=
+    AndAssign,          // &=
+    OrAssign,           // |=
     Increment,          // ++
     Decrement,          // --
 

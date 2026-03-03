@@ -14,13 +14,19 @@
               | <return_statement>
               | <expression_statement>
 
-<assignment_statement> ::= <identifier> "=" <expression>
-                         | <identifier> "+=" <expression>
-                         | <identifier> "-=" <expression>
-                         | <identifier> "*=" <expression>
-                         | <identifier> "/=" <expression>
-                         | <identifier> "%=" <expression>
+# Fråga: är detta hur man ska hantera 
+# min_lista[10] = 12
+# eller borde detta bara vara binary_operator då?
+<assignment_statement> ::= <expression> "=" <expression>
+                         | <expression> "+=" <expression>
+                         | <expression> "-=" <expression>
+                         | <expression> "*=" <expression>
+                         | <expression> "/=" <expression>
+                         | <expression> "%=" <expression>
+                         | <expression> "&=" <expression>
+                         | <expression> "|=" <expression>
 
+# Fråga: borde detta kanske bara vara expressions?
 <update_statement> ::= <identifier> "++"
                      | <identifier> "--"
 
@@ -55,6 +61,7 @@
                       | <expression> "-" <expression>
                       | <expression> "/" <expression>
                       | <expression> "*" <expression>
+                      | <expression> "%" <expression>
                       | <expression> "&&" <expression>
                       | <expression> "||" <expression>
                       | <expression> "<" <expression>

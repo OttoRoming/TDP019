@@ -169,20 +169,22 @@ impl Lexer {
     }
 
     fn tokenize(&mut self) -> Result<Token, Error> {
-        let two_chars = format!("{}{}", self.peek(0), self.peek(1));
-        let mut token_value = match two_chars.as_str() {
-            "&&" => Some(Value::And),
-            "||" => Some(Value::Or),
-            "+=" => Some(Value::AddAssign),
-            "-=" => Some(Value::SubtractAssign),
-            "*=" => Some(Value::MultiplyAssign),
-            "/=" => Some(Value::DivideAssign),
-            "%=" => Some(Value::ModAssign),
-            "==" => Some(Value::EqualsOperator),
-            "<=" => Some(Value::LessThanOrEqual),
-            ">=" => Some(Value::GreaterThanOrEqual),
-            "++" => Some(Value::Increment),
-            "--" => Some(Value::Decrement),
+        let two_chars = (self.peek(0), self.peek(1));
+        let mut token_value = match two_chars {
+            ('&', '&') => Some(Value::And),
+            ('|', '|') => Some(Value::Or),
+            ('+', '=') => Some(Value::AddAssign),
+            ('-', '=') => Some(Value::SubtractAssign),
+            ('*', '=') => Some(Value::MultiplyAssign),
+            ('/', '=') => Some(Value::DivideAssign),
+            ('%', '=') => Some(Value::ModAssign),
+            ('=', '=') => Some(Value::EqualsOperator),
+            ('<', '=') => Some(Value::LessThanOrEqual),
+            ('>', '=') => Some(Value::GreaterThanOrEqual),
+            ('&', '=') => Some(Value::AndAssign),
+            ('|', '=') => Some(Value::OrAssign),
+            ('+', '+') => Some(Value::Increment),
+            ('-', '-') => Some(Value::Decrement),
             _ => None,
         };
         if let Some(value) = token_value {
