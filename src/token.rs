@@ -1,9 +1,9 @@
 use crate::util::Region;
 
 #[derive(Debug, PartialEq)]
-pub struct Token<'a> {
+pub struct Token {
     pub value: Value,
-    pub region: Region<'a>,
+    pub region: Region,
 }
 
 #[derive(Debug, PartialEq)]

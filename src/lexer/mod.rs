@@ -8,7 +8,7 @@ use std::path::Path;
 #[cfg(test)]
 mod test;
 
-fn error<'a>(region: Region<'a>, message: String) -> Error<'a> {
+fn error<'a>(region: Region, message: String) -> Error<'a> {
     Error {
         message,
         level: error::Level::Lexer,
@@ -17,7 +17,8 @@ fn error<'a>(region: Region<'a>, message: String) -> Error<'a> {
 }
 
 struct Lexer<'a> {
-    location: Location<'a>,
+    filepath: &'a Path,
+    location: Location,
     index: usize,
     source: Vec<char>,
 }
@@ -224,13 +225,14 @@ impl<'a> Lexer<'a> {
         Ok(tokens)
     }
 
-    fn current_region(&self) -> Region<'a> {
+    fn current_region(&self) -> Region {
         Region::new(self.location, self.location)
     }
 
     pub fn new(filepath: &'a Path, source: &str) -> Self {
         Self {
-            location: Location::new(filepath, 1, 1),
+            filepath,
+            location: Location::new(1, 1),
             index: 0,
             source: source.chars().collect(),
         }

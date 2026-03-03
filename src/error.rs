@@ -1,5 +1,5 @@
 use crate::util::{Location, Region};
-use std::{convert::From, error, fmt, io};
+use std::{convert::From, error, fmt, io, path::PathBuf};
 
 use owo_colors::OwoColorize;
 
@@ -20,31 +20,33 @@ impl fmt::Display for Level {
 }
 
 #[derive(Debug)]
-pub struct Error<'a> {
+pub struct Error {
     pub message: String,
     pub level: Level,
-    pub region: Option<Region<'a>>,
+    pub path: Option<PathBuf>,
+    pub region: Option<Region>,
 }
 
-impl<'a> error::Error for Error<'a> {}
+impl error::Error for Error {}
 
-impl<'a> fmt::Display for Error<'a> {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} error: {}", self.level, self.message)
     }
 }
 
-impl<'a> From<io::Error> for Error<'a> {
+impl From<io::Error> for Error {
     fn from(value: io::Error) -> Self {
         Self {
             message: format!("{}", value),
             level: Level::IO,
+            path: None,
             region: None,
         }
     }
 }
 
-impl<'a> Error<'a> {
+impl Error {
     fn print_message(&self) {
         eprintln!(
             "{} {}: {}",
@@ -53,11 +55,21 @@ impl<'a> Error<'a> {
             self.message.cyan()
         )
     }
+
     pub fn print(&self, source: &str) {
         self.print_message();
 
         if let Some(region) = self.region {
-            eprintln!("  {} {}", "-->".blue().bold(), region);
+            match &self.path {
+                Some(path) => eprintln!(
+                    "  {} {}:{}",
+                    "-->".blue().bold(),
+                    path.as_os_str().to_string_lossy(),
+                    region
+                ),
+                None => eprintln!("  {} {}", "-->".blue().bold(), region),
+            }
+
             let lines = source.lines();
 
             // skip to one line above the error
@@ -74,7 +86,7 @@ impl<'a> Error<'a> {
                 );
 
                 for (char_index, char) in line.chars().enumerate() {
-                    let location = Location::new(region.start.path, line_index, char_index + 1);
+                    let location = Location::new(line_index, char_index + 1);
                     if region.contains(location) {
                         eprint!("{}", char.red().bold())
                     } else {
@@ -82,8 +94,6 @@ impl<'a> Error<'a> {
                     }
                 }
                 eprintln!();
-
-                // line_index += 1;
             }
         }
     }
