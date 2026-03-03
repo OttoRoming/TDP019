@@ -13,11 +13,11 @@ fn lex_string() {
     assert_eq!(
         vec![
             Token {
-                region: Region::new(Location::new(path, 1, 1), Location::new(path, 1, 15)),
+                region: Region::new(Location::new(1, 1), Location::new(1, 15)),
                 value: Value::String("Hello, World".to_string())
             },
             Token {
-                region: Region::new(Location::new(path, 1, 15), Location::new(path, 1, 15)),
+                region: Region::new(Location::new(1, 15), Location::new(1, 15)),
                 value: Value::Eof
             }
         ],
@@ -31,7 +31,7 @@ fn lex_ignore_whitespace() {
     let tokens = lex("\t  \n \n\n", path).unwrap();
     assert_eq!(
         vec![Token {
-            region: Region::new(Location::new(path, 4, 1), Location::new(path, 4, 1)),
+            region: Region::new(Location::new(4, 1), Location::new(4, 1)),
             value: Value::Eof
         }],
         tokens
@@ -44,7 +44,7 @@ fn lex_ignore_comments() {
     let tokens = lex("#!/usr/bin/env tdp019\n", path).unwrap();
     assert_eq!(
         vec![Token {
-            region: Region::new(Location::new(path, 2, 1), Location::new(path, 2, 1)),
+            region: Region::new(Location::new(2, 1), Location::new(2, 1)),
             value: Value::Eof
         }],
         tokens
@@ -57,7 +57,7 @@ fn lex_ignore_comments_without_newline() {
     let tokens = lex("#!/usr/bin/env tdp019", path).unwrap();
     assert_eq!(
         vec![Token {
-            region: Region::new(Location::new(path, 1, 23), Location::new(path, 1, 23)),
+            region: Region::new(Location::new(1, 23), Location::new(1, 23)),
             value: Value::Eof
         }],
         tokens

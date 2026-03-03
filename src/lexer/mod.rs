@@ -8,10 +8,11 @@ use std::path::Path;
 #[cfg(test)]
 mod test;
 
-fn error<'a>(region: Region, message: String) -> Error<'a> {
+fn error(region: Region, filepath: &Path, message: String) -> Error {
     Error {
         message,
         level: error::Level::Lexer,
+        path: Some(filepath.to_path_buf()),
         region: Some(region),
     }
 }
@@ -61,7 +62,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn tokenize_string(&mut self) -> Result<Token<'a>, Error<'a>> {
+    fn tokenize_string(&mut self) -> Result<Token, Error> {
         let start = self.location;
         self.advance(); // skip the first "
 
@@ -80,7 +81,7 @@ impl<'a> Lexer<'a> {
         })
     }
 
-    fn tokenize_int_or_float(&mut self) -> Result<Token<'a>, Error<'a>> {
+    fn tokenize_int_or_float(&mut self) -> Result<Token, Error> {
         let start = self.location;
         let mut content = String::new();
 
@@ -95,22 +96,22 @@ impl<'a> Lexer<'a> {
         let is_float = content.contains('.');
         let value = if is_float {
             Value::Float(
-                content
-                    .parse::<f64>()
-                    .map_err(|e| error(region, format!("failed to parse float token ({})", e)))?,
+                content.parse::<f64>().map_err(|e| {
+                    error(region, self.filepath, format!("failed to parse float token ({})", e))
+                })?,
             )
         } else {
             Value::Int(
-                content
-                    .parse::<i64>()
-                    .map_err(|e| error(region, format!("failed to parse int token ({})", e)))?,
+                content.parse::<i64>().map_err(|e| {
+                    error(region, self.filepath, format!("failed to parse int token ({})", e))
+                })?,
             )
         };
 
         Ok(Token { value, region })
     }
 
-    fn tokenize_identifier_or_keyword(&mut self) -> Result<Token<'a>, Error<'a>> {
+    fn tokenize_identifier_or_keyword(&mut self) -> Result<Token, Error> {
         let start = self.location;
 
         let mut content = String::new();
@@ -139,7 +140,7 @@ impl<'a> Lexer<'a> {
         Ok(Token { value, region })
     }
 
-    fn tokenize(&mut self) -> Result<Token<'a>, Error<'a>> {
+    fn tokenize(&mut self) -> Result<Token, Error> {
         let two_chars = format!("{}{}", self.peek(0), self.peek(1));
         let mut token_value = match two_chars.as_str() {
             "&&" => Some(Value::And),
@@ -202,13 +203,14 @@ impl<'a> Lexer<'a> {
         } else {
             Err(error(
                 self.current_region(),
+                self.filepath,
                 format!("unxepceted character found ({})", self.peek(0)),
             ))
         }
     }
 
-    fn run_analysis(&mut self) -> Result<Vec<Token<'a>>, Error<'a>> {
-        let mut tokens: Vec<Token<'a>> = vec![];
+    fn run_analysis(&mut self) -> Result<Vec<Token>, Error> {
+        let mut tokens: Vec<Token> = vec![];
 
         self.skip_whitespace();
         self.skip_comments();
@@ -239,7 +241,7 @@ impl<'a> Lexer<'a> {
     }
 }
 
-pub fn lex<'a>(source: &str, filepath: &'a Path) -> Result<Vec<Token<'a>>, Error<'a>> {
-    let mut lexer: Lexer<'a> = Lexer::new(filepath, source);
+pub fn lex(source: &str, filepath: &Path) -> Result<Vec<Token>, Error> {
+    let mut lexer = Lexer::new(filepath, source);
     lexer.run_analysis()
 }
