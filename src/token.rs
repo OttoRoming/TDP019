@@ -28,6 +28,7 @@ pub enum Value {
     MultiplyAssign,     // *=
     DivideAssign,       // /=
     ModAssign,          // %=
+    NotEquals,          // !=
     EqualsOperator,     // ==
     LessThanOrEqual,    // <=
     GreaterThanOrEqual, // >=
