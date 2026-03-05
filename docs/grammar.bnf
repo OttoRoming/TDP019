@@ -14,15 +14,11 @@
               | <return_statement>
               | <expression_statement>
 
-<assignment_statement> ::= <identifier> "=" <expression>
-                         | <identifier> "+=" <expression>
-                         | <identifier> "-=" <expression>
-                         | <identifier> "*=" <expression>
-                         | <identifier> "/=" <expression>
-                         | <identifier> "%=" <expression>
-                    
-<update_statement> ::= <identifier> "++"
-                     | <identifier> "--"
+<assignment_operator> := "=" | "+=" | "-=" | "*=" | "/=" | "%="
+<assignment_statement> ::= <expression> <assignment_operator> <expression>
+
+<update_operator> ::= "++" | "--"
+<update_statement> ::= <expression> <update_operator>
 
 <if_statement> ::= "if" <expression> <block>
                  | <if_statement> "elif" <expression> <block>
@@ -52,21 +48,11 @@
                | <reference_expression>
                | <literal>
 
-<binary_expression> ::= <expression> "+" <expression>
-                      | <expression> "-" <expression>
-                      | <expression> "/" <expression>
-                      | <expression> "*" <expression>
-                      | <expression> "&&" <expression>
-                      | <expression> "||" <expression>
-                      | <expression> "<" <expression>
-                      | <expression> ">" <expression>
-                      | <expression> "<=" <expression>
-                      | <expression> ">=" <expression>
-                      | <expression> "==" <expression>
-                      | <expression> "!=" <expression>
+<binary_operator> ::= "+" | "-" | "/" | "*" | "&&" | "||" | "<" | ">" | "<=" | ">=" | "==" | "!="
+<binary_expression> ::= <expression> <binary_operator> <expression>
 
-<unary_expression> ::= "-" <expression>
-                     | "!" <expression>
+<unary_operator> ::= "-" | "!"
+<unary_expression> ::= <unary_operator> <expression>
 
 
 <index_expression> ::= <expression> "[" <expression> "]"
