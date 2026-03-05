@@ -1,12 +1,12 @@
 use crate::util::Region;
 
-#[derive(Debug)]
-pub struct Token<'a> {
+#[derive(Debug, PartialEq)]
+pub struct Token {
     pub value: Value,
-    pub region: Region<'a>,
+    pub region: Region,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Value {
     // keyword tokens
     KeywordIf,     // if
@@ -31,6 +31,8 @@ pub enum Value {
     EqualsOperator,     // ==
     LessThanOrEqual,    // <=
     GreaterThanOrEqual, // >=
+    AndAssign,          // &=
+    OrAssign,           // |=
     Increment,          // ++
     Decrement,          // --
 
@@ -50,10 +52,13 @@ pub enum Value {
     Not,              // !
     LessThan,         // <
     GreaterThan,      // >
+    Ampersand,        // &
 
-    String(String), // "Hello, World"
-    Int(i64),       // 67
-    Float(f64),     // 67.67
-
+    // Special tokens
+    String(String),     // "Hello, World"
+    Int(i64),           // 1337
+    Float(f64),         // 3.14
     Identifier(String), // i
+
+    Eof,
 }

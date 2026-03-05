@@ -1,50 +1,67 @@
-use std::{fmt, path::Path};
+use std::{
+    cmp::{Ord, Ordering, PartialOrd},
+    fmt,
+};
 
-#[derive(Debug, Clone, Copy)]
-pub struct Region<'a> {
-    start: Location<'a>,
-    end: Location<'a>,
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Region {
+    pub start: Location,
+    pub end: Location,
 }
 
-impl<'a> Region<'a> {
-    pub fn new(start: Location<'a>, end: Location<'a>) -> Self {
+impl Region {
+    pub fn contains(&self, location: Location) -> bool {
+        location >= self.start && location <= self.end
+    }
+
+    pub fn new(start: Location, end: Location) -> Self {
         Self { start, end }
     }
 }
 
-impl<'a> fmt::Display for Region<'a> {
+impl fmt::Display for Region {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.start == self.end {
             write!(f, "{}", self.start)
-        } else if self.start.path == self.end.path {
-            let path_string = self.start.path.as_os_str().to_string_lossy();
+        } else {
             write!(
                 f,
-                "{}:({}:{} -> {}:{})",
-                path_string, self.start.line, self.start.column, self.end.line, self.end.column
+                "{}:{} -> {}:{}",
+                self.start.line, self.start.column, self.end.line, self.end.column
             )
-        } else {
-            write!(f, "{} -> {}", self.start, self.end)
         }
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Location<'a> {
-    path: &'a Path,
+pub struct Location {
     pub line: usize,
     pub column: usize,
 }
 
-impl<'a> Location<'a> {
-    pub fn new(path: &'a Path, line: usize, column: usize) -> Self {
-        Self { path, line, column }
+impl Location {
+    pub fn new(line: usize, column: usize) -> Self {
+        Self { line, column }
     }
 }
 
-impl<'a> fmt::Display for Location<'a> {
+impl fmt::Display for Location {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let path_string = self.path.as_os_str().to_string_lossy();
-        write!(f, "{}:{}:{}", path_string, self.line, self.column)
+        write!(f, "{}:{}", self.line, self.column)
+    }
+}
+
+impl Ord for Location {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self.line.cmp(&other.line), self.column.cmp(&other.column)) {
+            (Ordering::Equal, ord) => ord,
+            (ord, _) => ord,
+        }
+    }
+}
+
+impl PartialOrd for Location {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
