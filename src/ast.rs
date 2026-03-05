@@ -1,10 +1,10 @@
 #[allow(unused)]
-struct Block {
-    statements: Vec<Statement>,
+pub struct Block {
+    pub statements: Vec<Statement>,
 }
 
 #[allow(unused)]
-enum AssignmentOperator {
+pub enum AssignmentOperator {
     Equals,   // =
     Add,      // +=
     Subtract, // -=
@@ -16,72 +16,72 @@ enum AssignmentOperator {
 }
 
 #[allow(unused)]
-struct AssignmentStatement {
-    assignee: Expression,
-    operator: AssignmentOperator,
-    expression: Expression,
+pub struct AssignmentStatement {
+    pub assignee: Expression,
+    pub operator: AssignmentOperator,
+    pub expression: Expression,
 }
 
 #[allow(unused)]
-enum UpdateOperator {
+pub enum UpdateOperator {
     Increment, // ++
     Decrement, // --
 }
 
 #[allow(unused)]
-struct UpdateStatement {
-    identifier: String,
-    operator: UpdateOperator,
+pub struct UpdateStatement {
+    pub identifier: String,
+    pub operator: UpdateOperator,
 }
 
 #[allow(unused)]
-struct IfStatement {
-    test: Expression,
-    block: Block,
+pub struct IfStatement {
+    pub test: Expression,
+    pub block: Block,
 }
 // TODO: how to do the else branches?
 
 #[allow(unused)]
-struct WhileStatement {
-    test: Expression,
-    block: Block,
+pub struct WhileStatement {
+    pub test: Expression,
+    pub block: Block,
 }
 
 #[allow(unused)]
-struct EachStatement {
-    left: String,
-    right: Expression,
-    block: Block,
+pub struct EachStatement {
+    pub left: String,
+    pub right: Expression,
+    pub block: Block,
 }
 
 #[allow(unused)]
-struct VariableDeclarationStatement {
-    identifier: String,
-    type_specifier: Option<TypeSpecifier>,
-    expression: Expression,
+pub struct VariableDeclarationStatement {
+    pub identifier: String,
+    pub type_specifier: Option<TypeSpecifier>,
+    pub expression: Expression,
 }
 
 #[allow(unused)]
-struct Parameter {
-    identifier: String,
-    type_specifier: TypeSpecifier,
+pub struct Parameter {
+    pub identifier: String,
+    pub type_specifier: TypeSpecifier,
 }
 
 #[allow(unused)]
-struct FunctionDeclarationStatement {
-    identifier: String,
-    parameters: Vec<Parameter>,
-    return_type: Option<TypeSpecifier>,
-    block: Block,
+pub struct FunctionDeclarationStatement {
+    pub identifier: String,
+    pub parameters: Vec<Parameter>,
+    pub return_type: Option<TypeSpecifier>,
+    pub block: Block,
 }
 
 #[allow(unused)]
-struct ReturnStatement {
-    expression: Expression,
+pub struct ReturnStatement {
+    pub expression: Expression,
 }
 
 #[allow(unused)]
-enum Statement {
+pub enum Statement {
     Assignment(AssignmentStatement),
     Update(UpdateStatement),
     If(IfStatement),
@@ -94,7 +94,7 @@ enum Statement {
 }
 
 #[allow(unused)]
-enum BinaryOperator {
+pub enum BinaryOperator {
     Add,
     Subtract,
     Multiply,
@@ -111,43 +111,43 @@ enum BinaryOperator {
 }
 
 #[allow(unused)]
-struct BinaryExpression {
-    left: Expression,
-    operator: BinaryOperator,
-    right: Expression,
+pub struct BinaryExpression {
+    pub left: Expression,
+    pub operator: BinaryOperator,
+    pub right: Expression,
 }
 
 #[allow(unused)]
-enum UnaryOperator {
+pub enum UnaryOperator {
     Not,    // !
     Negate, // -
 }
 
 #[allow(unused)]
-struct UnaryExpression {
-    operator: UnaryOperator,
-    right: Expression,
+pub struct UnaryExpression {
+    pub operator: UnaryOperator,
+    pub right: Expression,
 }
 
 #[allow(unused)]
-struct IdentifierExpression {
-    identifier: String,
+pub struct IdentifierExpression {
+    pub identifier: String,
 }
 
 #[allow(unused)]
-struct FunctionCallExpression {
-    callee: Expression,
-    arguments: Vec<Expression>,
+pub struct FunctionCallExpression {
+    pub callee: Expression,
+    pub arguments: Vec<Expression>,
 }
 
 #[allow(unused)]
-struct IndexExpression {
-    collection: Expression,
-    index: Expression,
+pub struct IndexExpression {
+    pub collection: Expression,
+    pub index: Expression,
 }
 
 #[allow(unused)]
-enum Expression {
+pub enum Expression {
     Binary(Box<BinaryExpression>),
     Unary(Box<UnaryExpression>),
     Identifier(IdentifierExpression),
@@ -158,7 +158,7 @@ enum Expression {
 }
 
 #[allow(unused)]
-enum LiteralExpression {
+pub enum LiteralExpression {
     String(String),
     Int(i64),
     Float(f64),
@@ -168,7 +168,7 @@ enum LiteralExpression {
 }
 
 #[allow(unused)]
-enum TypeSpecifier {
+pub enum TypeSpecifier {
     Int,
     Float,
     String,
