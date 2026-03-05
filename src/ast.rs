@@ -1,9 +1,9 @@
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct Block {
     pub statements: Vec<Statement>,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub enum AssignmentOperator {
     Equals,   // =
     Add,      // +=
@@ -15,59 +15,59 @@ pub enum AssignmentOperator {
     Or,       // |=
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct AssignmentStatement {
     pub assignee: Expression,
     pub operator: AssignmentOperator,
     pub expression: Expression,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub enum UpdateOperator {
     Increment, // ++
     Decrement, // --
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct UpdateStatement {
     pub identifier: String,
     pub operator: UpdateOperator,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct IfStatement {
     pub test: Expression,
     pub block: Block,
 }
 // TODO: how to do the else branches?
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct WhileStatement {
     pub test: Expression,
     pub block: Block,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct EachStatement {
     pub left: String,
     pub right: Expression,
     pub block: Block,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct VariableDeclarationStatement {
     pub identifier: String,
     pub type_specifier: Option<TypeSpecifier>,
     pub expression: Expression,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct Parameter {
     pub identifier: String,
     pub type_specifier: TypeSpecifier,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct FunctionDeclarationStatement {
     pub identifier: String,
     pub parameters: Vec<Parameter>,
@@ -75,12 +75,12 @@ pub struct FunctionDeclarationStatement {
     pub block: Block,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct ReturnStatement {
     pub expression: Expression,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub enum Statement {
     Assignment(AssignmentStatement),
     Update(UpdateStatement),
@@ -93,7 +93,7 @@ pub enum Statement {
     Expression(Expression),
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub enum BinaryOperator {
     Add,
     Subtract,
@@ -110,43 +110,43 @@ pub enum BinaryOperator {
     NotEquals,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct BinaryExpression {
     pub left: Expression,
     pub operator: BinaryOperator,
     pub right: Expression,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub enum UnaryOperator {
     Not,    // !
     Negate, // -
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct UnaryExpression {
     pub operator: UnaryOperator,
     pub right: Expression,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct IdentifierExpression {
     pub identifier: String,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct FunctionCallExpression {
     pub callee: Expression,
     pub arguments: Vec<Expression>,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub struct IndexExpression {
     pub collection: Expression,
     pub index: Expression,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub enum Expression {
     Binary(Box<BinaryExpression>),
     Unary(Box<UnaryExpression>),
@@ -157,7 +157,7 @@ pub enum Expression {
     Parenthesised(Box<Expression>),
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub enum LiteralExpression {
     String(String),
     Int(i64),
@@ -167,7 +167,7 @@ pub enum LiteralExpression {
     Null,
 }
 
-#[allow(unused)]
+#[derive(Debug, PartialEq)]
 pub enum TypeSpecifier {
     Int,
     Float,

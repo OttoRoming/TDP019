@@ -56,30 +56,30 @@ impl Parser {
         let mut expression = Expression::Literal(self.parse_literal()?);
 
         while self.matching(Value::EqualsOperator) || self.matching(Value::NotEquals) {
-            let operator = Some(match self.peek(0).value {
+            let operator = match self.peek(0).value {
                 Value::EqualsOperator => BinaryOperator::Equals,
                 Value::NotEquals => BinaryOperator::NotEquals,
                 _ => unreachable!(),
-            });
+            };
             self.advance();
 
-            let right = Some(Expression::Literal(self.parse_literal()?));
+            let right = Expression::Literal(self.parse_literal()?);
 
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
-                operator: operator.unwrap(),
-                right: right.unwrap(),
+                operator: operator,
+                right: right,
             }));
         }
 
         Ok(expression)
     }
 
-    fn parse_or(&mut self) -> Result<Expression, Error> {
+    fn parse_logical_and(&mut self) -> Result<Expression, Error> {
         let mut expression = self.parse_equality()?;
 
-        while self.matching(Value::Or) {
-            let operator = BinaryOperator::Or;
+        while self.matching(Value::And) {
+            let operator = BinaryOperator::And;
             self.advance();
 
             let right = self.parse_equality()?;
@@ -94,16 +94,35 @@ impl Parser {
         Ok(expression)
     }
 
+    fn parse_logical_or(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_logical_and()?;
+
+        while self.matching(Value::Or) {
+            let operator = BinaryOperator::Or;
+            self.advance();
+
+            let right = self.parse_logical_and()?;
+
+            expression = Expression::Binary(Box::new(BinaryExpression {
+                left: expression,
+                operator,
+                right,
+            }));
+        }
+
+        Ok(expression)
+    }
+
     fn parse_expression(&mut self) -> Result<Expression, Error> {
-        Ok(self.parse_equality()?)
+        Ok(self.parse_logical_or()?)
     }
 
     fn parse_statement(&mut self) -> Result<Statement, Error> {
         Ok(Statement::Expression(self.parse_expression()?))
     }
 
-    pub fn parse_program(&mut self) -> Result<Statement, Error> {
-        self.parse_statement()
+    pub fn parse_program(&mut self) -> Result<Vec<Statement>, Error> {
+        Ok(vec![self.parse_statement()?])
     }
 
     pub fn new(source: &str) -> Result<Self, Error> {
@@ -116,7 +135,7 @@ impl Parser {
     }
 }
 
-pub fn parse(source: &str) -> Result<Statement, Error> {
+pub fn parse(source: &str) -> Result<Vec<Statement>, Error> {
     let mut parser = Parser::new(source)?;
     parser.parse_program()
 }
