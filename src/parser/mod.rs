@@ -117,8 +117,24 @@ impl Parser {
         Ok(self.parse_logical_or()?)
     }
 
+    fn parse_expression_statement(&mut self) -> Result<Statement, Error> {
+        let expression = self.parse_expression()?;
+
+        if self.peek(0).value != Value::Semicolon {
+            return Err(error(
+                self.peek(0).region,
+                format!(
+                    "expected semicolon after expression, found {:?}",
+                    self.peek(0).value
+                ),
+            ));
+        }
+
+        Ok(Statement::Expression(expression))
+    }
+
     fn parse_statement(&mut self) -> Result<Statement, Error> {
-        Ok(Statement::Expression(self.parse_expression()?))
+        self.parse_expression_statement()
     }
 
     pub fn parse_program(&mut self) -> Result<Vec<Statement>, Error> {

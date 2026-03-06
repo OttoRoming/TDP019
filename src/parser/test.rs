@@ -11,7 +11,7 @@ fn parse_logical_or() {
                 right: Expression::Literal(LiteralExpression::Bool(true)),
             }
         )))],
-        parse("true == true").unwrap()
+        parse("true == true;").unwrap()
     )
 }
 
@@ -25,7 +25,7 @@ fn parse_logical_and() {
                 right: Expression::Literal(LiteralExpression::Bool(true)),
             }
         )))],
-        parse("true && true").unwrap()
+        parse("true && true;").unwrap()
     )
 }
 
@@ -39,7 +39,7 @@ fn parse_logical_equality() {
                 right: Expression::Literal(LiteralExpression::Bool(true)),
             }
         )))],
-        parse("true == true").unwrap()
+        parse("true == true;").unwrap()
     );
 
     assert_eq!(
@@ -50,6 +50,6 @@ fn parse_logical_equality() {
                 right: Expression::Literal(LiteralExpression::Bool(true)),
             }
         )))],
-        parse("true != true").unwrap()
+        parse("true != true;").unwrap()
     )
 }

@@ -1,6 +1,5 @@
 <statements> ::= <statement>
-               | <statements> ";" <statement>
-               | <statements> ";"
+               | <statements> <statement>
 <block> ::= "{" <statements> "}"
 
 <statement> ::= <assignment_statement>
@@ -38,7 +37,7 @@
 
 <return_statement> ::= "return" <expression>
 
-<expression_statement> ::= <expression>
+<expression_statement> ::= <expression> ";"
 <expression> ::= <binary_expression>
                | <unary_expression>
                | <identifier>
