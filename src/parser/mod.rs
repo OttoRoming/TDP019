@@ -70,8 +70,53 @@ impl Parser {
         )
     }
 
-    fn parse_equality(&mut self) -> Result<Expression, Error> {
+    fn parse_multiplicative(&mut self) -> Result<Expression, Error> {
         let mut expression = self.parse_unary()?;
+
+        loop {
+            let operator = match self.peek(0).value {
+                Value::Multiply => BinaryOperator::Multiply,
+                Value::Divide => BinaryOperator::Divide,
+                Value::Mod => BinaryOperator::Modulo,
+                _ => break,
+            };
+            self.advance();
+
+            let right = self.parse_unary()?;
+            expression = Expression::Binary(Box::new(BinaryExpression {
+                left: expression,
+                operator,
+                right,
+            }));
+        }
+
+        Ok(expression)
+    }
+
+    fn parse_addative(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_multiplicative()?;
+
+        loop {
+            let operator = match self.peek(0).value {
+                Value::Add => BinaryOperator::Add,
+                Value::Subtract => BinaryOperator::Subtract,
+                _ => break,
+            };
+            self.advance();
+
+            let right = self.parse_multiplicative()?;
+            expression = Expression::Binary(Box::new(BinaryExpression {
+                left: expression,
+                operator,
+                right,
+            }));
+        }
+
+        Ok(expression)
+    }
+
+    fn parse_equality(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_addative()?;
 
         loop {
             let operator = match self.peek(0).value {
@@ -81,8 +126,7 @@ impl Parser {
             };
             self.advance();
 
-            let right = self.parse_unary()?;
-
+            let right = self.parse_addative()?;
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
