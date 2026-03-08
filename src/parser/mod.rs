@@ -41,6 +41,11 @@ impl Parser {
                 self.advance();
                 Ok(LiteralExpression::Bool(false))
             }
+            Value::Int(i) => {
+                let literal = LiteralExpression::Int(*i);
+                self.advance();
+                Ok(literal)
+            }
             _ => Err(error(
                 self.peek(0).region,
                 format!("expected literal, found {:?}", self.peek(0).value),
