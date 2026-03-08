@@ -31,20 +31,36 @@ impl Parser {
         self.index += 1;
     }
 
-    fn parse_literal(&mut self) -> Result<LiteralExpression, Error> {
+    fn parse_literal(&mut self) -> Result<Expression, Error> {
         match &self.peek(0).value {
             Value::KeywordTrue => {
                 self.advance();
-                Ok(LiteralExpression::Bool(true))
+                Ok(Expression::Literal(LiteralExpression::Bool(true)))
             }
             Value::KeywordFalse => {
                 self.advance();
-                Ok(LiteralExpression::Bool(false))
+                Ok(Expression::Literal(LiteralExpression::Bool(false)))
             }
             Value::Int(i) => {
                 let literal = LiteralExpression::Int(*i);
                 self.advance();
-                Ok(literal)
+                Ok(Expression::Literal(literal))
+            }
+            Value::OpenParenthesis => {
+                self.advance();
+                let expression = self.parse_expression()?;
+                if self.peek(0).value != Value::CloseParenthesis {
+                    Err(error(
+                        self.peek(0).region,
+                        format!(
+                            "expected closing parenthesis at end of parenthesized expression, found {:?}",
+                            self.peek(0).value
+                        ),
+                    ))
+                } else {
+                    self.advance();
+                    Ok(expression)
+                }
             }
             _ => Err(error(
                 self.peek(0).region,
@@ -63,10 +79,10 @@ impl Parser {
                 _ => None,
             } {
                 self.advance();
-                let right = Expression::Literal(self.parse_literal()?);
+                let right = self.parse_literal()?;
                 Expression::Unary(Box::new(UnaryExpression { operator, right }))
             } else {
-                Expression::Literal(self.parse_literal()?)
+                self.parse_literal()?
             },
         )
     }

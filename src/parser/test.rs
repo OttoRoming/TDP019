@@ -2,6 +2,16 @@ use super::parse;
 use crate::ast::*;
 
 #[test]
+fn parse_parenthesized() {
+    assert_eq!(
+        vec![Statement::Expression(Expression::Literal(
+            LiteralExpression::Bool(true)
+        ))],
+        parse("(((((true)))));").unwrap()
+    )
+}
+
+#[test]
 fn parse_logical_or() {
     assert_eq!(
         vec![Statement::Expression(Expression::Binary(Box::new(
