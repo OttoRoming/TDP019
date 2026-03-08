@@ -62,7 +62,8 @@ impl Parser {
                 Value::Ampersand => Some(UnaryOperator::Reference),
                 _ => None,
             } {
-                let right = self.parse_unary()?;
+                self.advance();
+                let right = Expression::Literal(self.parse_literal()?);
                 Expression::Unary(Box::new(UnaryExpression { operator, right }))
             } else {
                 Expression::Literal(self.parse_literal()?)
@@ -115,8 +116,32 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_equality(&mut self) -> Result<Expression, Error> {
+    fn parse_comparison(&mut self) -> Result<Expression, Error> {
         let mut expression = self.parse_addative()?;
+
+        loop {
+            let operator = match self.peek(0).value {
+                Value::LessThan => BinaryOperator::LessThan,
+                Value::LessThanOrEqual => BinaryOperator::LessThanOrEqual,
+                Value::GreaterThan => BinaryOperator::GreaterThan,
+                Value::GreaterThanOrEqual => BinaryOperator::GreaterThanOrEqual,
+                _ => break,
+            };
+            self.advance();
+
+            let right = self.parse_addative()?;
+            expression = Expression::Binary(Box::new(BinaryExpression {
+                left: expression,
+                operator,
+                right,
+            }));
+        }
+
+        Ok(expression)
+    }
+
+    fn parse_equality(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_comparison()?;
 
         loop {
             let operator = match self.peek(0).value {
@@ -126,7 +151,7 @@ impl Parser {
             };
             self.advance();
 
-            let right = self.parse_addative()?;
+            let right = self.parse_comparison()?;
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
