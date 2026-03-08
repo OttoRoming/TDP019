@@ -80,8 +80,8 @@ impl Parser {
 
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
-                operator: operator,
-                right: right,
+                operator,
+                right,
             }));
         }
 
@@ -91,17 +91,13 @@ impl Parser {
     fn parse_logical_and(&mut self) -> Result<Expression, Error> {
         let mut expression = self.parse_equality()?;
 
-        loop {
-            let operator = match self.peek(0).value {
-                Value::And => BinaryOperator::And,
-                _ => break,
-            };
+        while self.peek(0).value == Value::And {
             self.advance();
 
             let right = self.parse_equality()?;
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
-                operator,
+                operator: BinaryOperator::And,
                 right,
             }));
         }
@@ -112,17 +108,13 @@ impl Parser {
     fn parse_logical_or(&mut self) -> Result<Expression, Error> {
         let mut expression = self.parse_logical_and()?;
 
-        loop {
-            let operator = match self.peek(0).value {
-                Value::Or => BinaryOperator::Or,
-                _ => break,
-            };
+        while self.peek(0).value == Value::Or {
             self.advance();
 
             let right = self.parse_logical_and()?;
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
-                operator,
+                operator: BinaryOperator::Or,
                 right,
             }));
         }
@@ -179,7 +171,7 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Result<Expression, Error> {
-        Ok(self.parse_assignment()?)
+        self.parse_assignment()
     }
 
     fn parse_expression_statement(&mut self) -> Result<Statement, Error> {
@@ -209,10 +201,7 @@ impl Parser {
     pub fn new(source: &str) -> Result<Self, Error> {
         let tokens = lex(source)?;
 
-        Ok(Self {
-            index: 0,
-            tokens: tokens,
-        })
+        Ok(Self { index: 0, tokens })
     }
 }
 
