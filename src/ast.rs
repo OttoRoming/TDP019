@@ -4,37 +4,6 @@ pub struct Block {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum AssignmentOperator {
-    Equals,   // =
-    Add,      // +=
-    Subtract, // -=
-    Multiply, // *=
-    Divide,   // /=
-    Modulo,   // %=
-    And,      // &=
-    Or,       // |=
-}
-
-#[derive(Debug, PartialEq)]
-pub struct AssignmentStatement {
-    pub assignee: Expression,
-    pub operator: AssignmentOperator,
-    pub expression: Expression,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum UpdateOperator {
-    Increment, // ++
-    Decrement, // --
-}
-
-#[derive(Debug, PartialEq)]
-pub struct UpdateStatement {
-    pub identifier: String,
-    pub operator: UpdateOperator,
-}
-
-#[derive(Debug, PartialEq)]
 pub struct IfStatement {
     pub test: Expression,
     pub block: Block,
@@ -81,9 +50,8 @@ pub struct ReturnStatement {
 }
 
 #[derive(Debug, PartialEq)]
+#[allow(dead_code)]
 pub enum Statement {
-    Assignment(AssignmentStatement),
-    Update(UpdateStatement),
     If(IfStatement),
     While(WhileStatement),
     Each(EachStatement),
@@ -94,6 +62,38 @@ pub enum Statement {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum AssignmentOperator {
+    Equals,   // =
+    Add,      // +=
+    Subtract, // -=
+    Multiply, // *=
+    Divide,   // /=
+    Modulo,   // %=
+    And,      // &=
+    Or,       // |=
+}
+
+#[derive(Debug, PartialEq)]
+pub struct AssignmentExpression {
+    pub assignee: Expression,
+    pub operator: AssignmentOperator,
+    pub right: Expression,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum UpdateOperator {
+    Increment, // ++
+    Decrement, // --
+}
+
+#[derive(Debug, PartialEq)]
+pub struct UpdateExpression {
+    pub updatee: Expression,
+    pub operator: UpdateOperator,
+}
+
+#[derive(Debug, PartialEq)]
+#[allow(dead_code)]
 pub enum BinaryOperator {
     Add,
     Subtract,
@@ -119,8 +119,10 @@ pub struct BinaryExpression {
 
 #[derive(Debug, PartialEq)]
 pub enum UnaryOperator {
-    Not,    // !
-    Negate, // -
+    Not,         // !
+    Negate,      // -
+    Dereference, // *
+    Reference,   // &
 }
 
 #[derive(Debug, PartialEq)]
@@ -147,7 +149,10 @@ pub struct IndexExpression {
 }
 
 #[derive(Debug, PartialEq)]
+#[allow(dead_code)]
 pub enum Expression {
+    Assign(Box<AssignmentExpression>),
+    Update(Box<UpdateExpression>),
     Binary(Box<BinaryExpression>),
     Unary(Box<UnaryExpression>),
     Identifier(IdentifierExpression),
@@ -158,6 +163,7 @@ pub enum Expression {
 }
 
 #[derive(Debug, PartialEq)]
+#[allow(dead_code)]
 pub enum LiteralExpression {
     String(String),
     Int(i64),
@@ -168,6 +174,7 @@ pub enum LiteralExpression {
 }
 
 #[derive(Debug, PartialEq)]
+#[allow(dead_code)]
 pub enum TypeSpecifier {
     Int,
     Float,

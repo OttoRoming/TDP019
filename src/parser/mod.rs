@@ -1,9 +1,9 @@
 use crate::{
-    ast::{self, *},
+    ast::*,
     error::{self, Error},
     lexer::lex,
     token::{Token, Value},
-    util::{Location, Region},
+    util::Region,
 };
 
 #[cfg(test)]
@@ -31,10 +31,6 @@ impl Parser {
         self.index += 1;
     }
 
-    fn matching(&self, expected: Value) -> bool {
-        self.peek(0).value == expected
-    }
-
     fn parse_literal(&mut self) -> Result<LiteralExpression, Error> {
         match &self.peek(0).value {
             Value::KeywordTrue => {
@@ -52,18 +48,35 @@ impl Parser {
         }
     }
 
-    fn parse_equality(&mut self) -> Result<Expression, Error> {
-        let mut expression = Expression::Literal(self.parse_literal()?);
+    fn parse_unary(&mut self) -> Result<Expression, Error> {
+        Ok(
+            if let Some(operator) = match self.peek(0).value {
+                Value::Not => Some(UnaryOperator::Not),
+                Value::Subtract => Some(UnaryOperator::Negate),
+                Value::Multiply => Some(UnaryOperator::Dereference),
+                Value::Ampersand => Some(UnaryOperator::Reference),
+                _ => None,
+            } {
+                let right = self.parse_unary()?;
+                Expression::Unary(Box::new(UnaryExpression { operator, right }))
+            } else {
+                Expression::Literal(self.parse_literal()?)
+            },
+        )
+    }
 
-        while self.matching(Value::EqualsOperator) || self.matching(Value::NotEquals) {
+    fn parse_equality(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_unary()?;
+
+        loop {
             let operator = match self.peek(0).value {
-                Value::EqualsOperator => BinaryOperator::Equals,
+                Value::DoubleEquals => BinaryOperator::Equals,
                 Value::NotEquals => BinaryOperator::NotEquals,
-                _ => unreachable!(),
+                _ => break,
             };
             self.advance();
 
-            let right = Expression::Literal(self.parse_literal()?);
+            let right = self.parse_unary()?;
 
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
@@ -78,12 +91,14 @@ impl Parser {
     fn parse_logical_and(&mut self) -> Result<Expression, Error> {
         let mut expression = self.parse_equality()?;
 
-        while self.matching(Value::And) {
-            let operator = BinaryOperator::And;
+        loop {
+            let operator = match self.peek(0).value {
+                Value::And => BinaryOperator::And,
+                _ => break,
+            };
             self.advance();
 
             let right = self.parse_equality()?;
-
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
@@ -97,12 +112,14 @@ impl Parser {
     fn parse_logical_or(&mut self) -> Result<Expression, Error> {
         let mut expression = self.parse_logical_and()?;
 
-        while self.matching(Value::Or) {
-            let operator = BinaryOperator::Or;
+        loop {
+            let operator = match self.peek(0).value {
+                Value::Or => BinaryOperator::Or,
+                _ => break,
+            };
             self.advance();
 
             let right = self.parse_logical_and()?;
-
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
@@ -113,8 +130,56 @@ impl Parser {
         Ok(expression)
     }
 
+    fn parse_update(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_logical_or()?;
+
+        loop {
+            let operator = match self.peek(0).value {
+                Value::Increment => UpdateOperator::Increment,
+                Value::Decrement => UpdateOperator::Decrement,
+                _ => break,
+            };
+            self.advance();
+
+            expression = Expression::Update(Box::new(UpdateExpression {
+                updatee: expression,
+                operator,
+            }))
+        }
+
+        Ok(expression)
+    }
+
+    fn parse_assignment(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_update()?;
+
+        loop {
+            let operator = match self.peek(0).value {
+                Value::SingleEquals => AssignmentOperator::Equals,
+                Value::AddAssign => AssignmentOperator::Add,
+                Value::SubtractAssign => AssignmentOperator::Subtract,
+                Value::MultiplyAssign => AssignmentOperator::Multiply,
+                Value::DivideAssign => AssignmentOperator::Divide,
+                Value::ModAssign => AssignmentOperator::Modulo,
+                Value::AndAssign => AssignmentOperator::And,
+                Value::OrAssign => AssignmentOperator::Or,
+                _ => break,
+            };
+            self.advance();
+
+            let right = self.parse_update()?;
+            expression = Expression::Assign(Box::new(AssignmentExpression {
+                assignee: expression,
+                operator,
+                right,
+            }))
+        }
+
+        Ok(expression)
+    }
+
     fn parse_expression(&mut self) -> Result<Expression, Error> {
-        Ok(self.parse_logical_or()?)
+        Ok(self.parse_assignment()?)
     }
 
     fn parse_expression_statement(&mut self) -> Result<Statement, Error> {

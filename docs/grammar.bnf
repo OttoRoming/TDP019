@@ -13,12 +13,6 @@
               | <return_statement>
               | <expression_statement>
 
-<assignment_operator> := "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|="
-<assignment_statement> ::= <expression> <assignment_operator> <expression>
-
-<update_operator> ::= "++" | "--"
-<update_statement> ::= <expression> <update_operator>
-
 <if_statement> ::= "if" <expression> <block>
                  | <if_statement> "elif" <expression> <block>
 <else_statement> ::= <if_statement> "else" <block>
@@ -38,13 +32,21 @@
 <return_statement> ::= "return" <expression>
 
 <expression_statement> ::= <expression> ";"
-<expression> ::= <binary_expression>
+<expression> ::= <assignment_expression>
+               | <update_expression>
+               | <binary_expression>
                | <unary_expression>
                | <identifier>
                | <function_call>
                | <index_expression>
                | <parenthesized_expression>
                | <literal>
+
+<assignment_operator> := "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|="
+<assignment_expression> ::= <expression> <assignment_operator> <expression>
+
+<update_operator> ::= "++" | "--"
+<update_expression> ::= <expression> <update_operator>
 
 <binary_operator> ::= "+" | "-" | "/" | "*" | "%" | "&&" | "||" | "<" | ">" | "<=" | ">=" | "==" | "!="
 <binary_expression> ::= <expression> <binary_operator> <expression>
@@ -57,6 +59,7 @@
 
 <expressions> ::= <expressions> "," <expression>
                 | <expression>
+
 <function_call> ::= <identifier> "(" <arguments> ")"
 
 <parenthesized_expression> ::= "(" <expression> ")"

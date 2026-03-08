@@ -28,4 +28,13 @@ fn main() {
             err.print(&source);
         }
     };
+
+    match parser::parse(&source) {
+        Ok(ast) => {
+            dbg!(ast);
+        }
+        Err(err) => {
+            err.print(&source);
+        }
+    }
 }

@@ -29,7 +29,7 @@ pub enum Value {
     DivideAssign,       // /=
     ModAssign,          // %=
     NotEquals,          // !=
-    EqualsOperator,     // ==
+    DoubleEquals,       // ==
     LessThanOrEqual,    // <=
     GreaterThanOrEqual, // >=
     AndAssign,          // &=

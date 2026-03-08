@@ -179,7 +179,7 @@ impl Lexer {
             ('/', '=') => Some(Value::DivideAssign),
             ('%', '=') => Some(Value::ModAssign),
             ('!', '=') => Some(Value::NotEquals),
-            ('=', '=') => Some(Value::EqualsOperator),
+            ('=', '=') => Some(Value::DoubleEquals),
             ('<', '=') => Some(Value::LessThanOrEqual),
             ('>', '=') => Some(Value::GreaterThanOrEqual),
             ('&', '=') => Some(Value::AndAssign),
