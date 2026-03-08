@@ -135,5 +135,25 @@ fn parse_unary() {
             }
         )))],
         parse("!true").unwrap()
-    )
+    );
+
+    assert_eq!(
+        vec![Statement::Expression(Expression::Unary(Box::new(
+            UnaryExpression {
+                operator: UnaryOperator::Reference,
+                right: Expression::Literal(LiteralExpression::Bool(true))
+            }
+        )))],
+        parse("&true").unwrap()
+    );
+
+    assert_eq!(
+        vec![Statement::Expression(Expression::Unary(Box::new(
+            UnaryExpression {
+                operator: UnaryOperator::Dereference,
+                right: Expression::Literal(LiteralExpression::Bool(true))
+            }
+        )))],
+        parse("*true").unwrap()
+    );
 }
