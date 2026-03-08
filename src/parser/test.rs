@@ -55,6 +55,53 @@ fn parse_logical_equality() {
 }
 
 #[test]
+fn parse_comparison() {
+    assert_eq!(
+        vec![Statement::Expression(Expression::Binary(Box::new(
+            BinaryExpression {
+                left: Expression::Literal(LiteralExpression::Int(10)),
+                operator: BinaryOperator::LessThan,
+                right: Expression::Literal(LiteralExpression::Int(11))
+            }
+        )))],
+        parse("10 < 11;").unwrap()
+    );
+
+    assert_eq!(
+        vec![Statement::Expression(Expression::Binary(Box::new(
+            BinaryExpression {
+                left: Expression::Literal(LiteralExpression::Int(10)),
+                operator: BinaryOperator::LessThanOrEqual,
+                right: Expression::Literal(LiteralExpression::Int(11))
+            }
+        )))],
+        parse("10 <= 11;").unwrap()
+    );
+
+    assert_eq!(
+        vec![Statement::Expression(Expression::Binary(Box::new(
+            BinaryExpression {
+                left: Expression::Literal(LiteralExpression::Int(10)),
+                operator: BinaryOperator::GreaterThan,
+                right: Expression::Literal(LiteralExpression::Int(11))
+            }
+        )))],
+        parse("10 > 11;").unwrap()
+    );
+
+    assert_eq!(
+        vec![Statement::Expression(Expression::Binary(Box::new(
+            BinaryExpression {
+                left: Expression::Literal(LiteralExpression::Int(10)),
+                operator: BinaryOperator::GreaterThanOrEqual,
+                right: Expression::Literal(LiteralExpression::Int(11))
+            }
+        )))],
+        parse("10 >= 11;").unwrap()
+    );
+}
+
+#[test]
 fn parse_additive() {
     assert_eq!(
         vec![Statement::Expression(Expression::Binary(Box::new(
@@ -64,7 +111,7 @@ fn parse_additive() {
                 right: Expression::Literal(LiteralExpression::Int(11))
             }
         )))],
-        parse("10 + 11").unwrap()
+        parse("10 + 11;").unwrap()
     );
 
     assert_eq!(
@@ -75,7 +122,7 @@ fn parse_additive() {
                 right: Expression::Literal(LiteralExpression::Int(11))
             }
         )))],
-        parse("10 - 11").unwrap()
+        parse("10 - 11;").unwrap()
     )
 }
 
@@ -89,7 +136,7 @@ fn parse_multiplicative() {
                 right: Expression::Literal(LiteralExpression::Int(11))
             }
         )))],
-        parse("10 * 11").unwrap()
+        parse("10 * 11;").unwrap()
     );
 
     assert_eq!(
@@ -100,7 +147,7 @@ fn parse_multiplicative() {
                 right: Expression::Literal(LiteralExpression::Int(11))
             }
         )))],
-        parse("10 / 11").unwrap()
+        parse("10 / 11;").unwrap()
     );
 
     assert_eq!(
@@ -111,7 +158,7 @@ fn parse_multiplicative() {
                 right: Expression::Literal(LiteralExpression::Int(11))
             }
         )))],
-        parse("10 % 11").unwrap()
+        parse("10 % 11;").unwrap()
     )
 }
 
@@ -124,7 +171,7 @@ fn parse_unary() {
                 right: Expression::Literal(LiteralExpression::Int(10))
             }
         )))],
-        parse("-10").unwrap()
+        parse("-10;").unwrap()
     );
 
     assert_eq!(
@@ -134,7 +181,7 @@ fn parse_unary() {
                 right: Expression::Literal(LiteralExpression::Bool(true))
             }
         )))],
-        parse("!true").unwrap()
+        parse("!true;").unwrap()
     );
 
     assert_eq!(
@@ -144,7 +191,7 @@ fn parse_unary() {
                 right: Expression::Literal(LiteralExpression::Bool(true))
             }
         )))],
-        parse("&true").unwrap()
+        parse("&true;").unwrap()
     );
 
     assert_eq!(
@@ -154,6 +201,6 @@ fn parse_unary() {
                 right: Expression::Literal(LiteralExpression::Bool(true))
             }
         )))],
-        parse("*true").unwrap()
+        parse("*true;").unwrap()
     );
 }
