@@ -88,11 +88,15 @@
 
 <statement> ::= <throw_statement>
               | <try_statement>
+              | <continue_statement>
+              | <break_statement>
               | <namespace_declaration>
 
 <throw_statement> ::= "throw" <expression>
 <try_statement> ::= "try" <block> "catch" "(" <identifier> ")" <block>
                   | "try" <block> "catch" <block>
+<continue_statement> ::= "continue"
+<break_statement> ::= "break"
 
 <namespace_declaration> ::= "namespace" <identifier> <block>
 <identifier> ::= identifier_token
