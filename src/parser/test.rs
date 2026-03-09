@@ -173,6 +173,25 @@ fn parse_multiplicative() {
 }
 
 #[test]
+fn parse_function_call() {
+    assert_eq!(
+        vec![Statement::Expression(Expression::FunctionCall(Box::new(
+            FunctionCallExpression {
+                callee: Expression::Identifier(IdentifierExpression {
+                    identifier: "foo".to_string()
+                }),
+                arguments: vec![
+                    Expression::Literal(LiteralExpression::Int(1)),
+                    Expression::Literal(LiteralExpression::Int(2)),
+                    Expression::Literal(LiteralExpression::Int(3)),
+                ]
+            }
+        )))],
+        parse("foo(1, 2, 3);").unwrap()
+    );
+}
+
+#[test]
 fn parse_unary() {
     assert_eq!(
         vec![Statement::Expression(Expression::Unary(Box::new(

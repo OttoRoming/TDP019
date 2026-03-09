@@ -31,6 +31,20 @@ impl Parser {
         self.index += 1;
     }
 
+    fn parse_comma_separated_expressions(&mut self) -> Result<Vec<Expression>, Error> {
+        let mut expressions = vec![];
+
+        loop {
+            expressions.push(self.parse_expression()?);
+            if self.peek(0).value != Value::Comma {
+                break;
+            }
+            self.advance();
+        }
+
+        Ok(expressions)
+    }
+
     fn parse_literal(&mut self) -> Result<Expression, Error> {
         match &self.peek(0).value {
             Value::KeywordTrue => {
@@ -94,8 +108,36 @@ impl Parser {
         )
     }
 
-    fn parse_multiplicative(&mut self) -> Result<Expression, Error> {
+    fn parse_function_call(&mut self) -> Result<Expression, Error> {
         let mut expression = self.parse_unary()?;
+
+        while self.peek(0).value == Value::OpenParenthesis {
+            self.advance();
+
+            let arguments = self.parse_comma_separated_expressions()?;
+
+            if self.peek(0).value != Value::CloseParenthesis {
+                return Err(error(
+                    self.peek(0).region,
+                    format!(
+                        "expected closing parenthesis at end of argument list, found {:?}",
+                        self.peek(0).region
+                    ),
+                ));
+            }
+            self.advance();
+
+            expression = Expression::FunctionCall(Box::new(FunctionCallExpression {
+                callee: expression,
+                arguments,
+            }))
+        }
+
+        Ok(expression)
+    }
+
+    fn parse_multiplicative(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_function_call()?;
 
         loop {
             let operator = match self.peek(0).value {
@@ -106,7 +148,7 @@ impl Parser {
             };
             self.advance();
 
-            let right = self.parse_unary()?;
+            let right = self.parse_function_call()?;
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,

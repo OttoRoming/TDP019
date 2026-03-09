@@ -55,6 +55,7 @@ pub enum Value {
     GreaterThan,      // >
     Ampersand,        // &
     Semicolon,        // ;
+    Comma,            // ,
 
     // Special tokens
     String(String),     // "Hello, World"
