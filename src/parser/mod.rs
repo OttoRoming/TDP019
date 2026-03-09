@@ -62,6 +62,13 @@ impl Parser {
                     Ok(expression)
                 }
             }
+            Value::Identifier(id) => {
+                let expression = Expression::Identifier(IdentifierExpression {
+                    identifier: id.clone(),
+                });
+                self.advance();
+                Ok(expression)
+            }
             _ => Err(error(
                 self.peek(0).region,
                 format!("expected literal, found {:?}", self.peek(0).value),
