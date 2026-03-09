@@ -12,6 +12,20 @@ fn parse_parenthesized() {
 }
 
 #[test]
+fn parse_list_literal() {
+    assert_eq!(
+        vec![Statement::Expression(Expression::Literal(
+            LiteralExpression::List(vec![
+                Expression::Literal(LiteralExpression::Int(1)),
+                Expression::Literal(LiteralExpression::Int(2)),
+                Expression::Literal(LiteralExpression::Int(3)),
+            ])
+        ))],
+        parse("[1, 2, 3];").unwrap()
+    )
+}
+
+#[test]
 fn parse_logical_or() {
     assert_eq!(
         vec![Statement::Expression(Expression::Binary(Box::new(

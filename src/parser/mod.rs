@@ -60,6 +60,21 @@ impl Parser {
                 self.advance();
                 Ok(Expression::Literal(literal))
             }
+            Value::OpenBracket => {
+                self.advance();
+                let expressions = self.parse_comma_separated_expressions()?;
+                if self.peek(0).value != Value::CloseBracket {
+                    return Err(error(
+                        self.peek(0).region,
+                        format!(
+                            "expected closing pbrace at end of list literal, found {:?}",
+                            self.peek(0).value
+                        ),
+                    ));
+                };
+                self.advance();
+                Ok(Expression::Literal(LiteralExpression::List(expressions)))
+            }
             Value::OpenParenthesis => {
                 self.advance();
                 let expression = self.parse_expression()?;
