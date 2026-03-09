@@ -55,8 +55,22 @@ impl Parser {
                 self.advance();
                 Ok(Expression::Literal(LiteralExpression::Bool(false)))
             }
+            Value::KeywordNull => {
+                self.advance();
+                Ok(Expression::Literal(LiteralExpression::Null))
+            }
             Value::Int(i) => {
                 let literal = LiteralExpression::Int(*i);
+                self.advance();
+                Ok(Expression::Literal(literal))
+            }
+            Value::Float(f) => {
+                let literal = LiteralExpression::Float(*f);
+                self.advance();
+                Ok(Expression::Literal(literal))
+            }
+            Value::String(s) => {
+                let literal = LiteralExpression::String(s.clone());
                 self.advance();
                 Ok(Expression::Literal(literal))
             }
