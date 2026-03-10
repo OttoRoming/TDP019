@@ -36,7 +36,6 @@ variable_declaration_statement ::= "var" identifier "=" expression
 parameter ::= identifier ":" type_specifier
 parameters ::= parameter
              | parameters "," parameter
-
 function_declaration_statement ::= "fun" identifier "(" parameters ")" block
                                  | "fun" identifier "(" parameters ")" ":" type_specifier block
 
