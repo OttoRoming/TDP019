@@ -23,156 +23,35 @@ Ver. & Revisionsbeskrivning & Datum \\\hline
 \end{table}
 
 \section{Översikt}
-Det programspråket som utvecklas kommer att vara ett interpreterat språk med fokus på imperativ programmering för att lösa generella problem. Denna interpretator kommer vara skriven i programspråket \textit{Rust} och ha en egen parser skriven specifikt för ändamålet att läsa detta programspråk. Språket kommer att vara typat, det vill säga att när en variabel eller parameter är deklarerad kommer den inte kunna byta typ senare i koden.  Denna typning kommer hanteras av en typ analysator som går igenom syntaxträdet innan exekvering.
+Språket \textit{Oeno} (namngivet efter den afrikanska musarten rostnosråttan även känd som oenomys\cite{renaud_size_1999}) ska utvecklas för att lösa generella problem i en proceduriell stil. Interpretator kommer att skrivas i programspråket \textit{Rust} med egen parser skriven specifikt för ändamålet att läsa \textit{Oeno} källkod. Språket kommer att vara typat, det vill säga att när en variabel eller parameter är deklarerad kommer den inte kunna byta typ senare i koden.  Denna typning kommer att hanteras av en \textit{type checker} som går igenom syntaxträdet innan exekvering.
 
 \section{Typning}
 Språket kommer att vara statiskt typat så att när en variabel deklareras anges den en klass som den sedan ej kan bytas. Denna typkontrollering görs av interpretatorn innan evalueringen av programkoden så att utvecklaren snabbt kan hitta problem i hens programkod.
 
 \section{Referenser av värden}
-När komplexa datatyper så som till exempel listor skickas till funktioner via argument kommer detta ske via djup kopiering. Det kommer alltså inte delas en referens av samma underliggande datatyp. Detta är för att förebygga förvirring och onödig komplexitet.
+Standardfunktionaliteten i språket är att värden kopieras. Om användaren vill använda referenser kan hen använda sig av de två unära operatorerna ''\textt{\&}'' och ''\texttt{*}'' för att skapa en referens till ett värde samt att hämta värdet från referensen.
 
 \section{Objektorienterade mönster}
 Språket kommer inte innehålla några objektorienterade mönster för att förebygga onödig komplexitet.
 
 \section{\textit{Scope}}
-Varje \textit{expression} och \textit{statement} i språket där måsvingar (\texttt{\{\}}) använder sitt egna \textit{scope}. Detta betyder att varje if-sats, loop, funktion osv har ett eget scope. När en funktion anropas så kommer funktionen endast ha tillgång till variabler i scope över funktionsdeklarationen samt de argument som skickades in. Detta kontrolleras innan koden evalueras av samma system som kontrollerar den statiska typningen.
-
-\begin{minted}{text}
-fun bar() {
-    puts(x) # Error: x är odenfinierad
-}
-
-fun foo() {
-    var x = 10
-    bar()
-}
-
-foo()
-\end{minted}
-
-En viktig sak att notera är att funktioner inte måste vara i språkets globala \textit{scope}. Detta skulle göra denna omskrivning av koden giltig.
-
-\begin{minted}{text}
-
-fun foo() {
-    var x = 10
-    fun bar() {
-        puts(x) # 10
-    }
-    bar()
-}
-\end{minted}
+Varje uttryck och sats i språket där måsvingar (\texttt{\{\}}) använder sitt egna \textit{scope}. Detta betyder att varje if-sats, loop, funktion osv har ett eget \textit{scope}. När en funktion anropas så kommer funktionen endast ha tillgång till variabler i \textit{scope} över funktionsdeklarationen samt de argument som skickades in. Detta kontrolleras innan koden evalueras av samma system som kontrollerar den statiska typningen. Funktioner använder sig av statisk bindning till \textit{scopet} där de definierades.
 
 \section{Grammatik}
 Detta är ett utkast av grammatiken i Backus–Naur form till språket och kan anses vara en komplett grammatik för språket. Grammatiken är i stora drag inspirerad av grammatiken för Lox \cite{nystrom_crafting_2021} och C \cite{degner_ansi_1995}.
 
-\inputminted{peg}{grammar.bnf}
+\newpage
 
-\section{Kodexempel}
-\subsection{Funktionsdeklarationer}
-Funktioner deklareras med hjälp av \texttt{fun} nyckelordet. Både typerna för parametrarna och returvärdet måste definieras. Det går att notera i detta exempel att alla uttryck i ett block behöver avslutas med semikolon. Vad som också att viktigt notera i detta exempel att språket ignorerar tomrum samt använder måsvingar för kodblock.
-\begin{minted}{text}
-fun foo(arg1 String): String {
-    puts('foo function');
+\subsection{Stater}
+\inputminted{peg}{grammar/statements.bnf}
 
-    return 'foo';
-}
-\end{minted}
+\subsection{Uttryck}
+\inputminted{peg}{grammar/expressions.bnf}
 
-\subsection{If-satser}
-Tre olika nyckelord används för if-satser \texttt{if}, \texttt{elif}, \texttt{else}. Uttrycket som används för if-satsens test behöver inte omringas av parenteser
+\newpage
 
-\begin{minted}{text}
-if 1 == 2 {
-    puts('jag är i if grenen');
-} elif 1 == 3 {
-    puts('jag är i elif grenen');
-} else {
-    puts('jag hamnade i else grenen');
-}
-\end{minted}
-
-\subsection{Loopar}
-Språket kommer att innehålla två olika sorters loopar som använder \texttt{while} respektive \texttt{each} nyckelordet. En \textit{while-loop} tar in endast ett uttryck som ska evalueras till ett sant värde vid varje iteration. Den andra loopen \textit{each-loopen} kommer att vara mer komplex i sin funktion och hjälpa användaren enkelt iterera över ett itererbart värde så som till exempel en lista. Liknande if-satsen så behöver uttrycket inte omringas med parenteser
-
-\begin{minted}{text}
-while 1 == 2 {
-    puts('Hello, World')
-}
-
-each i : [1, 2, 3, 4] {
-    puts(i)
-}
-\end{minted}
-
-\subsection{Typer}
-Eftersom att språket är typat så behöver det gå att skriva dessa typer på något sätt i språket. Eftersom att listor i detta språk är homogena, det vill säga att endast värden av samma typ går att samlas i en lista så behöver listor vara generiska och typen den innehåller måste också deklareras inom mindre-än och mer-än tecken.
-\begin{minted}{text}
-String
-Bool
-Int
-Float
-List<Int> # en lista som innehåller heltal
-\end{minted}
-
-\subsection{Kommentarer}
-Att kommentera kod görs i språket genom att använda brädgårdstecken. Detta är smidigt eftersom så kallade shebangs kräver ett kommentartecken.
-\begin{minted}{text}
-#!/usr/bin/env language
-
-# this is a comment
-
-\end{minted}
-
-\subsection{Variabeldeklaration}
-Variabeldeklarationer görs med hjälp av \texttt{var} nyckelordet, därefter kan variabelns värde ändras med endast ett likamedtecken. Notera här att en av variabel deklarationerna i detta exempel saknar en typ. Detta är för att programspråket har stöd för typhärledning och kommer därför att lista ut vilken typ som är korrekt för variabeln
-\begin{minted}{text}
-var s = 'hello'
-var i: Int = 1
-\end{minted}
-
-\subsection{null}
-Null värden representeras med hjälp av \texttt{null} nyckelordet
-\begin{minted}{text}
-null
-\end{minted}
-
-\subsection{Litterära uttryck}
-Här kommer exempel på litterära uttryck för de olika typerna
-
-\subsubsection{String}
-Enkelfnuttar används för stängar eftersom att de är lättare att skriva på amerikanska tangentbord än dubbelfnuttar.
-\begin{minted}{text}
-'hello'
-\end{minted}
-
-\subsubsection{Int}
-En integer representeras av ett heltal
-\begin{minted}{text}
-10
-\end{minted}
-
-\subsubsection{Float}
-För att parsern ska hantera ett tal som ett flyttal så behöver decimaltecknet användas.
-\begin{minted}{text}
-10.0
-\end{minted}
-
-\subsubsection{List}
-Listor använder sig av hackparenteser med kommatecken som separerar värdena.
-\begin{minted}{text}
-[1, 2, 3, 4]
-\end{minted}
-
-\subsection{Append}
-För att \textit{append}a till en lista används \texttt{<<} operatorn.
-\begin{minted}{text}
-var list = [1, 2, 3, 4]
-list <- 5
-puts(list) # [1, 2, 3, 4, 5]
-\end{minted}
-
-
+\subsection{Typspecifikatorer}
+\inputminted{peg}{grammar/type_specifiers.bnf}
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
