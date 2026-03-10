@@ -96,37 +96,37 @@ impl Parser {
         match &self.peek(0).value {
             Value::KeywordTrue => {
                 self.advance();
-                Ok(Expression::Literal(LiteralExpression::Bool(true)))
+                Ok(Expression::Bool(true))
             }
             Value::KeywordFalse => {
                 self.advance();
-                Ok(Expression::Literal(LiteralExpression::Bool(false)))
+                Ok(Expression::Bool(false))
             }
             Value::KeywordNull => {
                 self.advance();
-                Ok(Expression::Literal(LiteralExpression::Null))
+                Ok(Expression::Null)
             }
             Value::Int(i) => {
-                let literal = LiteralExpression::Int(*i);
+                let expression = Expression::Int(*i);
                 self.advance();
-                Ok(Expression::Literal(literal))
+                Ok(expression)
             }
             Value::Float(f) => {
-                let literal = LiteralExpression::Float(*f);
+                let expression = Expression::Float(*f);
                 self.advance();
-                Ok(Expression::Literal(literal))
+                Ok(expression)
             }
             Value::String(s) => {
-                let literal = LiteralExpression::String(s.clone());
+                let expression = Expression::String(s.clone());
                 self.advance();
-                Ok(Expression::Literal(literal))
+                Ok(expression)
             }
             Value::OpenBracket => {
                 self.advance();
                 let expressions = self.parse_comma_separated_expressions()?;
                 self.expect(Value::CloseBracket, "end of list literal")?;
                 self.advance();
-                Ok(Expression::Literal(LiteralExpression::List(expressions)))
+                Ok(Expression::List(expressions))
             }
             Value::OpenParenthesis => {
                 self.advance();

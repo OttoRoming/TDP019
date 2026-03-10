@@ -4,9 +4,7 @@ use crate::ast::*;
 #[test]
 fn parse_parenthesized() {
     assert_eq!(
-        Ok(vec![Statement::Expression(Expression::Literal(
-            LiteralExpression::Bool(true)
-        ))]),
+        Ok(vec![Statement::Expression(Expression::Bool(true))]),
         parse("(((((true)))));")
     )
 }
@@ -14,13 +12,11 @@ fn parse_parenthesized() {
 #[test]
 fn parse_list_literal() {
     assert_eq!(
-        Ok(vec![Statement::Expression(Expression::Literal(
-            LiteralExpression::List(vec![
-                Expression::Literal(LiteralExpression::Int(1)),
-                Expression::Literal(LiteralExpression::Int(2)),
-                Expression::Literal(LiteralExpression::Int(3)),
-            ])
-        ))]),
+        Ok(vec![Statement::Expression(Expression::List(vec![
+            Expression::Int(1),
+            Expression::Int(2),
+            Expression::Int(3),
+        ]))]),
         parse("[1, 2, 3];")
     )
 }
@@ -30,9 +26,9 @@ fn parse_logical_or() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Bool(true)),
+                left: Expression::Bool(true),
                 operator: BinaryOperator::Equals,
-                right: Expression::Literal(LiteralExpression::Bool(false)),
+                right: Expression::Bool(false),
             }
         )))]),
         parse("true == false;")
@@ -44,9 +40,9 @@ fn parse_logical_and() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Bool(true)),
+                left: Expression::Bool(true),
                 operator: BinaryOperator::And,
-                right: Expression::Literal(LiteralExpression::Bool(false)),
+                right: Expression::Bool(false),
             }
         )))]),
         parse("true && false;")
@@ -58,9 +54,9 @@ fn parse_logical_equality() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Bool(true)),
+                left: Expression::Bool(true),
                 operator: BinaryOperator::Equals,
-                right: Expression::Literal(LiteralExpression::Bool(false)),
+                right: Expression::Bool(false),
             }
         )))]),
         parse("true == false;")
@@ -69,9 +65,9 @@ fn parse_logical_equality() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Bool(true)),
+                left: Expression::Bool(true),
                 operator: BinaryOperator::NotEquals,
-                right: Expression::Literal(LiteralExpression::Bool(false)),
+                right: Expression::Bool(false),
             }
         )))]),
         parse("true != false;")
@@ -83,9 +79,9 @@ fn parse_comparison() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::LessThan,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 < 11;")
@@ -94,9 +90,9 @@ fn parse_comparison() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::LessThanOrEqual,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 <= 11;")
@@ -105,9 +101,9 @@ fn parse_comparison() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::GreaterThan,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 > 11;")
@@ -116,9 +112,9 @@ fn parse_comparison() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::GreaterThanOrEqual,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 >= 11;")
@@ -130,9 +126,9 @@ fn parse_additive() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::Add,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 + 11;")
@@ -141,9 +137,9 @@ fn parse_additive() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::Subtract,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 - 11;")
@@ -155,9 +151,9 @@ fn parse_multiplicative() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::Multiply,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 * 11;")
@@ -166,9 +162,9 @@ fn parse_multiplicative() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::Divide,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 / 11;")
@@ -177,9 +173,9 @@ fn parse_multiplicative() {
     assert_eq!(
         Ok(vec![Statement::Expression(Expression::Binary(Box::new(
             BinaryExpression {
-                left: Expression::Literal(LiteralExpression::Int(10)),
+                left: Expression::Int(10),
                 operator: BinaryOperator::Modulo,
-                right: Expression::Literal(LiteralExpression::Int(11))
+                right: Expression::Int(11)
             }
         )))]),
         parse("10 % 11;")
@@ -194,11 +190,7 @@ fn parse_function_call() {
                 callee: Expression::Identifier(IdentifierExpression {
                     identifier: "foo".to_string()
                 }),
-                arguments: vec![
-                    Expression::Literal(LiteralExpression::Int(1)),
-                    Expression::Literal(LiteralExpression::Int(2)),
-                    Expression::Literal(LiteralExpression::Int(3)),
-                ]
+                arguments: vec![Expression::Int(1), Expression::Int(2), Expression::Int(3),]
             })
         ))]),
         parse("foo(1, 2, 3);")
@@ -211,7 +203,7 @@ fn parse_unary() {
         Ok(vec![Statement::Expression(Expression::Unary(Box::new(
             UnaryExpression {
                 operator: UnaryOperator::Negate,
-                right: Expression::Literal(LiteralExpression::Int(10))
+                right: Expression::Int(10)
             }
         )))]),
         parse("-10;")
@@ -221,7 +213,7 @@ fn parse_unary() {
         Ok(vec![Statement::Expression(Expression::Unary(Box::new(
             UnaryExpression {
                 operator: UnaryOperator::Not,
-                right: Expression::Literal(LiteralExpression::Bool(true))
+                right: Expression::Bool(true)
             }
         )))]),
         parse("!true;")
@@ -231,7 +223,7 @@ fn parse_unary() {
         Ok(vec![Statement::Expression(Expression::Unary(Box::new(
             UnaryExpression {
                 operator: UnaryOperator::Reference,
-                right: Expression::Literal(LiteralExpression::Bool(true))
+                right: Expression::Bool(true)
             }
         )))]),
         parse("&true;")
@@ -241,7 +233,7 @@ fn parse_unary() {
         Ok(vec![Statement::Expression(Expression::Unary(Box::new(
             UnaryExpression {
                 operator: UnaryOperator::Dereference,
-                right: Expression::Literal(LiteralExpression::Bool(true))
+                right: Expression::Bool(true)
             }
         )))]),
         parse("*true;")
@@ -255,7 +247,7 @@ fn parse_variable_declaration() {
             VariableDeclarationStatement {
                 identifier: "x".to_string(),
                 type_specifier: None,
-                expression: Expression::Literal(LiteralExpression::Int(10))
+                expression: Expression::Int(10)
             }
         )]),
         parse("var x = 10")
@@ -269,7 +261,7 @@ fn parse_variable_declaration_with_type() {
             VariableDeclarationStatement {
                 identifier: "x".to_string(),
                 type_specifier: Some(TypeSpecifier::Int),
-                expression: Expression::Literal(LiteralExpression::Int(10))
+                expression: Expression::Int(10)
             }
         )]),
         parse("var x: Int = 10")
@@ -283,11 +275,11 @@ fn parse_variable_declaration_with_generic_type() {
             VariableDeclarationStatement {
                 identifier: "l".to_string(),
                 type_specifier: Some(TypeSpecifier::List(Box::new(TypeSpecifier::Int))),
-                expression: Expression::Literal(LiteralExpression::List(vec![
-                    Expression::Literal(LiteralExpression::Int(1)),
-                    Expression::Literal(LiteralExpression::Int(2)),
-                    Expression::Literal(LiteralExpression::Int(3))
-                ]))
+                expression: Expression::List(vec![
+                    Expression::Int(1),
+                    Expression::Int(2),
+                    Expression::Int(3)
+                ])
             }
         )]),
         parse("var l: List<Int> = [1, 2, 3]")
@@ -303,23 +295,23 @@ fn parse_variable_declaration_with_extra_generic_type() {
                 type_specifier: Some(TypeSpecifier::List(Box::new(TypeSpecifier::List(
                     Box::new(TypeSpecifier::Int)
                 )))),
-                expression: Expression::Literal(LiteralExpression::List(vec![
-                    Expression::Literal(LiteralExpression::List(vec![
-                        Expression::Literal(LiteralExpression::Int(1)),
-                        Expression::Literal(LiteralExpression::Int(2)),
-                        Expression::Literal(LiteralExpression::Int(3))
-                    ])),
-                    Expression::Literal(LiteralExpression::List(vec![
-                        Expression::Literal(LiteralExpression::Int(4)),
-                        Expression::Literal(LiteralExpression::Int(5)),
-                        Expression::Literal(LiteralExpression::Int(6))
-                    ])),
-                    Expression::Literal(LiteralExpression::List(vec![
-                        Expression::Literal(LiteralExpression::Int(7)),
-                        Expression::Literal(LiteralExpression::Int(8)),
-                        Expression::Literal(LiteralExpression::Int(9))
-                    ]))
-                ]))
+                expression: Expression::List(vec![
+                    Expression::List(vec![
+                        Expression::Int(1),
+                        Expression::Int(2),
+                        Expression::Int(3)
+                    ]),
+                    Expression::List(vec![
+                        Expression::Int(4),
+                        Expression::Int(5),
+                        Expression::Int(6)
+                    ]),
+                    Expression::List(vec![
+                        Expression::Int(7),
+                        Expression::Int(8),
+                        Expression::Int(9)
+                    ])
+                ])
             }
         )]),
         parse("var l: List<List<Int>> = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]")

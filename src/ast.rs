@@ -158,13 +158,6 @@ pub enum Expression {
     Identifier(IdentifierExpression),
     FunctionCall(Box<FunctionCallExpression>),
     Index(Box<IndexExpression>),
-    Literal(LiteralExpression),
-    Parenthesised(Box<Expression>),
-}
-
-#[derive(Debug, PartialEq)]
-#[allow(dead_code)]
-pub enum LiteralExpression {
     String(String),
     Int(i64),
     Float(f64),
