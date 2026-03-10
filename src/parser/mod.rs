@@ -45,7 +45,7 @@ impl Parser {
         Ok(expressions)
     }
 
-    fn parse_literal(&mut self) -> Result<Expression, Error> {
+    fn parse_primary(&mut self) -> Result<Expression, Error> {
         match &self.peek(0).value {
             Value::KeywordTrue => {
                 self.advance();
@@ -119,26 +119,8 @@ impl Parser {
         }
     }
 
-    fn parse_unary(&mut self) -> Result<Expression, Error> {
-        Ok(
-            if let Some(operator) = match self.peek(0).value {
-                Value::Not => Some(UnaryOperator::Not),
-                Value::Subtract => Some(UnaryOperator::Negate),
-                Value::Multiply => Some(UnaryOperator::Dereference),
-                Value::Ampersand => Some(UnaryOperator::Reference),
-                _ => None,
-            } {
-                self.advance();
-                let right = self.parse_literal()?;
-                Expression::Unary(Box::new(UnaryExpression { operator, right }))
-            } else {
-                self.parse_literal()?
-            },
-        )
-    }
-
-    fn parse_function_call(&mut self) -> Result<Expression, Error> {
-        let mut expression = self.parse_unary()?;
+    fn parse_call(&mut self) -> Result<Expression, Error> {
+        let mut expression = self.parse_primary()?;
 
         while self.peek(0).value == Value::OpenParenthesis {
             self.advance();
@@ -165,8 +147,26 @@ impl Parser {
         Ok(expression)
     }
 
+    fn parse_unary(&mut self) -> Result<Expression, Error> {
+        Ok(
+            if let Some(operator) = match self.peek(0).value {
+                Value::Not => Some(UnaryOperator::Not),
+                Value::Subtract => Some(UnaryOperator::Negate),
+                Value::Multiply => Some(UnaryOperator::Dereference),
+                Value::Ampersand => Some(UnaryOperator::Reference),
+                _ => None,
+            } {
+                self.advance();
+                let right = self.parse_call()?;
+                Expression::Unary(Box::new(UnaryExpression { operator, right }))
+            } else {
+                self.parse_call()?
+            },
+        )
+    }
+
     fn parse_multiplicative(&mut self) -> Result<Expression, Error> {
-        let mut expression = self.parse_function_call()?;
+        let mut expression = self.parse_unary()?;
 
         loop {
             let operator = match self.peek(0).value {
@@ -177,7 +177,7 @@ impl Parser {
             };
             self.advance();
 
-            let right = self.parse_function_call()?;
+            let right = self.parse_unary()?;
             expression = Expression::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
