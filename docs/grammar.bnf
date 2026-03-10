@@ -1,103 +1,114 @@
-<statements> ::= <statement>
-               | <statements> <statement>
-<block> ::= "{" <statements> "}"
+##############
+# Statements #
+##############
 
-<statement> ::= <assignment_statement>
-              | <update_statement>
-              | <if_statement>
-              | <else_statement>
-              | <while_statement>
-              | <each_statement>
-              | <variable_declaration>
-              | <function_declaration>
-              | <return_statement>
-              | <expression_statement>
+program ::= statements
 
-<if_statement> ::= "if" <expression> <block>
-                 | <if_statement> "elif" <expression> <block>
-<else_statement> ::= <if_statement> "else" <block>
+statements ::= statement
+             | statements statement
 
-<while_statement> ::= "while" <expression> <block>
-<each_statement> ::= "each" <identifier> ":" <expression> <block>
-<variable_declaration> ::= "var" <identifier> "=" <expression>
-<variable_declaration> ::= "var" <identifier> ":" <type_specifier> "=" <expression>
+block ::= "{" statements "}"
 
-<parameter> ::= <identifier> ":" <type_specifier>
-<parameters> ::= <parameter>
-               | <parameters> "," <parameter>
+statement ::= if_statement
+            | else_statement
+            | while_statement
+            | each_statement
+            | variable_declaration_statement
+            | function_declaration_statement
+            | return_statement
+            | continue_statement
+            | break_statement
+            | throw_statement
+            | try_statement
+            | expression_statement
 
-<function_declaration> ::= "fun" <identifier> "(" <parameters> ")" <block>
-                         | "fun" <identifier> "(" <parameters> ")" ":" <type_specifier> <block>
+if_statement ::= "if" expression block
+               | if_statement "elif" expression block
+else_statement ::= if_statement "else" block
 
-<return_statement> ::= "return" <expression>
+while_statement ::= "while" expression block
 
-<expression_statement> ::= <expression> ";"
-<expression> ::= <assignment_expression>
-               | <update_expression>
-               | <binary_expression>
-               | <unary_expression>
-               | <identifier>
-               | <function_call>
-               | <index_expression>
-               | <parenthesized_expression>
-               | <literal>
+each_statement ::= "each" identifier ":" expression block
 
-<assignment_operator> := "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|="
-<assignment_expression> ::= <expression> <assignment_operator> <expression>
+variable_declaration_statement ::= "var" identifier "=" expression
+                                 | "var" identifier ":" type_specifier "=" expression
 
-<update_operator> ::= "++" | "--"
-<update_expression> ::= <expression> <update_operator>
+parameter ::= identifier ":" type_specifier
+parameters ::= parameter
+             | parameters "," parameter
 
-<binary_operator> ::= "+" | "-" | "/" | "*" | "%" | "&&" | "||" | "<" | ">" | "<=" | ">=" | "==" | "!="
-<binary_expression> ::= <expression> <binary_operator> <expression>
+function_declaration_statement ::= "fun" identifier "(" parameters ")" block
+                                 | "fun" identifier "(" parameters ")" ":" type_specifier block
 
-<unary_operator> ::= "-" | "!" | "*" | "&"
-<unary_expression> ::= <unary_operator> <expression>
+return_statement ::= "return" expression
 
+continue_statement ::= "continue"
 
-<index_expression> ::= <expression> "[" <expression> "]"
+break_statement ::= "break"
 
-<expressions> ::= <expressions> "," <expression>
-                | <expression>
+throw_statement ::= "throw" expression
 
-<function_call> ::= <identifier> "(" <arguments> ")"
+try_statement ::= "try" block "catch" identifier block
+                | "try" block "catch" block
 
-<parenthesized_expression> ::= "(" <expression> ")"
+expression_statement ::= expression ";"
 
-<literal> ::= <int> | <float> | <string> | <boolean> | <list> | <null>
-<string> ::= string_token
-<int> ::= int_token
-<float> ::= float_token
-<boolean> ::= "true" | "false"
-<null> ::= "null"
+###############
+# Expressions #
+###############
 
-<list> ::= "[" <expressions> "]"
+comma_separated_expressions ::= expression
+                              | comma_separated_expressions "," expression
 
-<type_specifier> ::= "Int"
-               | "Float"
-               | "String"
-               | "Bool"
-               | <generic_type>
-<generic_type> ::= "List" "<" <type_specifier> ">"
-                 | "Ref" "<" <type_specifier> ">"
+expression ::= assignment_expression
 
-<identifier> ::= identifier_token
+assignment_operator := "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|="
+assignment_expression ::= update_expression ( assignment_operator update_expression )*
 
+update_operator ::= "++" | "--"
+update_expression ::= expression ( update_operator )*
 
-# Extra om jag har tid över
+logical_or_expression ::= logical_and_expression ( "||" logical_and_expression )*
 
-<statement> ::= <throw_statement>
-              | <try_statement>
-              | <continue_statement>
-              | <break_statement>
-              | <namespace_declaration>
+logical_and_expression ::= equality_expression ( "&&" equality_expression )*
 
-<throw_statement> ::= "throw" <expression>
-<try_statement> ::= "try" <block> "catch" "(" <identifier> ")" <block>
-                  | "try" <block> "catch" <block>
-<continue_statement> ::= "continue"
-<break_statement> ::= "break"
+equality_operator ::= "==" | "!="
+equality_expression ::= comparison_expression ( equality_operator comparison_expression )*
 
-<namespace_declaration> ::= "namespace" <identifier> <block>
-<identifier> ::= identifier_token
-               | <identifier> "." <identifier>
+comparison_operator ::= "<" | "<=" | ">" | ">="
+comparison_expression ::= additive_expression ( comparison_operator additive_expression )*
+
+additive_operator ::= "+" | "-"
+additive_operator ::= multiplicative_expression ( additive_operator multiplicative_expression )*
+
+multiplicative_operator ::= "*" | "/" | "%"
+multiplicative_expression ::= unary_expression ( multiplicative_operator unary_expression )*
+
+unary_operator ::= "!" | "-" | "*" | "&"
+unary_expression ::= unary_operator index_expression
+                   | index_expression
+
+index_expression ::= call_expression ( "[" expression "]" )*
+
+call_expression ::= primary_expression ( "(" comma_separated_expressions ")" )*
+
+primary_expression ::= "true"
+                     | "false"
+                     | "null"
+                     | "[" comma_separated_expressions "]"
+                     | "(" expression ")"
+                     | INT
+                     | FLOAT
+                     | STRING
+                     | IDENTIFIER
+
+###################
+# Type specifiers #
+###################
+
+type_specifier ::= "Int"
+                 | "Float"
+                 | "String"
+                 | "Bool"
+                 | "List" "<" type_specifier ">"
+                 | "Ref" "<" type_specifier ">"
