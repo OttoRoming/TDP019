@@ -1,0 +1,84 @@
+\documentclass{TDP003mall}
+
+\usepackage{float}
+\usepackage{minted}
+
+\newcommand{\version}{Version 3.0}
+\author{Otto Roming, \url{ottro821@student.liu.se}}
+\title{Implementationsplan}
+\date{2026-03-10}
+\rhead{Otto Roming}
+
+\begin{document}
+\projectpage
+\section{Revisionshistorik}
+\begin{table}[!h]
+\begin{tabularx}{\linewidth}{|l|X|l|}
+\hline
+Ver. & Revisionsbeskrivning & Datum \\\hline
+1.0 & Första version av språkspecifikationen (språkidé) & 2026-03-10 \\\hline
+\end{tabularx}
+\end{table}
+
+\section{Implementationsdetaljer}
+Språket implementeras i programspråket \textit{Rust} och följer i stora drag hur \cite{nystrom_crafting_2021} implementerar interpretatorn för programspråket \textit{Lox}. Vad som skiljer lösningarna åt är att mitt språk kommer inte använda sig av semantisk analys men istället ha \textit{type checking} för att kontrollera korrekt användning av typer i språket. 
+
+När programkod ska exekveras kommer interpretatorn att gå igenom fyra faser.
+
+\begin{enumerate}
+    \item Lexikalanalys
+    \item Parsning
+    \item \textit{Type checking}
+    \item Evaluering
+\end{enumerate}
+
+\section{Milstolpar}
+Milstolparna följer deadlines från \cite{haglund_tdp019_2026}
+
+\subsection{2026-05-12 12:00}
+Inlämning av språkdokumentation
+
+\subsection{2026-05-26 8:00}
+Inlämning av projektet
+
+\section{Svåra moment}
+En av de svårare momenten kommer bland annat vara statisk bindning i situationer så som i figur \ref{fig:scope_problem}. För att hantera detta så presenterar \cite{nystrom_crafting_2021} två olika lösningar, en av dem är att ha varje variabel i eget \textit{scope} (se figur \ref{fig:scheme_environment}). Denna lösning är populär bland \textit{Scheme} implementationer och är effektiv vilket gör den till ett attraktiv lösning till problemet.
+
+
+\begin{figure}
+    \centering
+    \begin{minipage}{0.5\linewidth}
+    \begin{minted}[frame=single]{text}
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
+
+  showA();
+  var a = "block";
+  showA();
+}
+
+# Felaktig utdata:
+# global
+# block
+
+# Förväntad utdata:
+# global
+# global
+    \end{minted}
+    \end{minipage}
+    \caption{Nystroms exempel på svår scope situation \cite{nystrom_crafting_2021}}
+    \label{fig:scope_problem}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{docs/scheme-environment.png}
+    \caption{Nystroms exempel på miljö med varje variabel i eget \textit{scope} \cite{nystrom_crafting_2021}}
+    \label{fig:scheme_environment}
+\end{figure}
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
