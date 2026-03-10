@@ -31,6 +31,53 @@ impl Parser {
         self.index += 1;
     }
 
+    fn expect(&self, expected_value: Value, at_msg: &str) -> Result<(), Error> {
+        if self.peek(0).value != expected_value {
+            Err(error(
+                self.peek(0).region,
+                format!(
+                    "expected {:?} token at {}, found {:?}",
+                    expected_value,
+                    at_msg,
+                    self.peek(0).value
+                ),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn parse_type_specifier(&mut self) -> Result<TypeSpecifier, Error> {
+        fn generic(parser: &mut Parser) -> Result<TypeSpecifier, Error> {
+            parser.advance();
+            parser.expect(Value::LessThan, "generic type")?;
+            parser.advance();
+
+            let type_specifier = parser.parse_type_specifier()?;
+
+            parser.expect(Value::GreaterThan, "generic type")?;
+
+            Ok(type_specifier)
+        }
+
+        let type_specifier = match self.peek(0).value {
+            Value::TypeInt => TypeSpecifier::Int,
+            Value::TypeFloat => TypeSpecifier::Float,
+            Value::TypeBool => TypeSpecifier::Bool,
+            Value::TypeList => TypeSpecifier::List(Box::new(generic(self)?)),
+            Value::TypeRef => TypeSpecifier::Ref(Box::new(generic(self)?)),
+            _ => {
+                return Err(error(
+                    self.peek(0).region,
+                    format!("expected type specifier, found {:?}", self.peek(0).value),
+                ));
+            }
+        };
+        self.advance();
+
+        Ok(type_specifier)
+    }
+
     fn parse_comma_separated_expressions(&mut self) -> Result<Vec<Expression>, Error> {
         let mut expressions = vec![];
 
@@ -77,33 +124,16 @@ impl Parser {
             Value::OpenBracket => {
                 self.advance();
                 let expressions = self.parse_comma_separated_expressions()?;
-                if self.peek(0).value != Value::CloseBracket {
-                    return Err(error(
-                        self.peek(0).region,
-                        format!(
-                            "expected closing pbrace at end of list literal, found {:?}",
-                            self.peek(0).value
-                        ),
-                    ));
-                };
+                self.expect(Value::CloseBracket, "end of list literal")?;
                 self.advance();
                 Ok(Expression::Literal(LiteralExpression::List(expressions)))
             }
             Value::OpenParenthesis => {
                 self.advance();
                 let expression = self.parse_expression()?;
-                if self.peek(0).value != Value::CloseParenthesis {
-                    Err(error(
-                        self.peek(0).region,
-                        format!(
-                            "expected closing parenthesis at end of parenthesized expression, found {:?}",
-                            self.peek(0).value
-                        ),
-                    ))
-                } else {
-                    self.advance();
-                    Ok(expression)
-                }
+                self.expect(Value::CloseParenthesis, "end of parenthesized expression")?;
+                self.advance();
+                Ok(expression)
             }
             Value::Identifier(id) => {
                 let expression = Expression::Identifier(IdentifierExpression {
@@ -114,7 +144,10 @@ impl Parser {
             }
             _ => Err(error(
                 self.peek(0).region,
-                format!("expected literal, found {:?}", self.peek(0).value),
+                format!(
+                    "expected primary expression, found {:?}",
+                    self.peek(0).value
+                ),
             )),
         }
     }
@@ -127,15 +160,7 @@ impl Parser {
 
             let arguments = self.parse_comma_separated_expressions()?;
 
-            if self.peek(0).value != Value::CloseParenthesis {
-                return Err(error(
-                    self.peek(0).region,
-                    format!(
-                        "expected closing parenthesis at end of argument list, found {:?}",
-                        self.peek(0).region
-                    ),
-                ));
-            }
+            self.expect(Value::CloseParenthesis, "end of argument list")?;
             self.advance();
 
             expression = Expression::FunctionCall(Box::new(FunctionCallExpression {
@@ -345,21 +370,52 @@ impl Parser {
     fn parse_expression_statement(&mut self) -> Result<Statement, Error> {
         let expression = self.parse_expression()?;
 
-        if self.peek(0).value != Value::Semicolon {
-            return Err(error(
-                self.peek(0).region,
-                format!(
-                    "expected semicolon after expression, found {:?}",
-                    self.peek(0).value
-                ),
-            ));
-        }
+        self.expect(Value::Semicolon, "end of expression statement")?;
 
         Ok(Statement::Expression(expression))
     }
 
+    fn parse_variable_declaration(&mut self) -> Result<VariableDeclarationStatement, Error> {
+        self.expect(Value::KeywordVar, "start of variable declaration statement")?;
+        self.advance();
+
+        let identifier = match &self.peek(0).value {
+            Value::Identifier(id) => Ok(id.clone()),
+            _ => Err(error(
+                self.peek(0).region,
+                format!(
+                    "expected identifier for variable name, found {:?}",
+                    self.peek(0).value
+                ),
+            )),
+        }?;
+        self.advance();
+
+        let type_specifier = match self.peek(0).value {
+            Value::Colon => {
+                self.advance();
+                Some(self.parse_type_specifier()?)
+            }
+            _ => None,
+        };
+
+        self.expect(Value::SingleEquals, "variable declaration")?;
+        self.advance();
+
+        let expression = self.parse_expression()?;
+
+        Ok(VariableDeclarationStatement {
+            identifier,
+            type_specifier,
+            expression,
+        })
+    }
+
     fn parse_statement(&mut self) -> Result<Statement, Error> {
-        self.parse_expression_statement()
+        Ok(match self.peek(0).value {
+            Value::KeywordVar => Statement::VariableDeclaration(self.parse_variable_declaration()?),
+            _ => self.parse_expression_statement()?,
+        })
     }
 
     pub fn parse_program(&mut self) -> Result<Vec<Statement>, Error> {

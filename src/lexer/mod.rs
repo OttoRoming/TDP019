@@ -139,7 +139,7 @@ impl Lexer {
         Ok(Token { value, region })
     }
 
-    fn tokenize_identifier_or_keyword(&mut self) -> Result<Token, Error> {
+    fn tokenize_mutlichar(&mut self) -> Result<Token, Error> {
         let start = self.location;
 
         let mut content = String::new();
@@ -162,6 +162,13 @@ impl Lexer {
             "return" => Value::KeywordReturn,
             "true" => Value::KeywordTrue,
             "false" => Value::KeywordFalse,
+            "var" => Value::KeywordVar,
+            "Int" => Value::TypeInt,
+            "Float" => Value::TypeFloat,
+            "String" => Value::TypeString,
+            "Bool" => Value::TypeBool,
+            "List" => Value::TypeList,
+            "Ref" => Value::TypeRef,
             _ => Value::Identifier(content),
         };
 
@@ -216,6 +223,7 @@ impl Lexer {
             '>' => Some(Value::GreaterThan),
             '&' => Some(Value::Ampersand),
             ';' => Some(Value::Semicolon),
+            ':' => Some(Value::Colon),
             ',' => Some(Value::Comma),
             _ => None,
         };
@@ -232,7 +240,7 @@ impl Lexer {
         } else if self.peek(0).is_ascii_digit() {
             self.tokenize_int_or_float()
         } else if self.peek(0).is_alphabetic() {
-            self.tokenize_identifier_or_keyword()
+            self.tokenize_mutlichar()
         } else {
             Err(error(
                 self.current_region(),

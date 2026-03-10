@@ -247,3 +247,81 @@ fn parse_unary() {
         parse("*true;").unwrap()
     );
 }
+
+#[test]
+fn parse_variable_declaration() {
+    assert_eq!(
+        Ok(vec![Statement::VariableDeclaration(
+            VariableDeclarationStatement {
+                identifier: "x".to_string(),
+                type_specifier: None,
+                expression: Expression::Literal(LiteralExpression::Int(10))
+            }
+        )]),
+        parse("var x = 10")
+    )
+}
+
+#[test]
+fn parse_variable_declaration_with_type() {
+    assert_eq!(
+        Ok(vec![Statement::VariableDeclaration(
+            VariableDeclarationStatement {
+                identifier: "x".to_string(),
+                type_specifier: Some(TypeSpecifier::Int),
+                expression: Expression::Literal(LiteralExpression::Int(10))
+            }
+        )]),
+        parse("var x: Int = 10")
+    )
+}
+
+#[test]
+fn parse_variable_declaration_with_generic_type() {
+    assert_eq!(
+        Ok(vec![Statement::VariableDeclaration(
+            VariableDeclarationStatement {
+                identifier: "l".to_string(),
+                type_specifier: Some(TypeSpecifier::List(Box::new(TypeSpecifier::Int))),
+                expression: Expression::Literal(LiteralExpression::List(vec![
+                    Expression::Literal(LiteralExpression::Int(1)),
+                    Expression::Literal(LiteralExpression::Int(2)),
+                    Expression::Literal(LiteralExpression::Int(3))
+                ]))
+            }
+        )]),
+        parse("var l: List<Int> = [1, 2, 3]")
+    )
+}
+
+#[test]
+fn parse_variable_declaration_with_extra_generic_type() {
+    assert_eq!(
+        Ok(vec![Statement::VariableDeclaration(
+            VariableDeclarationStatement {
+                identifier: "l".to_string(),
+                type_specifier: Some(TypeSpecifier::List(Box::new(TypeSpecifier::List(
+                    Box::new(TypeSpecifier::Int)
+                )))),
+                expression: Expression::Literal(LiteralExpression::List(vec![
+                    Expression::Literal(LiteralExpression::List(vec![
+                        Expression::Literal(LiteralExpression::Int(1)),
+                        Expression::Literal(LiteralExpression::Int(2)),
+                        Expression::Literal(LiteralExpression::Int(3))
+                    ])),
+                    Expression::Literal(LiteralExpression::List(vec![
+                        Expression::Literal(LiteralExpression::Int(4)),
+                        Expression::Literal(LiteralExpression::Int(5)),
+                        Expression::Literal(LiteralExpression::Int(6))
+                    ])),
+                    Expression::Literal(LiteralExpression::List(vec![
+                        Expression::Literal(LiteralExpression::Int(7)),
+                        Expression::Literal(LiteralExpression::Int(8)),
+                        Expression::Literal(LiteralExpression::Int(9))
+                    ]))
+                ]))
+            }
+        )]),
+        parse("var l: List<List<Int>> = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]")
+    )
+}

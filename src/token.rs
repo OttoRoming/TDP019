@@ -19,6 +19,14 @@ pub enum Value {
     KeywordReturn, // return
     KeywordTrue,   // true
     KeywordFalse,  // false
+    KeywordVar,    // var
+
+    TypeInt,    // Int
+    TypeFloat,  // Float
+    TypeString, // String
+    TypeBool,   // Bool
+    TypeList,   // List
+    TypeRef,    // Ref
 
     // 2 char tokens
     And,                // &&
@@ -55,6 +63,7 @@ pub enum Value {
     GreaterThan,      // >
     Ampersand,        // &
     Semicolon,        // ;
+    Colon,            // :
     Comma,            // ,
 
     // Special tokens

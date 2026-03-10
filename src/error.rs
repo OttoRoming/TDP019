@@ -3,7 +3,7 @@ use std::{convert::From, error, fmt, io};
 
 use owo_colors::OwoColorize;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 #[allow(dead_code)]
 pub enum Level {
     IO,
@@ -19,7 +19,7 @@ impl fmt::Display for Level {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Error {
     pub message: String,
     pub level: Level,
