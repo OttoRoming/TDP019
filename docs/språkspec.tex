@@ -6,7 +6,7 @@
 \newcommand{\version}{Version 3.0}
 \author{Otto Roming, \url{ottro821@student.liu.se}}
 \title{Språkspec}
-\date{2026-02-25}
+\date{2026-03-10}
 \rhead{Otto Roming}
 
 \begin{document}
@@ -18,7 +18,7 @@
 Ver. & Revisionsbeskrivning & Datum \\\hline
 1.0 & Första version av språkspecifikationen (språkidé) & 2026-02-18 \\\hline
 2.0 & Andra version av språkspecifikationen (utkast av grammatik) & 2026-02-25 \\\hline
-3.0 & Tredje version av språkspecifikationen & 2026-xx-xx \\\hline
+3.0 & Tredje version av språkspecifikationen & 2026-03-10 \\\hline
 \end{tabularx}
 \end{table}
 
@@ -64,9 +64,9 @@ fun foo() {
 \end{minted}
 
 \section{Grammatik}
-Detta är ett utkast av grammatiken i Backus–Naur form till språket. Alla språkfunktioner finns inte definierade i detta utkast och misstag kan uppstå. Till exempel saknas definitioner för litterära uttryck
+Detta är ett utkast av grammatiken i Backus–Naur form till språket och kan anses vara en komplett grammatik för språket. Grammatiken är i stora drag inspirerad av grammatiken för Lox \cite{nystrom_crafting_2021} och C \cite{degner_ansi_1995}.
 
-\inputminted{bnf}{grammar.bnf}
+\inputminted{peg}{grammar.bnf}
 
 \section{Kodexempel}
 \subsection{Funktionsdeklarationer}
@@ -174,7 +174,7 @@ puts(list) # [1, 2, 3, 4, 5]
 
 
 
-% \bibliographystyle{IEEEtran}
-% \bibliography{references}
+\bibliographystyle{IEEEtran}
+\bibliography{references}
 
 \end{document}
