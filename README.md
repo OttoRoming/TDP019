@@ -1,4 +1,6 @@
-# TDP019
+# TDP019 - Oneo language interpreter
+Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀
+@sermuns
 
 ## Källor
 - https://www.ida.liu.se/~TDP019/
