@@ -1,0 +1,6 @@
+type_specifier ::= "Int"
+                 | "Float"
+                 | "String"
+                 | "Bool"
+                 | "List" "<" type_specifier ">"
+                 | "Ref" "<" type_specifier ">"

@@ -1,0 +1,49 @@
+program ::= statements
+
+statements ::= statement
+             | statements statement
+
+block ::= "{" statements "}"
+
+statement ::= if_statement
+            | else_statement
+            | while_statement
+            | each_statement
+            | variable_declaration_statement
+            | function_declaration_statement
+            | return_statement
+            | continue_statement
+            | break_statement
+            | throw_statement
+            | try_statement
+            | expression_statement
+
+if_statement ::= "if" expression block
+               | if_statement "elif" expression block
+else_statement ::= if_statement "else" block
+
+while_statement ::= "while" expression block
+
+each_statement ::= "each" identifier ":" expression block
+
+variable_declaration_statement ::= "var" identifier "=" expression
+                                 | "var" identifier ":" type_specifier "=" expression
+
+parameter ::= identifier ":" type_specifier
+parameters ::= parameter
+             | parameters "," parameter
+function_declaration_statement ::= "fun" identifier "(" parameters ")" block
+                                 | "fun" identifier "(" parameters ")" ":" type_specifier block
+
+return_statement ::= "return" expression
+
+continue_statement ::= "continue"
+
+break_statement ::= "break"
+
+throw_statement ::= "throw" expression
+
+try_statement ::= "try" block "catch" identifier block
+                | "try" block "catch" block
+
+expression_statement ::= expression ";"
