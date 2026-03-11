@@ -1,4 +1,5 @@
 mod ast;
+mod checker;
 mod error;
 mod lexer;
 mod parser;
@@ -29,12 +30,21 @@ fn main() {
         }
     };
 
-    match parser::parse(&source) {
+    let ast = match parser::parse(&source) {
         Ok(ast) => {
-            dbg!(ast);
+            dbg!(&ast);
+            ast
         }
         Err(err) => {
             err.print(&source);
+            panic!()
         }
-    }
+    };
+
+    match checker::check(&ast) {
+        Ok(_) => {}
+        Err(err) => {
+            err.print(&source);
+        }
+    };
 }

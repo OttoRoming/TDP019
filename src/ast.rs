@@ -1,3 +1,5 @@
+use crate::util::Region;
+
 #[derive(Debug, PartialEq)]
 pub struct Block {
     pub statements: Vec<Statement>,
@@ -30,14 +32,14 @@ pub struct ElsePart {
 
 #[derive(Debug, PartialEq)]
 pub struct WhileStatement {
-    pub test: Expression,
+    pub test: ExpressionValue,
     pub block: Block,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct EachStatement {
     pub left: String,
-    pub right: Expression,
+    pub right: ExpressionValue,
     pub block: Block,
 }
 
@@ -64,12 +66,12 @@ pub struct FunctionDeclarationStatement {
 
 #[derive(Debug, PartialEq)]
 pub struct ReturnStatement {
-    pub expression: Expression,
+    pub expression: ExpressionValue,
 }
 
 #[derive(Debug, PartialEq)]
 #[allow(dead_code)]
-pub enum Statement {
+pub enum StatementValue {
     Block(Block),
     If(IfStatement),
     While(WhileStatement),
@@ -78,6 +80,12 @@ pub enum Statement {
     FunctionDeclaration(FunctionDeclarationStatement),
     Return(ReturnStatement),
     Expression(Expression),
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Statement {
+    pub value: StatementValue,
+    pub region: Region,
 }
 
 #[derive(Debug, PartialEq)]
@@ -94,9 +102,9 @@ pub enum AssignmentOperator {
 
 #[derive(Debug, PartialEq)]
 pub struct AssignmentExpression {
-    pub assignee: Expression,
+    pub assignee: ExpressionValue,
     pub operator: AssignmentOperator,
-    pub right: Expression,
+    pub right: ExpressionValue,
 }
 
 #[derive(Debug, PartialEq)]
@@ -107,7 +115,7 @@ pub enum UpdateOperator {
 
 #[derive(Debug, PartialEq)]
 pub struct UpdateExpression {
-    pub updatee: Expression,
+    pub updatee: ExpressionValue,
     pub operator: UpdateOperator,
 }
 
@@ -130,9 +138,9 @@ pub enum BinaryOperator {
 
 #[derive(Debug, PartialEq)]
 pub struct BinaryExpression {
-    pub left: Expression,
+    pub left: ExpressionValue,
     pub operator: BinaryOperator,
-    pub right: Expression,
+    pub right: ExpressionValue,
 }
 
 #[derive(Debug, PartialEq)]
@@ -146,7 +154,7 @@ pub enum UnaryOperator {
 #[derive(Debug, PartialEq)]
 pub struct UnaryExpression {
     pub operator: UnaryOperator,
-    pub right: Expression,
+    pub right: ExpressionValue,
 }
 
 #[derive(Debug, PartialEq)]
@@ -156,19 +164,19 @@ pub struct IdentifierExpression {
 
 #[derive(Debug, PartialEq)]
 pub struct FunctionCallExpression {
-    pub callee: Expression,
+    pub callee: ExpressionValue,
     pub arguments: Vec<Expression>,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct IndexExpression {
-    pub collection: Expression,
-    pub index: Expression,
+    pub collection: ExpressionValue,
+    pub index: ExpressionValue,
 }
 
 #[derive(Debug, PartialEq)]
 #[allow(dead_code)]
-pub enum Expression {
+pub enum ExpressionValue {
     Assign(Box<AssignmentExpression>),
     Update(Box<UpdateExpression>),
     Binary(Box<BinaryExpression>),
@@ -182,6 +190,12 @@ pub enum Expression {
     Bool(bool),
     List(Vec<Expression>),
     Null,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Expression {
+    pub value: ExpressionValue,
+    pub region: Region,
 }
 
 #[derive(Debug, PartialEq)]

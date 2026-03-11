@@ -10,7 +10,7 @@ use crate::{
 mod test;
 
 struct Parser {
-    index: usize,
+    index: i32,
     tokens: Vec<Token>,
 }
 
@@ -23,8 +23,8 @@ fn error(region: Region, message: String) -> Error {
 }
 
 impl Parser {
-    fn peek(&self, ahead: usize) -> &Token {
-        &self.tokens[self.index + ahead]
+    fn peek(&self, ahead: i32) -> &Token {
+        &self.tokens[(self.index + ahead) as usize]
     }
 
     fn advance(&mut self) {
@@ -93,32 +93,32 @@ impl Parser {
         Ok(expressions)
     }
 
-    fn parse_primary(&mut self) -> Result<Expression, Error> {
+    fn parse_primary(&mut self) -> Result<ExpressionValue, Error> {
         match &self.peek(0).value {
             Value::KeywordTrue => {
                 self.advance();
-                Ok(Expression::Bool(true))
+                Ok(ExpressionValue::Bool(true))
             }
             Value::KeywordFalse => {
                 self.advance();
-                Ok(Expression::Bool(false))
+                Ok(ExpressionValue::Bool(false))
             }
             Value::KeywordNull => {
                 self.advance();
-                Ok(Expression::Null)
+                Ok(ExpressionValue::Null)
             }
             Value::Int(i) => {
-                let expression = Expression::Int(*i);
+                let expression = ExpressionValue::Int(*i);
                 self.advance();
                 Ok(expression)
             }
             Value::Float(f) => {
-                let expression = Expression::Float(*f);
+                let expression = ExpressionValue::Float(*f);
                 self.advance();
                 Ok(expression)
             }
             Value::String(s) => {
-                let expression = Expression::String(s.clone());
+                let expression = ExpressionValue::String(s.clone());
                 self.advance();
                 Ok(expression)
             }
@@ -127,17 +127,17 @@ impl Parser {
                 let expressions = self.parse_comma_separated_expressions()?;
                 self.expect(Value::CloseBracket, "end of list literal")?;
                 self.advance();
-                Ok(Expression::List(expressions))
+                Ok(ExpressionValue::List(expressions))
             }
             Value::OpenParenthesis => {
                 self.advance();
                 let expression = self.parse_expression()?;
                 self.expect(Value::CloseParenthesis, "end of parenthesized expression")?;
                 self.advance();
-                Ok(expression)
+                Ok(expression.value)
             }
             Value::Identifier(id) => {
-                let expression = Expression::Identifier(IdentifierExpression {
+                let expression = ExpressionValue::Identifier(IdentifierExpression {
                     identifier: id.clone(),
                 });
                 self.advance();
@@ -153,7 +153,7 @@ impl Parser {
         }
     }
 
-    fn parse_call(&mut self) -> Result<Expression, Error> {
+    fn parse_call(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_primary()?;
 
         while self.peek(0).value == Value::OpenParenthesis {
@@ -164,7 +164,7 @@ impl Parser {
             self.expect(Value::CloseParenthesis, "end of argument list")?;
             self.advance();
 
-            expression = Expression::FunctionCall(Box::new(FunctionCallExpression {
+            expression = ExpressionValue::FunctionCall(Box::new(FunctionCallExpression {
                 callee: expression,
                 arguments,
             }))
@@ -173,7 +173,7 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_unary(&mut self) -> Result<Expression, Error> {
+    fn parse_unary(&mut self) -> Result<ExpressionValue, Error> {
         Ok(
             if let Some(operator) = match self.peek(0).value {
                 Value::Not => Some(UnaryOperator::Not),
@@ -184,14 +184,14 @@ impl Parser {
             } {
                 self.advance();
                 let right = self.parse_call()?;
-                Expression::Unary(Box::new(UnaryExpression { operator, right }))
+                ExpressionValue::Unary(Box::new(UnaryExpression { operator, right }))
             } else {
                 self.parse_call()?
             },
         )
     }
 
-    fn parse_multiplicative(&mut self) -> Result<Expression, Error> {
+    fn parse_multiplicative(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_unary()?;
 
         loop {
@@ -204,7 +204,7 @@ impl Parser {
             self.advance();
 
             let right = self.parse_unary()?;
-            expression = Expression::Binary(Box::new(BinaryExpression {
+            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
                 right,
@@ -214,7 +214,7 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_addative(&mut self) -> Result<Expression, Error> {
+    fn parse_addative(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_multiplicative()?;
 
         loop {
@@ -226,7 +226,7 @@ impl Parser {
             self.advance();
 
             let right = self.parse_multiplicative()?;
-            expression = Expression::Binary(Box::new(BinaryExpression {
+            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
                 right,
@@ -236,7 +236,7 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_comparison(&mut self) -> Result<Expression, Error> {
+    fn parse_comparison(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_addative()?;
 
         loop {
@@ -250,7 +250,7 @@ impl Parser {
             self.advance();
 
             let right = self.parse_addative()?;
-            expression = Expression::Binary(Box::new(BinaryExpression {
+            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
                 right,
@@ -260,7 +260,7 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_equality(&mut self) -> Result<Expression, Error> {
+    fn parse_equality(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_comparison()?;
 
         loop {
@@ -272,7 +272,7 @@ impl Parser {
             self.advance();
 
             let right = self.parse_comparison()?;
-            expression = Expression::Binary(Box::new(BinaryExpression {
+            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator,
                 right,
@@ -282,14 +282,14 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_logical_and(&mut self) -> Result<Expression, Error> {
+    fn parse_logical_and(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_equality()?;
 
         while self.peek(0).value == Value::And {
             self.advance();
 
             let right = self.parse_equality()?;
-            expression = Expression::Binary(Box::new(BinaryExpression {
+            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator: BinaryOperator::And,
                 right,
@@ -299,14 +299,14 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_logical_or(&mut self) -> Result<Expression, Error> {
+    fn parse_logical_or(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_logical_and()?;
 
         while self.peek(0).value == Value::Or {
             self.advance();
 
             let right = self.parse_logical_and()?;
-            expression = Expression::Binary(Box::new(BinaryExpression {
+            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
                 left: expression,
                 operator: BinaryOperator::Or,
                 right,
@@ -316,7 +316,7 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_update(&mut self) -> Result<Expression, Error> {
+    fn parse_update(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_logical_or()?;
 
         loop {
@@ -327,7 +327,7 @@ impl Parser {
             };
             self.advance();
 
-            expression = Expression::Update(Box::new(UpdateExpression {
+            expression = ExpressionValue::Update(Box::new(UpdateExpression {
                 updatee: expression,
                 operator,
             }))
@@ -336,7 +336,7 @@ impl Parser {
         Ok(expression)
     }
 
-    fn parse_assignment(&mut self) -> Result<Expression, Error> {
+    fn parse_assignment(&mut self) -> Result<ExpressionValue, Error> {
         let mut expression = self.parse_update()?;
 
         loop {
@@ -354,7 +354,7 @@ impl Parser {
             self.advance();
 
             let right = self.parse_update()?;
-            expression = Expression::Assign(Box::new(AssignmentExpression {
+            expression = ExpressionValue::Assign(Box::new(AssignmentExpression {
                 assignee: expression,
                 operator,
                 right,
@@ -365,16 +365,23 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Result<Expression, Error> {
-        self.parse_assignment()
+        let start = self.peek(0).region.start;
+
+        let value = self.parse_assignment()?;
+
+        let end = self.peek(-1).region.end;
+        let region = Region::new(start, end);
+
+        Ok(Expression { value, region })
     }
 
-    fn parse_expression_statement(&mut self) -> Result<Statement, Error> {
+    fn parse_expression_statement(&mut self) -> Result<StatementValue, Error> {
         let expression = self.parse_expression()?;
 
         self.expect(Value::Semicolon, "end of expression statement")?;
         self.advance();
 
-        Ok(Statement::Expression(expression))
+        Ok(StatementValue::Expression(expression))
     }
 
     fn parse_variable_declaration(&mut self) -> Result<VariableDeclarationStatement, Error> {
@@ -474,12 +481,19 @@ impl Parser {
     }
 
     fn parse_statement(&mut self) -> Result<Statement, Error> {
-        Ok(match self.peek(0).value {
-            Value::OpenBrace => Statement::Block(self.parse_block()?),
-            Value::KeywordVar => Statement::VariableDeclaration(self.parse_variable_declaration()?),
-            Value::KeywordIf => Statement::If(self.parse_if_statement()?),
+        let start = self.peek(0).region.start;
+        let value = match self.peek(0).value {
+            Value::OpenBrace => StatementValue::Block(self.parse_block()?),
+            Value::KeywordVar => {
+                StatementValue::VariableDeclaration(self.parse_variable_declaration()?)
+            }
+            Value::KeywordIf => StatementValue::If(self.parse_if_statement()?),
             _ => self.parse_expression_statement()?,
-        })
+        };
+        let end = self.peek(-1).region.end;
+        let region = Region::new(start, end);
+
+        Ok(Statement { value, region })
     }
 
     pub fn parse_program(&mut self) -> Result<Vec<Statement>, Error> {
