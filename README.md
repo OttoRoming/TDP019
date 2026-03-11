@@ -1,4 +1,4 @@
-# TDP019 - Oneo language interpreter
+# TDP019 - Oeno language interpreter
 Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀
 @sermuns
 
