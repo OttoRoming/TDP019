@@ -241,6 +241,14 @@ fn parse_unary() {
 }
 
 #[test]
+fn parse_block() {
+    assert_eq!(
+        Ok(vec![Statement::Block(Block { statements: vec![] })]),
+        parse("{}")
+    )
+}
+
+#[test]
 fn parse_variable_declaration() {
     assert_eq!(
         Ok(vec![Statement::VariableDeclaration(
@@ -315,5 +323,65 @@ fn parse_variable_declaration_with_extra_generic_type() {
             }
         )]),
         parse("var l: List<List<Int>> = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]")
+    )
+}
+
+#[test]
+fn parse_if() {
+    assert_eq!(
+        Ok(vec![Statement::If(IfStatement {
+            test: Expression::Bool(true),
+            block: Block { statements: vec![] },
+            branch: None
+        })]),
+        parse("if true {}")
+    )
+}
+
+#[test]
+fn parse_if_elif() {
+    assert_eq!(
+        Ok(vec![Statement::If(IfStatement {
+            test: Expression::Bool(false),
+            block: Block { statements: vec![] },
+            branch: Some(IfBranch::Elif(ElifPart {
+                test: Expression::Bool(true),
+                block: Block { statements: vec![] },
+                branch: Box::new(None)
+            }))
+        })]),
+        parse("if false {} elif true {}")
+    )
+}
+
+#[test]
+fn parse_if_else() {
+    assert_eq!(
+        Ok(vec![Statement::If(IfStatement {
+            test: Expression::Bool(false),
+            block: Block { statements: vec![] },
+            branch: Some(IfBranch::Else(ElsePart {
+                block: Block { statements: vec![] },
+            }))
+        })]),
+        parse("if false {} else {}")
+    )
+}
+
+#[test]
+fn parse_if_elif_else() {
+    assert_eq!(
+        Ok(vec![Statement::If(IfStatement {
+            test: Expression::Bool(false),
+            block: Block { statements: vec![] },
+            branch: Some(IfBranch::Elif(ElifPart {
+                test: Expression::Bool(false),
+                block: Block { statements: vec![] },
+                branch: Box::new(Some(IfBranch::Else(ElsePart {
+                    block: Block { statements: vec![] }
+                })))
+            }))
+        })]),
+        parse("if false {} elif false {} else {}")
     )
 }

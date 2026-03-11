@@ -371,6 +371,7 @@ impl Parser {
         let expression = self.parse_expression()?;
 
         self.expect(Value::Semicolon, "end of expression statement")?;
+        self.advance();
 
         Ok(Statement::Expression(expression))
     }
@@ -411,15 +412,81 @@ impl Parser {
         })
     }
 
+    fn parse_elif_part(&mut self) -> Result<ElifPart, Error> {
+        self.expect(Value::KeywordElif, "start of elif branch")?;
+        self.advance();
+
+        let test = self.parse_expression()?;
+        let block = self.parse_block()?;
+        let branch = Box::new(self.parse_if_branch()?);
+
+        Ok(ElifPart {
+            test,
+            block,
+            branch,
+        })
+    }
+
+    fn parse_else_part(&mut self) -> Result<ElsePart, Error> {
+        self.expect(Value::KeywordElse, "start of else branch")?;
+        self.advance();
+
+        let block = self.parse_block()?;
+
+        Ok(ElsePart { block })
+    }
+
+    fn parse_if_branch(&mut self) -> Result<Option<IfBranch>, Error> {
+        Ok(match self.peek(0).value {
+            Value::KeywordElif => Some(IfBranch::Elif(self.parse_elif_part()?)),
+            Value::KeywordElse => Some(IfBranch::Else(self.parse_else_part()?)),
+            _ => None,
+        })
+    }
+
+    fn parse_if_statement(&mut self) -> Result<IfStatement, Error> {
+        self.expect(Value::KeywordIf, "start of if statement")?;
+        self.advance();
+
+        let test = self.parse_expression()?;
+        let block = self.parse_block()?;
+        let branch = self.parse_if_branch()?;
+
+        Ok(IfStatement {
+            test,
+            block,
+            branch,
+        })
+    }
+
+    fn parse_block(&mut self) -> Result<Block, Error> {
+        self.expect(Value::OpenBrace, "start of block")?;
+        self.advance();
+
+        let mut statements = vec![];
+        while self.peek(0).value != Value::CloseBrace {
+            statements.push(self.parse_statement()?);
+        }
+        self.advance();
+
+        Ok(Block { statements })
+    }
+
     fn parse_statement(&mut self) -> Result<Statement, Error> {
         Ok(match self.peek(0).value {
+            Value::OpenBrace => Statement::Block(self.parse_block()?),
             Value::KeywordVar => Statement::VariableDeclaration(self.parse_variable_declaration()?),
+            Value::KeywordIf => Statement::If(self.parse_if_statement()?),
             _ => self.parse_expression_statement()?,
         })
     }
 
     pub fn parse_program(&mut self) -> Result<Vec<Statement>, Error> {
-        Ok(vec![self.parse_statement()?])
+        let mut statements = vec![];
+        while self.peek(0).value != Value::Eof {
+            statements.push(self.parse_statement()?);
+        }
+        Ok(statements)
     }
 
     pub fn new(source: &str) -> Result<Self, Error> {

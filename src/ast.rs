@@ -7,8 +7,26 @@ pub struct Block {
 pub struct IfStatement {
     pub test: Expression,
     pub block: Block,
+    pub branch: Option<IfBranch>,
 }
-// TODO: how to do the else branches?
+
+#[derive(Debug, PartialEq)]
+pub enum IfBranch {
+    Elif(ElifPart),
+    Else(ElsePart),
+}
+
+#[derive(Debug, PartialEq)]
+pub struct ElifPart {
+    pub test: Expression,
+    pub block: Block,
+    pub branch: Box<Option<IfBranch>>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct ElsePart {
+    pub block: Block,
+}
 
 #[derive(Debug, PartialEq)]
 pub struct WhileStatement {
@@ -52,6 +70,7 @@ pub struct ReturnStatement {
 #[derive(Debug, PartialEq)]
 #[allow(dead_code)]
 pub enum Statement {
+    Block(Block),
     If(IfStatement),
     While(WhileStatement),
     Each(EachStatement),

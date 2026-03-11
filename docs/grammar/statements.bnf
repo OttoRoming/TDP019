@@ -5,7 +5,8 @@ statements ::= statement
 
 block ::= "{" statements "}"
 
-statement ::= if_statement
+statement ::= block
+            | if_statement
             | while_statement
             | each_statement
             | variable_declaration_statement
@@ -18,11 +19,10 @@ statement ::= if_statement
             | expression_statement
 
 if_statement ::= "if" expression block
-               | "if" expression block elif_part
-               | "if" expression block else_part
+               | "if" expression block if_branch
+if_branch ::= elif_part | else_part
 elif_part ::= "elif" expression block
-            | "elif" expression block elif_part
-            | "elif" expression block else_part
+            | "elif" expression block if_branch
 else_part ::= "else" block
 
 while_statement ::= "while" expression block
