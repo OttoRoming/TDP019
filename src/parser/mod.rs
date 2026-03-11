@@ -64,6 +64,7 @@ impl Parser {
             Value::TypeInt => TypeSpecifier::Int,
             Value::TypeFloat => TypeSpecifier::Float,
             Value::TypeBool => TypeSpecifier::Bool,
+            Value::TypeString => TypeSpecifier::String,
             Value::TypeList => TypeSpecifier::List(Box::new(generic(self)?)),
             Value::TypeRef => TypeSpecifier::Ref(Box::new(generic(self)?)),
             _ => {

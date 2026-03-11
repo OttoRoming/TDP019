@@ -112,7 +112,6 @@ pub struct UpdateExpression {
 }
 
 #[derive(Debug, PartialEq)]
-#[allow(dead_code)]
 pub enum BinaryOperator {
     Add,
     Subtract,
@@ -186,7 +185,6 @@ pub enum Expression {
 }
 
 #[derive(Debug, PartialEq)]
-#[allow(dead_code)]
 pub enum TypeSpecifier {
     Int,
     Float,
