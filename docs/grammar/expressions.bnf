@@ -31,14 +31,22 @@ unary_expression ::= unary_operator index_expression
 
 index_expression ::= call_expression ( "[" expression "]" )*
 
-call_expression ::= primary_expression ( "(" comma_separated_expressions ")" )*
+call_expression ::= primary_expression ( "(" ")" )*
+                  | primary_expression ( "(" comma_separated_expressions ")" )*
 
-primary_expression ::= "true"
-                     | "false"
-                     | "null"
-                     | "[" comma_separated_expressions "]"
+primary_expression ::= bool_literal
+                     | null_literal
+                     | list_literal
+                     | int_literal
+                     | float_literal
+                     | string_literal
+                     | identifier_literal
                      | "(" expression ")"
-                     | INT
-                     | FLOAT
-                     | STRING
-                     | IDENTIFIER
+bool_literal ::= "true" | "false"
+null_literal ::= "null"
+list_literal ::= "[" "]"
+               | "[" comma_separated_expressions "]"
+int_literal ::= INT
+float_literal ::= FLOAT
+string_literal ::= STRING
+identifier_literal ::= IDENTIFIER

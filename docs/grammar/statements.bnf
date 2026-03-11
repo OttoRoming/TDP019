@@ -6,7 +6,6 @@ statements ::= statement
 block ::= "{" statements "}"
 
 statement ::= if_statement
-            | else_statement
             | while_statement
             | each_statement
             | variable_declaration_statement
@@ -19,8 +18,12 @@ statement ::= if_statement
             | expression_statement
 
 if_statement ::= "if" expression block
-               | if_statement "elif" expression block
-else_statement ::= if_statement "else" block
+               | "if" expression block elif_part
+               | "if" expression block else_part
+elif_part ::= "elif" expression block
+            | "elif" expression block elif_part
+            | "elif" expression block else_part
+else_part ::= "else" block
 
 while_statement ::= "while" expression block
 
@@ -32,7 +35,9 @@ variable_declaration_statement ::= "var" identifier "=" expression
 parameter ::= identifier ":" type_specifier
 parameters ::= parameter
              | parameters "," parameter
-function_declaration_statement ::= "fun" identifier "(" parameters ")" block
+function_declaration_statement ::= "fun" identifier "(" ")" block
+                                 | "fun" identifier "(" ")" ":" type_specifier block
+                                 | "fun" identifier "(" parameters ")" block
                                  | "fun" identifier "(" parameters ")" ":" type_specifier block
 
 return_statement ::= "return" expression
