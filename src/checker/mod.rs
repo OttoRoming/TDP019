@@ -37,8 +37,8 @@ impl From<TypeSpecifier> for Type {
 
 #[derive(Debug, PartialEq, Eq)]
 struct Identifier {
-    identifier: String,
-    type_: Type,
+    pub identifier: String,
+    pub type_: Type,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -75,31 +75,24 @@ impl Checker {
     fn enter_block(&mut self) {
         self.scopes.push(Scope::Block);
     }
+    fn declare_identifier(&mut self, identifier: Identifier) {
+        self.scopes.push(Scope::Identifier(identifier))
+    }
 
-    fn check_binary(&mut self, binary: &BinaryExpression, region: Region) -> Result<Type, Error> {
-        let left = self
-            .check_expression(&Expression {
-                value: binary.left,
-                region,
-            })?
-            .ok_or(error(
-                region,
-                "left expression in binary expression has unknown type".to_string(),
-            ))?;
+    fn check_binary(&mut self, binary: &BinaryExpression, region: &Region) -> Result<Type, Error> {
+        let left = self.check_expression(&binary.left, region)?.ok_or(error(
+            *region,
+            "left expression in binary expression has unknown type".to_string(),
+        ))?;
 
-        let right = self
-            .check_expression(&Expression {
-                value: binary.left,
-                region,
-            })?
-            .ok_or(error(
-                region,
-                "right expression in binary expression has unknown type".to_string(),
-            ))?;
+        let right = self.check_expression(&binary.right, region)?.ok_or(error(
+            *region,
+            "right expression in binary expression has unknown type".to_string(),
+        ))?;
 
         if left != right {
             return Err(error(
-                region,
+                *region,
                 format!("binary expression type mismatch ({:?}, {:?})", left, right),
             ));
         }
@@ -112,7 +105,7 @@ impl Checker {
             | BinaryOperator::Modulo => match left {
                 Type::Int | Type::Float => Ok(left),
                 _ => Err(error(
-                    region,
+                    *region,
                     format!(
                         "{:?} is incompatible with operator {:?}",
                         left, binary.operator
@@ -123,21 +116,40 @@ impl Checker {
         }
     }
 
-    fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
-        match &expression.value {
+    fn check_expression(
+        &mut self,
+        value: &ExpressionValue,
+        region: &Region,
+    ) -> Result<Option<Type>, Error> {
+        match &value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
             ExpressionValue::Null => Ok(None),
-            ExpressionValue::Binary(binary) => self
-                .check_binary(binary, expression.region)
-                .map(|t| Some(t)),
+            ExpressionValue::Binary(binary) => self.check_binary(binary, region).map(|t| Some(t)),
             _ => todo!(),
         }
+    }
+
+    fn check_variable_declaration(
+        &mut self,
+        var: &VariableDeclarationStatement,
+    ) -> Result<(), Error> {
+        let expression_type =
+            self.check_expression(&var.expression.value, &var.expression.region)?;
+
+        self.declare_identifier(Identifier {
+            identifier: var.identifier,
+        });
+
+        Ok(())
     }
 
     fn check_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match &statement.value {
             StatementValue::Block(block) => self.check_block(block),
-            StatementValue::Expression(expression) => self.check_expression(expression).map(|_| ()),
+            StatementValue::VariableDeclaration(var) => self.check_variable_declaration(var),
+            StatementValue::Expression(expression) => self
+                .check_expression(&expression.value, &expression.region)
+                .map(|_| ()),
             _ => {
                 todo!()
             }
