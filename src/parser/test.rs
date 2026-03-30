@@ -56,6 +56,96 @@ fn parse_logical_or() {
                             end: Location { line: 1, column: 5 },
                         },
                     },
+                    operator: BinaryOperator::Or,
+                    right: Expression {
+                        value: ExpressionValue::Bool(false),
+                        region: Region {
+                            start: Location { line: 1, column: 9 },
+                            end: Location {
+                                line: 1,
+                                column: 14,
+                            },
+                        },
+                    },
+                }),),
+                region: Region {
+                    start: Location { line: 1, column: 1 },
+                    end: Location {
+                        line: 1,
+                        column: 14,
+                    },
+                },
+            },),
+            region: Region {
+                start: Location { line: 1, column: 1 },
+                end: Location {
+                    line: 1,
+                    column: 15,
+                },
+            },
+        },],),
+        parse("true || false;")
+    );
+}
+
+#[test]
+fn parse_logical_and() {
+    assert_eq!(
+        Ok(vec![Statement {
+            value: StatementValue::Expression(Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: Expression {
+                        value: ExpressionValue::Bool(true),
+                        region: Region {
+                            start: Location { line: 1, column: 1 },
+                            end: Location { line: 1, column: 5 },
+                        },
+                    },
+                    operator: BinaryOperator::And,
+                    right: Expression {
+                        value: ExpressionValue::Bool(false),
+                        region: Region {
+                            start: Location { line: 1, column: 9 },
+                            end: Location {
+                                line: 1,
+                                column: 14,
+                            },
+                        },
+                    },
+                }),),
+                region: Region {
+                    start: Location { line: 1, column: 1 },
+                    end: Location {
+                        line: 1,
+                        column: 14,
+                    },
+                },
+            },),
+            region: Region {
+                start: Location { line: 1, column: 1 },
+                end: Location {
+                    line: 1,
+                    column: 15,
+                },
+            },
+        },],),
+        parse("true && false;")
+    )
+}
+
+#[test]
+fn parse_logical_equality() {
+    assert_eq!(
+        Ok(vec![Statement {
+            value: StatementValue::Expression(Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: Expression {
+                        value: ExpressionValue::Bool(true),
+                        region: Region {
+                            start: Location { line: 1, column: 1 },
+                            end: Location { line: 1, column: 5 },
+                        },
+                    },
                     operator: BinaryOperator::Equals,
                     right: Expression {
                         value: ExpressionValue::Bool(false),
@@ -86,58 +176,49 @@ fn parse_logical_or() {
         },],),
         parse("true == false;")
     );
+
+    assert_eq!(
+        Ok(vec![Statement {
+            value: StatementValue::Expression(Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: Expression {
+                        value: ExpressionValue::Bool(true),
+                        region: Region {
+                            start: Location { line: 1, column: 1 },
+                            end: Location { line: 1, column: 5 },
+                        },
+                    },
+                    operator: BinaryOperator::NotEquals,
+                    right: Expression {
+                        value: ExpressionValue::Bool(false),
+                        region: Region {
+                            start: Location { line: 1, column: 9 },
+                            end: Location {
+                                line: 1,
+                                column: 14,
+                            },
+                        },
+                    },
+                }),),
+                region: Region {
+                    start: Location { line: 1, column: 1 },
+                    end: Location {
+                        line: 1,
+                        column: 14,
+                    },
+                },
+            },),
+            region: Region {
+                start: Location { line: 1, column: 1 },
+                end: Location {
+                    line: 1,
+                    column: 15,
+                },
+            },
+        },],),
+        parse("true != false;")
+    )
 }
-
-// #[test]
-// fn parse_logical_and() {
-//     assert_eq!(
-//         Ok(vec![Statement {
-//             value: StatementValue::Expression(Expression {
-//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
-//                     left: ExpressionValue::Bool(true),
-//                     operator: BinaryOperator::And,
-//                     right: ExpressionValue::Bool(false),
-//                 })),
-//                 region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-//             }),
-//             region: Region::new(Location::new(1, 1), Location::new(1, 15)),
-//         }]),
-//         parse("true && false;")
-//     )
-// }
-
-// #[test]
-// fn parse_logical_equality() {
-//     assert_eq!(
-//         Ok(vec![Statement {
-//             value: StatementValue::Expression(Expression {
-//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
-//                     left: ExpressionValue::Bool(true),
-//                     operator: BinaryOperator::Equals,
-//                     right: ExpressionValue::Bool(false),
-//                 })),
-//                 region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-//             }),
-//             region: Region::new(Location::new(1, 1), Location::new(1, 15)),
-//         }]),
-//         parse("true == false;")
-//     );
-
-//     assert_eq!(
-//         Ok(vec![Statement {
-//             value: StatementValue::Expression(Expression {
-//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
-//                     left: ExpressionValue::Bool(true),
-//                     operator: BinaryOperator::NotEquals,
-//                     right: ExpressionValue::Bool(false),
-//                 })),
-//                 region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-//             }),
-//             region: Region::new(Location::new(1, 1), Location::new(1, 15)),
-//         }]),
-//         parse("true != false;")
-//     )
-// }
 
 // #[test]
 // fn parse_comparison() {
@@ -145,9 +226,21 @@ fn parse_logical_or() {
 //         Ok(vec![Statement {
 //             value: StatementValue::Expression(Expression {
 //                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
-//                     left: ExpressionValue::Int(10),
+//                     left: Expression {
+//                         value: ExpressionValue::Int(10),
+//                         region: Region {
+//                             start: Location { line: 1, column: 1 },
+//                             end: Location { line: 1, column: 3 },
+//                         },
+//                     },
 //                     operator: BinaryOperator::LessThan,
-//                     right: ExpressionValue::Int(11),
+//                     right: Expression {
+//                         value: ExpressionValue::Int(11),
+//                         region: Region {
+//                             start: Location { line: 1, column: 6 },
+//                             end: Location { line: 1, column: 8 },
+//                         },
+//                     },
 //                 })),
 //                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
 //             }),
@@ -160,13 +253,25 @@ fn parse_logical_or() {
 //         Ok(vec![Statement {
 //             value: StatementValue::Expression(Expression {
 //                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
-//                     left: ExpressionValue::Int(10),
+//                     left: Expression {
+//                         value: ExpressionValue::Int(10),
+//                         region: Region {
+//                             start: Location { line: 1, column: 1 },
+//                             end: Location { line: 1, column: 3 },
+//                         },
+//                     },
 //                     operator: BinaryOperator::LessThanOrEqual,
-//                     right: ExpressionValue::Int(11),
+//                     right: Expression {
+//                         value: ExpressionValue::Int(11),
+//                         region: Region {
+//                             start: Location { line: 1, column: 7 },
+//                             end: Location { line: 1, column: 9 },
+//                         },
+//                     },
 //                 })),
-//                 region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
 //             }),
-//             region: Region::new(Location::new(1, 1), Location::new(1, 10)),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
 //         }]),
 //         parse("10 <= 11;")
 //     );
@@ -175,9 +280,21 @@ fn parse_logical_or() {
 //         Ok(vec![Statement {
 //             value: StatementValue::Expression(Expression {
 //                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
-//                     left: ExpressionValue::Int(10),
+//                     left: Expression {
+//                         value: ExpressionValue::Int(10),
+//                         region: Region {
+//                             start: Location { line: 1, column: 1 },
+//                             end: Location { line: 1, column: 3 },
+//                         },
+//                     },
 //                     operator: BinaryOperator::GreaterThan,
-//                     right: ExpressionValue::Int(11),
+//                     right: Expression {
+//                         value: ExpressionValue::Int(11),
+//                         region: Region {
+//                             start: Location { line: 1, column: 6 },
+//                             end: Location { line: 1, column: 8 },
+//                         },
+//                     },
 //                 })),
 //                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
 //             }),
@@ -190,13 +307,25 @@ fn parse_logical_or() {
 //         Ok(vec![Statement {
 //             value: StatementValue::Expression(Expression {
 //                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
-//                     left: ExpressionValue::Int(10),
+//                     left: Expression {
+//                         value: ExpressionValue::Int(10),
+//                         region: Region {
+//                             start: Location { line: 1, column: 1 },
+//                             end: Location { line: 1, column: 3 },
+//                         },
+//                     },
 //                     operator: BinaryOperator::GreaterThanOrEqual,
-//                     right: ExpressionValue::Int(11),
+//                     right: Expression {
+//                         value: ExpressionValue::Int(11),
+//                         region: Region {
+//                             start: Location { line: 1, column: 7 },
+//                             end: Location { line: 1, column: 9 },
+//                         },
+//                     },
 //                 })),
-//                 region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
 //             }),
-//             region: Region::new(Location::new(1, 1), Location::new(1, 10)),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
 //         }]),
 //         parse("10 >= 11;")
 //     );
