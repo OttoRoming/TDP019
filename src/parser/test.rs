@@ -43,23 +43,50 @@ fn parse_list_literal() {
     )
 }
 
-// #[test]
-// fn parse_logical_or() {
-//     assert_eq!(
-//         Ok(vec![Statement {
-//             value: StatementValue::Expression(Expression {
-//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
-//                     left: ExpressionValue::Bool(true),
-//                     operator: BinaryOperator::Equals,
-//                     right: ExpressionValue::Bool(false),
-//                 })),
-//                 region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-//             }),
-//             region: Region::new(Location::new(1, 1), Location::new(1, 15)),
-//         }]),
-//         parse("true == false;")
-//     )
-// }
+#[test]
+fn parse_logical_or() {
+    assert_eq!(
+        Ok(vec![Statement {
+            value: StatementValue::Expression(Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: Expression {
+                        value: ExpressionValue::Bool(true),
+                        region: Region {
+                            start: Location { line: 1, column: 1 },
+                            end: Location { line: 1, column: 5 },
+                        },
+                    },
+                    operator: BinaryOperator::Equals,
+                    right: Expression {
+                        value: ExpressionValue::Bool(false),
+                        region: Region {
+                            start: Location { line: 1, column: 9 },
+                            end: Location {
+                                line: 1,
+                                column: 14,
+                            },
+                        },
+                    },
+                }),),
+                region: Region {
+                    start: Location { line: 1, column: 1 },
+                    end: Location {
+                        line: 1,
+                        column: 14,
+                    },
+                },
+            },),
+            region: Region {
+                start: Location { line: 1, column: 1 },
+                end: Location {
+                    line: 1,
+                    column: 15,
+                },
+            },
+        },],),
+        parse("true == false;")
+    );
+}
 
 // #[test]
 // fn parse_logical_and() {
