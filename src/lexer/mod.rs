@@ -23,7 +23,7 @@ struct Lexer {
 
 impl Lexer {
     fn current_region(&self) -> Region {
-        Region::new(self.location, self.location)
+        Region::new(self.location.clone(), self.location.clone())
     }
 
     fn advance(&mut self) {
@@ -64,7 +64,7 @@ impl Lexer {
     }
 
     fn tokenize_string(&mut self) -> Result<Token, Error> {
-        let start = self.location;
+        let start = self.location.clone();
         self.advance(); // skip the first "
 
         let mut contents = String::new();
@@ -85,7 +85,7 @@ impl Lexer {
                     '"' => '"',
                     _ => {
                         return Err(error(
-                            Region::new(start, self.location),
+                            Region::new(start, self.location.clone()),
                             format!("unknown string escape sequence (\\{})", self.peek(1)),
                         ));
                     }
@@ -101,7 +101,7 @@ impl Lexer {
         }
 
         self.advance(); // skip the second "
-        let end = self.location;
+        let end = self.location.clone();
 
         Ok(Token {
             value: Value::String(contents),
@@ -110,7 +110,7 @@ impl Lexer {
     }
 
     fn tokenize_int_or_float(&mut self) -> Result<Token, Error> {
-        let start = self.location;
+        let start = self.location.clone();
         let mut content = String::new();
 
         while self.peek(0).is_ascii_digit() || self.peek(0) == '.' {
@@ -118,29 +118,29 @@ impl Lexer {
             self.advance();
         }
 
-        let end = self.location;
+        let end = self.location.clone();
         let region = Region::new(start, end);
 
         let is_float = content.contains('.');
-        let value = if is_float {
-            Value::Float(
-                content
-                    .parse::<f64>()
-                    .map_err(|e| error(region, format!("failed to parse float token ({})", e)))?,
-            )
-        } else {
-            Value::Int(
-                content
-                    .parse::<i64>()
-                    .map_err(|e| error(region, format!("failed to parse int token ({})", e)))?,
-            )
-        };
+        let value =
+            if is_float {
+                Value::Float(content.parse::<f64>().map_err(|e| {
+                    error(
+                        region.clone(),
+                        format!("failed to parse float token ({})", e),
+                    )
+                })?)
+            } else {
+                Value::Int(content.parse::<i64>().map_err(|e| {
+                    error(region.clone(), format!("failed to parse int token ({})", e))
+                })?)
+            };
 
         Ok(Token { value, region })
     }
 
     fn tokenize_mutlichar(&mut self) -> Result<Token, Error> {
-        let start = self.location;
+        let start = self.location.clone();
 
         let mut content = String::new();
         while self.peek(0).is_alphanumeric() {
@@ -148,7 +148,7 @@ impl Lexer {
             self.advance();
         }
 
-        let end = self.location;
+        let end = self.location.clone();
         let region = Region::new(start, end);
 
         let value = match content.as_str() {
@@ -196,10 +196,10 @@ impl Lexer {
             _ => None,
         };
         if let Some(value) = token_value {
-            let start = self.location;
+            let start = self.location.clone();
             self.advance();
             self.advance();
-            let end = self.location;
+            let end = self.location.clone();
             let region = Region::new(start, end);
 
             return Ok(Token { value, region });
@@ -228,9 +228,9 @@ impl Lexer {
             _ => None,
         };
         if let Some(value) = token_value {
-            let start = self.location;
+            let start = self.location.clone();
             self.advance();
-            let end = self.location;
+            let end = self.location.clone();
             let region = Region::new(start, end);
             return Ok(Token { value, region });
         }

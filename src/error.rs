@@ -57,7 +57,7 @@ impl Error {
     pub fn print(&self, source: &str) {
         self.print_message();
 
-        if let Some(region) = self.region {
+        if let Some(region) = &self.region {
             eprintln!("  {} {}", "-->".blue().bold(), region);
 
             let lines = source.lines();

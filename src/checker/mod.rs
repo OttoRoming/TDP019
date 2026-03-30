@@ -81,18 +81,18 @@ impl Checker {
 
     fn check_binary(&mut self, binary: &BinaryExpression, region: &Region) -> Result<Type, Error> {
         let left = self.check_expression(&binary.left, region)?.ok_or(error(
-            *region,
+            region.clone(),
             "left expression in binary expression has unknown type".to_string(),
         ))?;
 
         let right = self.check_expression(&binary.right, region)?.ok_or(error(
-            *region,
+            region.clone(),
             "right expression in binary expression has unknown type".to_string(),
         ))?;
 
         if left != right {
             return Err(error(
-                *region,
+                region.clone(),
                 format!("binary expression type mismatch ({:?}, {:?})", left, right),
             ));
         }
@@ -105,7 +105,7 @@ impl Checker {
             | BinaryOperator::Modulo => match left {
                 Type::Int | Type::Float => Ok(left),
                 _ => Err(error(
-                    *region,
+                    region.clone(),
                     format!(
                         "{:?} is incompatible with operator {:?}",
                         left, binary.operator
@@ -143,7 +143,7 @@ impl Checker {
                 && specifier != expression
             {
                 return Err(error(
-                    *region,
+                    region.clone(),
                     format!(
                         "variable declaration type mismatch (specified: {:?}; got: {:?})",
                         specifier, expression
@@ -158,7 +158,7 @@ impl Checker {
                 Ok(expression)
             } else {
                 Err(error(
-                    *region,
+                    region.clone(),
                     "could not infer type for variable declaration, hint: add a type specifier"
                         .to_string(),
                 ))

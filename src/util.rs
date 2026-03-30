@@ -3,7 +3,7 @@ use std::{
     fmt,
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Region {
     pub start: Location,
     pub end: Location,
@@ -33,7 +33,7 @@ impl fmt::Display for Region {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Location {
     pub line: usize,
     pub column: usize,

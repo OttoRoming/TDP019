@@ -34,7 +34,7 @@ impl Parser {
     fn expect(&self, expected_value: Value, at_msg: &str) -> Result<(), Error> {
         if self.peek(0).value != expected_value {
             Err(error(
-                self.peek(0).region,
+                self.peek(0).region.clone(),
                 format!(
                     "expected {:?} token at {}, found {:?}",
                     expected_value,
@@ -69,7 +69,7 @@ impl Parser {
             Value::TypeRef => TypeSpecifier::Ref(Box::new(generic(self)?)),
             _ => {
                 return Err(error(
-                    self.peek(0).region,
+                    self.peek(0).region.clone(),
                     format!("expected type specifier, found {:?}", self.peek(0).value),
                 ));
             }
@@ -144,7 +144,7 @@ impl Parser {
                 Ok(expression)
             }
             _ => Err(error(
-                self.peek(0).region,
+                self.peek(0).region.clone(),
                 format!(
                     "expected primary expression, found {:?}",
                     self.peek(0).value
@@ -365,11 +365,11 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Result<Expression, Error> {
-        let start = self.peek(0).region.start;
+        let start = self.peek(0).region.start.clone();
 
         let value = self.parse_assignment()?;
 
-        let end = self.peek(-1).region.end;
+        let end = self.peek(-1).region.end.clone();
         let region = Region::new(start, end);
 
         Ok(Expression { value, region })
@@ -391,7 +391,7 @@ impl Parser {
         let identifier = match &self.peek(0).value {
             Value::Identifier(id) => Ok(id.clone()),
             _ => Err(error(
-                self.peek(0).region,
+                self.peek(0).region.clone(),
                 format!(
                     "expected identifier for variable name, found {:?}",
                     self.peek(0).value
@@ -481,7 +481,7 @@ impl Parser {
     }
 
     fn parse_statement(&mut self) -> Result<Statement, Error> {
-        let start = self.peek(0).region.start;
+        let start = self.peek(0).region.start.clone();
         let value = match self.peek(0).value {
             Value::OpenBrace => StatementValue::Block(self.parse_block()?),
             Value::KeywordVar => {
@@ -490,7 +490,7 @@ impl Parser {
             Value::KeywordIf => StatementValue::If(self.parse_if_statement()?),
             _ => self.parse_expression_statement()?,
         };
-        let end = self.peek(-1).region.end;
+        let end = self.peek(-1).region.end.clone();
         let region = Region::new(start, end);
 
         Ok(Statement { value, region })
