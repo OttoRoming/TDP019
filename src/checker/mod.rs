@@ -68,8 +68,10 @@ impl<'a> Checker {
             .expect("type checker environment is empty")
             != Scope::Block
         {
+            // pop the identifiers inside the block
             self.scopes.pop();
         }
+        // pop the block
         self.scopes.pop();
     }
     fn enter_block(&mut self) {
@@ -81,9 +83,10 @@ impl<'a> Checker {
     fn _get_identifier(&'a mut self, id: &str) -> Option<&'a Type> {
         for scope in self.scopes.iter().rev() {
             if let Scope::Identifier(scope_id) = scope
-                && scope_id.identifier == id {
-                    return Some(&scope_id.type_);
-                }
+                && scope_id.identifier == id
+            {
+                return Some(&scope_id.type_);
+            }
         }
 
         None
@@ -155,15 +158,16 @@ impl<'a> Checker {
             for (parameter, argument) in parameters.iter().zip(call.arguments.iter()) {
                 let argument_type = self.check_expression(argument)?;
                 if let Some(argument_type) = argument_type
-                    && *parameter != argument_type {
-                        return Err(error(
-                            region.clone(),
-                            format!(
-                                "argument type mismatch in function call (expected: {:?}, got: {:?})",
-                                parameter, argument_type
-                            ),
-                        ));
-                    }
+                    && *parameter != argument_type
+                {
+                    return Err(error(
+                        region.clone(),
+                        format!(
+                            "argument type mismatch in function call (expected: {:?}, got: {:?})",
+                            parameter, argument_type
+                        ),
+                    ));
+                }
             }
 
             Ok(*return_type)
