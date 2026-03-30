@@ -17,6 +17,18 @@ impl Region {
     pub fn new(start: Location, end: Location) -> Self {
         Self { start, end }
     }
+
+    pub fn newi(
+        start_line: usize,
+        start_column: usize,
+        end_line: usize,
+        end_column: usize,
+    ) -> Self {
+        Self {
+            start: Location::new(start_line, start_column),
+            end: Location::new(end_line, end_column),
+        }
+    }
 }
 
 impl fmt::Display for Region {
