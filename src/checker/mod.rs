@@ -7,7 +7,7 @@ use crate::{
 #[cfg(test)]
 mod test;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(unused)]
 pub enum Type {
     Int,
@@ -129,15 +129,53 @@ impl Checker {
         }
     }
 
+    fn get_varible_declaration_type(
+        &mut self,
+        var: &VariableDeclarationStatement,
+        region: &Region,
+    ) -> Result<Type, Error> {
+        let expression_type_check =
+            self.check_expression(&var.expression.value, &var.expression.region)?;
+
+        if let Some(specifier) = var.type_specifier.as_ref().map(|s| Type::from(s.clone())) {
+            // Variable declarations with specified type
+            if let Some(expression) = expression_type_check {
+                if specifier != expression {
+                    return Err(error(
+                        *region,
+                        format!(
+                            "variable declaration type mismatch (specified: {:?}; got: {:?})",
+                            specifier, expression
+                        ),
+                    ));
+                }
+            }
+
+            Ok(specifier)
+        } else {
+            // Infered type
+            if let Some(expression) = expression_type_check {
+                return Ok(expression);
+            } else {
+                return Err(error(
+                    *region,
+                    "could not infer type for variable declaration, hint: add a type specifier"
+                        .to_string(),
+                ));
+            }
+        }
+    }
+
     fn check_variable_declaration(
         &mut self,
         var: &VariableDeclarationStatement,
+        region: &Region,
     ) -> Result<(), Error> {
-        let expression_type =
-            self.check_expression(&var.expression.value, &var.expression.region)?;
+        let type_ = self.get_varible_declaration_type(var, region)?;
 
         self.declare_identifier(Identifier {
-            identifier: var.identifier,
+            identifier: var.identifier.clone(),
+            type_,
         });
 
         Ok(())
@@ -146,7 +184,9 @@ impl Checker {
     fn check_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match &statement.value {
             StatementValue::Block(block) => self.check_block(block),
-            StatementValue::VariableDeclaration(var) => self.check_variable_declaration(var),
+            StatementValue::VariableDeclaration(var) => {
+                self.check_variable_declaration(var, &statement.region)
+            }
             StatementValue::Expression(expression) => self
                 .check_expression(&expression.value, &expression.region)
                 .map(|_| ()),

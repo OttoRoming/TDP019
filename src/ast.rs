@@ -198,7 +198,7 @@ pub struct Expression {
     pub region: Region,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TypeSpecifier {
     Int,
     Float,
