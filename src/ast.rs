@@ -32,14 +32,14 @@ pub struct ElsePart {
 
 #[derive(Debug, PartialEq)]
 pub struct WhileStatement {
-    pub test: ExpressionValue,
+    pub test: Expression,
     pub block: Block,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct EachStatement {
     pub left: String,
-    pub right: ExpressionValue,
+    pub right: Expression,
     pub block: Block,
 }
 
@@ -66,7 +66,7 @@ pub struct FunctionDeclarationStatement {
 
 #[derive(Debug, PartialEq)]
 pub struct ReturnStatement {
-    pub expression: ExpressionValue,
+    pub expression: Expression,
 }
 
 #[derive(Debug, PartialEq)]
@@ -102,9 +102,9 @@ pub enum AssignmentOperator {
 
 #[derive(Debug, PartialEq)]
 pub struct AssignmentExpression {
-    pub assignee: ExpressionValue,
+    pub assignee: Expression,
     pub operator: AssignmentOperator,
-    pub right: ExpressionValue,
+    pub right: Expression,
 }
 
 #[derive(Debug, PartialEq)]
@@ -115,7 +115,7 @@ pub enum UpdateOperator {
 
 #[derive(Debug, PartialEq)]
 pub struct UpdateExpression {
-    pub updatee: ExpressionValue,
+    pub updatee: Expression,
     pub operator: UpdateOperator,
 }
 
@@ -138,9 +138,9 @@ pub enum BinaryOperator {
 
 #[derive(Debug, PartialEq)]
 pub struct BinaryExpression {
-    pub left: ExpressionValue,
+    pub left: Expression,
     pub operator: BinaryOperator,
-    pub right: ExpressionValue,
+    pub right: Expression,
 }
 
 #[derive(Debug, PartialEq)]
@@ -154,7 +154,7 @@ pub enum UnaryOperator {
 #[derive(Debug, PartialEq)]
 pub struct UnaryExpression {
     pub operator: UnaryOperator,
-    pub right: ExpressionValue,
+    pub right: Expression,
 }
 
 #[derive(Debug, PartialEq)]
@@ -164,14 +164,14 @@ pub struct IdentifierExpression {
 
 #[derive(Debug, PartialEq)]
 pub struct FunctionCallExpression {
-    pub callee: ExpressionValue,
+    pub callee: Expression,
     pub arguments: Vec<Expression>,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct IndexExpression {
-    pub collection: ExpressionValue,
-    pub index: ExpressionValue,
+    pub collection: Expression,
+    pub index: Expression,
 }
 
 #[derive(Debug, PartialEq)]

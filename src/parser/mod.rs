@@ -93,8 +93,10 @@ impl Parser {
         Ok(expressions)
     }
 
-    fn parse_primary(&mut self) -> Result<ExpressionValue, Error> {
-        match &self.peek(0).value {
+    fn parse_primary(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
+
+        let value = match &self.peek(0).value {
             Value::KeywordTrue => {
                 self.advance();
                 Ok(ExpressionValue::Bool(true))
@@ -150,10 +152,16 @@ impl Parser {
                     self.peek(0).value
                 ),
             )),
-        }
+        }?;
+
+        let end = self.peek(-1).region.end.clone();
+        let region = Region::new(start, end);
+
+        Ok(Expression { value, region })
     }
 
-    fn parse_call(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_call(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_primary()?;
 
         while self.peek(0).value == Value::OpenParenthesis {
@@ -164,16 +172,21 @@ impl Parser {
             self.expect(Value::CloseParenthesis, "end of argument list")?;
             self.advance();
 
-            expression = ExpressionValue::FunctionCall(Box::new(FunctionCallExpression {
-                callee: expression,
-                arguments,
-            }))
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::FunctionCall(Box::new(FunctionCallExpression {
+                    callee: self.parse_primary()?,
+                    arguments,
+                })),
+                region,
+            }
         }
 
         Ok(expression)
     }
 
-    fn parse_unary(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_unary(&mut self) -> Result<Expression, Error> {
         Ok(
             if let Some(operator) = match self.peek(0).value {
                 Value::Not => Some(UnaryOperator::Not),
@@ -182,16 +195,23 @@ impl Parser {
                 Value::Ampersand => Some(UnaryOperator::Reference),
                 _ => None,
             } {
+                let start = self.peek(0).region.start.clone();
                 self.advance();
                 let right = self.parse_call()?;
-                ExpressionValue::Unary(Box::new(UnaryExpression { operator, right }))
+                let end = self.peek(-1).region.end.clone();
+                let region = Region::new(start, end);
+                Expression {
+                    value: ExpressionValue::Unary(Box::new(UnaryExpression { operator, right })),
+                    region,
+                }
             } else {
                 self.parse_call()?
             },
         )
     }
 
-    fn parse_multiplicative(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_multiplicative(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_unary()?;
 
         loop {
@@ -204,17 +224,23 @@ impl Parser {
             self.advance();
 
             let right = self.parse_unary()?;
-            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
-                left: expression,
-                operator,
-                right,
-            }));
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: expression,
+                    operator,
+                    right,
+                })),
+                region,
+            };
         }
 
         Ok(expression)
     }
 
-    fn parse_addative(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_addative(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_multiplicative()?;
 
         loop {
@@ -226,17 +252,23 @@ impl Parser {
             self.advance();
 
             let right = self.parse_multiplicative()?;
-            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
-                left: expression,
-                operator,
-                right,
-            }));
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: expression,
+                    operator,
+                    right,
+                })),
+                region,
+            };
         }
 
         Ok(expression)
     }
 
-    fn parse_comparison(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_comparison(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_addative()?;
 
         loop {
@@ -250,17 +282,23 @@ impl Parser {
             self.advance();
 
             let right = self.parse_addative()?;
-            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
-                left: expression,
-                operator,
-                right,
-            }));
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: expression,
+                    operator,
+                    right,
+                })),
+                region,
+            };
         }
 
         Ok(expression)
     }
 
-    fn parse_equality(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_equality(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_comparison()?;
 
         loop {
@@ -272,51 +310,70 @@ impl Parser {
             self.advance();
 
             let right = self.parse_comparison()?;
-            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
-                left: expression,
-                operator,
-                right,
-            }));
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: expression,
+                    operator,
+                    right,
+                })),
+                region,
+            };
         }
 
         Ok(expression)
     }
 
-    fn parse_logical_and(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_logical_and(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_equality()?;
 
         while self.peek(0).value == Value::And {
             self.advance();
 
             let right = self.parse_equality()?;
-            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
-                left: expression,
-                operator: BinaryOperator::And,
-                right,
-            }));
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: expression,
+                    operator: BinaryOperator::And,
+                    right,
+                })),
+                region,
+            };
         }
 
         Ok(expression)
     }
 
-    fn parse_logical_or(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_logical_or(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_logical_and()?;
 
         while self.peek(0).value == Value::Or {
             self.advance();
 
             let right = self.parse_logical_and()?;
-            expression = ExpressionValue::Binary(Box::new(BinaryExpression {
-                left: expression,
-                operator: BinaryOperator::Or,
-                right,
-            }));
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+
+            expression = Expression {
+                value: ExpressionValue::Binary(Box::new(BinaryExpression {
+                    left: expression,
+                    operator: BinaryOperator::Or,
+                    right,
+                })),
+                region,
+            };
         }
 
         Ok(expression)
     }
 
-    fn parse_update(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_update(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_logical_or()?;
 
         loop {
@@ -327,16 +384,22 @@ impl Parser {
             };
             self.advance();
 
-            expression = ExpressionValue::Update(Box::new(UpdateExpression {
-                updatee: expression,
-                operator,
-            }))
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::Update(Box::new(UpdateExpression {
+                    updatee: expression,
+                    operator,
+                })),
+                region,
+            };
         }
 
         Ok(expression)
     }
 
-    fn parse_assignment(&mut self) -> Result<ExpressionValue, Error> {
+    fn parse_assignment(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
         let mut expression = self.parse_update()?;
 
         loop {
@@ -354,25 +417,23 @@ impl Parser {
             self.advance();
 
             let right = self.parse_update()?;
-            expression = ExpressionValue::Assign(Box::new(AssignmentExpression {
-                assignee: expression,
-                operator,
-                right,
-            }))
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::Assign(Box::new(AssignmentExpression {
+                    assignee: expression,
+                    operator,
+                    right,
+                })),
+                region,
+            };
         }
 
         Ok(expression)
     }
 
     fn parse_expression(&mut self) -> Result<Expression, Error> {
-        let start = self.peek(0).region.start.clone();
-
-        let value = self.parse_assignment()?;
-
-        let end = self.peek(-1).region.end.clone();
-        let region = Region::new(start, end);
-
-        Ok(Expression { value, region })
+        self.parse_assignment()
     }
 
     fn parse_expression_statement(&mut self) -> Result<StatementValue, Error> {

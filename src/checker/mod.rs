@@ -80,12 +80,12 @@ impl Checker {
     }
 
     fn check_binary(&mut self, binary: &BinaryExpression, region: &Region) -> Result<Type, Error> {
-        let left = self.check_expression(&binary.left, region)?.ok_or(error(
+        let left = self.check_expression(&binary.left)?.ok_or(error(
             region.clone(),
             "left expression in binary expression has unknown type".to_string(),
         ))?;
 
-        let right = self.check_expression(&binary.right, region)?.ok_or(error(
+        let right = self.check_expression(&binary.right)?.ok_or(error(
             region.clone(),
             "right expression in binary expression has unknown type".to_string(),
         ))?;
@@ -116,15 +116,13 @@ impl Checker {
         }
     }
 
-    fn check_expression(
-        &mut self,
-        value: &ExpressionValue,
-        region: &Region,
-    ) -> Result<Option<Type>, Error> {
-        match &value {
+    fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
+        match &expression.value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
             ExpressionValue::Null => Ok(None),
-            ExpressionValue::Binary(binary) => self.check_binary(binary, region).map(Some),
+            ExpressionValue::Binary(binary) => {
+                self.check_binary(binary, &expression.region).map(Some)
+            }
             _ => todo!(),
         }
     }
@@ -134,8 +132,7 @@ impl Checker {
         var: &VariableDeclarationStatement,
         region: &Region,
     ) -> Result<Type, Error> {
-        let expression_type_check =
-            self.check_expression(&var.expression.value, &var.expression.region)?;
+        let expression_type_check = self.check_expression(&var.expression)?;
 
         if let Some(specifier) = var.type_specifier.as_ref().map(|s| Type::from(s.clone())) {
             // Variable declarations with specified type
@@ -187,9 +184,7 @@ impl Checker {
             StatementValue::VariableDeclaration(var) => {
                 self.check_variable_declaration(var, &statement.region)
             }
-            StatementValue::Expression(expression) => self
-                .check_expression(&expression.value, &expression.region)
-                .map(|_| ()),
+            StatementValue::Expression(expression) => self.check_expression(expression).map(|_| ()),
             _ => {
                 todo!()
             }

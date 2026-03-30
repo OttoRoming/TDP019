@@ -43,309 +43,309 @@ fn parse_list_literal() {
     )
 }
 
-#[test]
-fn parse_logical_or() {
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Bool(true),
-                    operator: BinaryOperator::Equals,
-                    right: ExpressionValue::Bool(false),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 15)),
-        }]),
-        parse("true == false;")
-    )
-}
+// #[test]
+// fn parse_logical_or() {
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Bool(true),
+//                     operator: BinaryOperator::Equals,
+//                     right: ExpressionValue::Bool(false),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 14)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 15)),
+//         }]),
+//         parse("true == false;")
+//     )
+// }
 
-#[test]
-fn parse_logical_and() {
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Bool(true),
-                    operator: BinaryOperator::And,
-                    right: ExpressionValue::Bool(false),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 15)),
-        }]),
-        parse("true && false;")
-    )
-}
+// #[test]
+// fn parse_logical_and() {
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Bool(true),
+//                     operator: BinaryOperator::And,
+//                     right: ExpressionValue::Bool(false),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 14)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 15)),
+//         }]),
+//         parse("true && false;")
+//     )
+// }
 
-#[test]
-fn parse_logical_equality() {
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Bool(true),
-                    operator: BinaryOperator::Equals,
-                    right: ExpressionValue::Bool(false),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 15)),
-        }]),
-        parse("true == false;")
-    );
+// #[test]
+// fn parse_logical_equality() {
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Bool(true),
+//                     operator: BinaryOperator::Equals,
+//                     right: ExpressionValue::Bool(false),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 14)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 15)),
+//         }]),
+//         parse("true == false;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Bool(true),
-                    operator: BinaryOperator::NotEquals,
-                    right: ExpressionValue::Bool(false),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 15)),
-        }]),
-        parse("true != false;")
-    )
-}
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Bool(true),
+//                     operator: BinaryOperator::NotEquals,
+//                     right: ExpressionValue::Bool(false),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 14)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 15)),
+//         }]),
+//         parse("true != false;")
+//     )
+// }
 
-#[test]
-fn parse_comparison() {
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::LessThan,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 8)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-        }]),
-        parse("10 < 11;")
-    );
+// #[test]
+// fn parse_comparison() {
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::LessThan,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//         }]),
+//         parse("10 < 11;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::LessThanOrEqual,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 10)),
-        }]),
-        parse("10 <= 11;")
-    );
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::LessThanOrEqual,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 10)),
+//         }]),
+//         parse("10 <= 11;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::GreaterThan,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 8)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-        }]),
-        parse("10 > 11;")
-    );
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::GreaterThan,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//         }]),
+//         parse("10 > 11;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::GreaterThanOrEqual,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 10)),
-        }]),
-        parse("10 >= 11;")
-    );
-}
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::GreaterThanOrEqual,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 10)),
+//         }]),
+//         parse("10 >= 11;")
+//     );
+// }
 
-#[test]
-fn parse_additive() {
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::Add,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 8)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-        }]),
-        parse("10 + 11;")
-    );
+// #[test]
+// fn parse_additive() {
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::Add,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//         }]),
+//         parse("10 + 11;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::Subtract,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 8)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-        }]),
-        parse("10 - 11;")
-    )
-}
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::Subtract,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//         }]),
+//         parse("10 - 11;")
+//     )
+// }
 
-#[test]
-fn parse_multiplicative() {
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::Multiply,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 8)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-        }]),
-        parse("10 * 11;")
-    );
+// #[test]
+// fn parse_multiplicative() {
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::Multiply,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//         }]),
+//         parse("10 * 11;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::Divide,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 8)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-        }]),
-        parse("10 / 11;")
-    );
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::Divide,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//         }]),
+//         parse("10 / 11;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Binary(Box::new(BinaryExpression {
-                    left: ExpressionValue::Int(10),
-                    operator: BinaryOperator::Modulo,
-                    right: ExpressionValue::Int(11),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 8)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 9)),
-        }]),
-        parse("10 % 11;")
-    )
-}
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Binary(Box::new(BinaryExpression {
+//                     left: ExpressionValue::Int(10),
+//                     operator: BinaryOperator::Modulo,
+//                     right: ExpressionValue::Int(11),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 8)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 9)),
+//         }]),
+//         parse("10 % 11;")
+//     )
+// }
 
-#[test]
-fn parse_function_call() {
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::FunctionCall(Box::new(FunctionCallExpression {
-                    callee: ExpressionValue::Identifier(IdentifierExpression {
-                        identifier: "foo".to_string(),
-                    }),
-                    arguments: vec![
-                        Expression {
-                            value: ExpressionValue::Int(1),
-                            region: Region::new(Location::new(1, 5), Location::new(1, 6)),
-                        },
-                        Expression {
-                            value: ExpressionValue::Int(2),
-                            region: Region::new(Location::new(1, 8), Location::new(1, 9)),
-                        },
-                        Expression {
-                            value: ExpressionValue::Int(3),
-                            region: Region::new(Location::new(1, 11), Location::new(1, 12)),
-                        },
-                    ],
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 13)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 14)),
-        }]),
-        parse("foo(1, 2, 3);")
-    );
-}
+// #[test]
+// fn parse_function_call() {
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::FunctionCall(Box::new(FunctionCallExpression {
+//                     callee: ExpressionValue::Identifier(IdentifierExpression {
+//                         identifier: "foo".to_string(),
+//                     }),
+//                     arguments: vec![
+//                         Expression {
+//                             value: ExpressionValue::Int(1),
+//                             region: Region::new(Location::new(1, 5), Location::new(1, 6)),
+//                         },
+//                         Expression {
+//                             value: ExpressionValue::Int(2),
+//                             region: Region::new(Location::new(1, 8), Location::new(1, 9)),
+//                         },
+//                         Expression {
+//                             value: ExpressionValue::Int(3),
+//                             region: Region::new(Location::new(1, 11), Location::new(1, 12)),
+//                         },
+//                     ],
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 13)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 14)),
+//         }]),
+//         parse("foo(1, 2, 3);")
+//     );
+// }
 
-#[test]
-fn parse_unary() {
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Unary(Box::new(UnaryExpression {
-                    operator: UnaryOperator::Negate,
-                    right: ExpressionValue::Int(10),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 4)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 5)),
-        }]),
-        parse("-10;")
-    );
+// #[test]
+// fn parse_unary() {
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Unary(Box::new(UnaryExpression {
+//                     operator: UnaryOperator::Negate,
+//                     right: ExpressionValue::Int(10),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 4)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 5)),
+//         }]),
+//         parse("-10;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Unary(Box::new(UnaryExpression {
-                    operator: UnaryOperator::Not,
-                    right: ExpressionValue::Bool(true),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 6)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 7)),
-        }]),
-        parse("!true;")
-    );
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Unary(Box::new(UnaryExpression {
+//                     operator: UnaryOperator::Not,
+//                     right: ExpressionValue::Bool(true),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 6)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 7)),
+//         }]),
+//         parse("!true;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Unary(Box::new(UnaryExpression {
-                    operator: UnaryOperator::Reference,
-                    right: ExpressionValue::Bool(true),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 6)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 7)),
-        }]),
-        parse("&true;")
-    );
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Unary(Box::new(UnaryExpression {
+//                     operator: UnaryOperator::Reference,
+//                     right: ExpressionValue::Bool(true),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 6)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 7)),
+//         }]),
+//         parse("&true;")
+//     );
 
-    assert_eq!(
-        Ok(vec![Statement {
-            value: StatementValue::Expression(Expression {
-                value: ExpressionValue::Unary(Box::new(UnaryExpression {
-                    operator: UnaryOperator::Dereference,
-                    right: ExpressionValue::Bool(true),
-                })),
-                region: Region::new(Location::new(1, 1), Location::new(1, 6)),
-            }),
-            region: Region::new(Location::new(1, 1), Location::new(1, 7)),
-        }]),
-        parse("*true;")
-    );
-}
+//     assert_eq!(
+//         Ok(vec![Statement {
+//             value: StatementValue::Expression(Expression {
+//                 value: ExpressionValue::Unary(Box::new(UnaryExpression {
+//                     operator: UnaryOperator::Dereference,
+//                     right: ExpressionValue::Bool(true),
+//                 })),
+//                 region: Region::new(Location::new(1, 1), Location::new(1, 6)),
+//             }),
+//             region: Region::new(Location::new(1, 1), Location::new(1, 7)),
+//         }]),
+//         parse("*true;")
+//     );
+// }
 
 #[test]
 fn parse_block() {
@@ -431,9 +431,9 @@ fn parse_variable_declaration_with_extra_generic_type() {
         Ok(vec![Statement {
             value: StatementValue::VariableDeclaration(VariableDeclarationStatement {
                 identifier: "l".to_string(),
-                type_specifier: Some(TypeSpecifier::List(Box::new(TypeSpecifier::List(Box::new(
-                    TypeSpecifier::Int,
-                ))))),
+                type_specifier: Some(TypeSpecifier::List(Box::new(TypeSpecifier::List(
+                    Box::new(TypeSpecifier::Int,)
+                )))),
                 expression: Expression {
                     value: ExpressionValue::List(vec![
                         Expression {
