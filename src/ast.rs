@@ -1,62 +1,62 @@
 use crate::util::Region;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Block {
     pub statements: Vec<Statement>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IfStatement {
     pub test: Expression,
     pub block: Block,
     pub branch: Option<IfBranch>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum IfBranch {
     Elif(ElifPart),
     Else(ElsePart),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ElifPart {
     pub test: Expression,
     pub block: Block,
     pub branch: Box<Option<IfBranch>>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ElsePart {
     pub block: Block,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct WhileStatement {
     pub test: Expression,
     pub block: Block,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct EachStatement {
     pub left: String,
     pub right: Expression,
     pub block: Block,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct VariableDeclarationStatement {
     pub identifier: String,
     pub type_specifier: Option<TypeSpecifier>,
     pub expression: Expression,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Parameter {
     pub identifier: String,
     pub type_specifier: TypeSpecifier,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct FunctionDeclarationStatement {
     pub identifier: String,
     pub parameters: Vec<Parameter>,
@@ -64,12 +64,12 @@ pub struct FunctionDeclarationStatement {
     pub block: Block,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ReturnStatement {
     pub expression: Expression,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 #[allow(dead_code)]
 pub enum StatementValue {
     Block(Block),
@@ -82,13 +82,13 @@ pub enum StatementValue {
     Expression(Expression),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Statement {
     pub value: StatementValue,
     pub region: Region,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum AssignmentOperator {
     Equals,   // =
     Add,      // +=
@@ -100,26 +100,26 @@ pub enum AssignmentOperator {
     Or,       // |=
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct AssignmentExpression {
     pub assignee: Expression,
     pub operator: AssignmentOperator,
     pub right: Expression,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum UpdateOperator {
     Increment, // ++
     Decrement, // --
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct UpdateExpression {
     pub updatee: Expression,
     pub operator: UpdateOperator,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum BinaryOperator {
     Add,
     Subtract,
@@ -136,14 +136,14 @@ pub enum BinaryOperator {
     NotEquals,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct BinaryExpression {
     pub left: Expression,
     pub operator: BinaryOperator,
     pub right: Expression,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum UnaryOperator {
     Not,         // !
     Negate,      // -
@@ -151,30 +151,30 @@ pub enum UnaryOperator {
     Reference,   // &
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct UnaryExpression {
     pub operator: UnaryOperator,
     pub right: Expression,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IdentifierExpression {
     pub identifier: String,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct FunctionCallExpression {
     pub callee: Expression,
     pub arguments: Vec<Expression>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndexExpression {
     pub collection: Expression,
     pub index: Expression,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 #[allow(dead_code)]
 pub enum ExpressionValue {
     Assign(Box<AssignmentExpression>),
@@ -192,7 +192,7 @@ pub enum ExpressionValue {
     Null,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Expression {
     pub value: ExpressionValue,
     pub region: Region,

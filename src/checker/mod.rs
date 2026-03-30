@@ -9,7 +9,7 @@ mod test;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(unused)]
-pub enum Type {
+enum Type {
     Int,
     Float,
     Bool,
@@ -78,13 +78,12 @@ impl<'a> Checker {
     fn declare_identifier(&mut self, identifier: Identifier) {
         self.scopes.push(Scope::Identifier(identifier))
     }
-    fn get_identifier(&'a mut self, id: &str) -> Option<&'a Type> {
+    fn _get_identifier(&'a mut self, id: &str) -> Option<&'a Type> {
         for scope in self.scopes.iter().rev() {
-            if let Scope::Identifier(scope_id) = scope {
-                if scope_id.identifier == id {
+            if let Scope::Identifier(scope_id) = scope
+                && scope_id.identifier == id {
                     return Some(&scope_id.type_);
                 }
-            }
         }
 
         None
@@ -155,8 +154,8 @@ impl<'a> Checker {
 
             for (parameter, argument) in parameters.iter().zip(call.arguments.iter()) {
                 let argument_type = self.check_expression(argument)?;
-                if let Some(argument_type) = argument_type {
-                    if *parameter != argument_type {
+                if let Some(argument_type) = argument_type
+                    && *parameter != argument_type {
                         return Err(error(
                             region.clone(),
                             format!(
@@ -165,7 +164,6 @@ impl<'a> Checker {
                             ),
                         ));
                     }
-                }
             }
 
             Ok(*return_type)
@@ -242,11 +240,44 @@ impl<'a> Checker {
         Ok(())
     }
 
+    fn check_function_declaration(
+        &mut self,
+        function: &FunctionDeclarationStatement,
+    ) -> Result<(), Error> {
+        self.enter_block();
+
+        for parameter in &function.parameters {
+            self.declare_identifier(Identifier {
+                identifier: parameter.identifier.clone(),
+                type_: parameter.type_specifier.clone().into(),
+            });
+        }
+
+        self.exit_block();
+
+        self.declare_identifier(Identifier {
+            identifier: function.identifier.clone(),
+            type_: Type::Function {
+                parameters: function
+                    .parameters
+                    .iter()
+                    .map(|t| t.type_specifier.clone().into())
+                    .collect(),
+                return_type: Box::new(function.return_type.clone().map(|t| t.into())),
+            },
+        });
+
+        Ok(())
+    }
+
     fn check_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match &statement.value {
             StatementValue::Block(block) => self.check_block(block),
             StatementValue::VariableDeclaration(var) => {
                 self.check_variable_declaration(var, &statement.region)
+            }
+            StatementValue::FunctionDeclaration(function) => {
+                self.check_function_declaration(function)
             }
             StatementValue::Expression(expression) => self.check_expression(expression).map(|_| ()),
             _ => {
