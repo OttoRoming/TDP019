@@ -124,7 +124,7 @@ impl Checker {
         match &value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
             ExpressionValue::Null => Ok(None),
-            ExpressionValue::Binary(binary) => self.check_binary(binary, region).map(|t| Some(t)),
+            ExpressionValue::Binary(binary) => self.check_binary(binary, region).map(Some),
             _ => todo!(),
         }
     }
@@ -139,29 +139,29 @@ impl Checker {
 
         if let Some(specifier) = var.type_specifier.as_ref().map(|s| Type::from(s.clone())) {
             // Variable declarations with specified type
-            if let Some(expression) = expression_type_check {
-                if specifier != expression {
-                    return Err(error(
-                        *region,
-                        format!(
-                            "variable declaration type mismatch (specified: {:?}; got: {:?})",
-                            specifier, expression
-                        ),
-                    ));
-                }
+            if let Some(expression) = expression_type_check
+                && specifier != expression
+            {
+                return Err(error(
+                    *region,
+                    format!(
+                        "variable declaration type mismatch (specified: {:?}; got: {:?})",
+                        specifier, expression
+                    ),
+                ));
             }
 
             Ok(specifier)
         } else {
             // Infered type
             if let Some(expression) = expression_type_check {
-                return Ok(expression);
+                Ok(expression)
             } else {
-                return Err(error(
+                Err(error(
                     *region,
                     "could not infer type for variable declaration, hint: add a type specifier"
                         .to_string(),
-                ));
+                ))
             }
         }
     }
