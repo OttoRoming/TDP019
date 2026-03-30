@@ -18,7 +18,7 @@ pub enum Type {
     Ref(Box<Type>),
     Function {
         parameters: Vec<Type>,
-        return_type: Box<Type>,
+        return_type: Box<Option<Type>>,
     },
 }
 
@@ -60,7 +60,7 @@ fn error(region: Region, msg: String) -> Error {
     }
 }
 
-impl Checker {
+impl<'a> Checker {
     fn exit_block(&mut self) {
         while *self
             .scopes
@@ -77,6 +77,17 @@ impl Checker {
     }
     fn declare_identifier(&mut self, identifier: Identifier) {
         self.scopes.push(Scope::Identifier(identifier))
+    }
+    fn get_identifier(&'a mut self, id: &str) -> Option<&'a Type> {
+        for scope in self.scopes.iter().rev() {
+            if let Scope::Identifier(scope_id) = scope {
+                if scope_id.identifier == id {
+                    return Some(&scope_id.type_);
+                }
+            }
+        }
+
+        None
     }
 
     fn check_binary(&mut self, binary: &BinaryExpression, region: &Region) -> Result<Type, Error> {
@@ -116,12 +127,65 @@ impl Checker {
         }
     }
 
+    fn check_function_call(
+        &mut self,
+        call: &FunctionCallExpression,
+        region: &Region,
+    ) -> Result<Option<Type>, Error> {
+        let callee_type = self.check_expression(&call.callee)?.ok_or(error(
+            region.clone(),
+            "attempted to call null type".to_string(),
+        ))?;
+
+        if let Type::Function {
+            parameters,
+            return_type,
+        } = callee_type
+        {
+            if call.arguments.len() != parameters.len() {
+                return Err(error(
+                    region.clone(),
+                    format!(
+                        "wrong number of arguments in function call, (expected: {}, got: {})",
+                        parameters.len(),
+                        call.arguments.len()
+                    ),
+                ));
+            }
+
+            for (parameter, argument) in parameters.iter().zip(call.arguments.iter()) {
+                let argument_type = self.check_expression(argument)?;
+                if let Some(argument_type) = argument_type {
+                    if *parameter != argument_type {
+                        return Err(error(
+                            region.clone(),
+                            format!(
+                                "argument type mismatch in function call (expected: {:?}, got: {:?})",
+                                parameter, argument_type
+                            ),
+                        ));
+                    }
+                }
+            }
+
+            Ok(*return_type)
+        } else {
+            Err(error(
+                region.clone(),
+                format!("attempted to call non-function type: {:?}", callee_type),
+            ))
+        }
+    }
+
     fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
         match &expression.value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
             ExpressionValue::Null => Ok(None),
             ExpressionValue::Binary(binary) => {
                 self.check_binary(binary, &expression.region).map(Some)
+            }
+            ExpressionValue::FunctionCall(call) => {
+                self.check_function_call(call, &expression.region)
             }
             _ => todo!(),
         }
