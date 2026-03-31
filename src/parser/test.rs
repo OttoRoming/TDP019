@@ -45,6 +45,20 @@ fn parse_list_literal() {
 }
 
 #[test]
+fn parse_list_literal_empty() {
+    assert_eq!(
+        Ok(vec![Statement {
+            value: StatementValue::Expression(Expression {
+                value: ExpressionValue::List(vec![]),
+                region: Region::newi(1, 1, 1, 3)
+            }),
+            region: Region::newi(1, 1, 1, 4)
+        }]),
+        parse("[];")
+    )
+}
+
+#[test]
 fn parse_logical_or() {
     assert_eq!(
         Ok(vec![Statement {
@@ -357,7 +371,6 @@ fn parse_multiplicative_modulo() {
 }
 
 #[test]
-#[ignore = "function call parsing is broken"]
 fn parse_function_call() {
     assert_eq!(
         Ok(vec![Statement {
@@ -389,6 +402,28 @@ fn parse_function_call() {
             region: Region::newi(1, 1, 1, 14)
         }]),
         parse("foo(1, 2, 3);")
+    );
+}
+
+#[test]
+fn parse_function_call_simple() {
+    assert_eq!(
+        Ok(vec![Statement {
+            value: StatementValue::Expression(Expression {
+                value: ExpressionValue::FunctionCall(Box::new(FunctionCallExpression {
+                    callee: Expression {
+                        value: ExpressionValue::Identifier(IdentifierExpression {
+                            identifier: "foo".to_string()
+                        }),
+                        region: Region::newi(1, 1, 1, 4),
+                    },
+                    arguments: vec![],
+                })),
+                region: Region::newi(1, 1, 1, 6)
+            }),
+            region: Region::newi(1, 1, 1, 7)
+        }]),
+        parse("foo();")
     );
 }
 

@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::{
     ast::*,
     error::{self, Error},
@@ -79,10 +81,13 @@ impl Parser {
         Ok(type_specifier)
     }
 
+    /// Used for parsing exprssion in function call and list literals
     fn parse_comma_separated_expressions(&mut self) -> Result<Vec<Expression>, Error> {
         let mut expressions = vec![];
 
-        loop {
+        while self.peek(0).value != Value::CloseParenthesis
+            && self.peek(0).value != Value::CloseBracket
+        {
             expressions.push(self.parse_expression()?);
             if self.peek(0).value != Value::Comma {
                 break;
@@ -176,7 +181,7 @@ impl Parser {
             let region = Region::new(start.clone(), end);
             expression = Expression {
                 value: ExpressionValue::FunctionCall(Box::new(FunctionCallExpression {
-                    callee: self.parse_primary()?,
+                    callee: expression,
                     arguments,
                 })),
                 region,
