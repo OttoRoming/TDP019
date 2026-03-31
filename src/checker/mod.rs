@@ -256,6 +256,7 @@ impl<'a> Checker {
                 type_: parameter.type_specifier.clone().into(),
             });
         }
+        self.check_block(&function.block)?;
 
         self.exit_block();
 
