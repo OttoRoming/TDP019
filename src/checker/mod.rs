@@ -311,7 +311,7 @@ impl<'a> Checker {
         self.check_block(&if_statement.block)?;
 
         if let Some(branch) = &if_statement.branch {
-            self.check_if_branch(branch);
+            self.check_if_branch(branch)?;
         }
 
         Ok(())
