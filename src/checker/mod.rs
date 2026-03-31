@@ -275,6 +275,48 @@ impl<'a> Checker {
         Ok(())
     }
 
+    fn check_if_branch(&mut self, if_branch: &IfBranch) -> Result<(), Error> {
+        match if_branch {
+            IfBranch::Elif(elif) => {
+                let test_type = self.check_expression(&elif.test)?;
+                if test_type != Some(Type::Bool) {
+                    return Err(error(
+                        elif.test.region.clone(),
+                        format!("elif branch can only check booleans, found {:?}", test_type),
+                    ));
+                };
+
+                self.check_block(&elif.block)?;
+            }
+            IfBranch::Else(else_part) => {
+                self.check_block(&else_part.block)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn check_if_statement(&mut self, if_statement: &IfStatement) -> Result<(), Error> {
+        let test_type = self.check_expression(&if_statement.test)?;
+        if test_type != Some(Type::Bool) {
+            return Err(error(
+                if_statement.test.region.clone(),
+                format!(
+                    "if statements can only check booleans, found {:?}",
+                    test_type
+                ),
+            ));
+        };
+
+        self.check_block(&if_statement.block)?;
+
+        if let Some(branch) = &if_statement.branch {
+            self.check_if_branch(branch);
+        }
+
+        Ok(())
+    }
+
     fn check_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match &statement.value {
             StatementValue::Block(block) => self.check_block(block),
@@ -284,6 +326,7 @@ impl<'a> Checker {
             StatementValue::FunctionDeclaration(function) => {
                 self.check_function_declaration(function)
             }
+            StatementValue::If(if_statement) => self.check_if_statement(if_statement),
             StatementValue::Expression(expression) => self.check_expression(expression).map(|_| ()),
             _ => {
                 todo!()
