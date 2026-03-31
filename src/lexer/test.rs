@@ -71,7 +71,7 @@ fn lex_ignore_comments() {
             region: Region::new(Location::new(2, 1), Location::new(2, 1)),
             value: Value::Eof
         }]),
-        lex("#!/usr/bin/env tdp019\n")
+        lex("#!/usr/bin/env oeno\n")
     )
 }
 
@@ -79,9 +79,9 @@ fn lex_ignore_comments() {
 fn lex_ignore_comments_without_newline() {
     assert_eq!(
         Ok(vec![Token {
-            region: Region::new(Location::new(1, 23), Location::new(1, 23)),
+            region: Region::new(Location::new(1, 21), Location::new(1, 21)),
             value: Value::Eof
         }]),
-        lex("#!/usr/bin/env tdp019")
+        lex("#!/usr/bin/env oeno")
     )
 }
