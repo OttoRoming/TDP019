@@ -3,6 +3,7 @@ use crate::{
     token::{Token, Value},
     util::{Location, Region},
 };
+use pretty_assertions::assert_eq;
 
 #[test]
 fn lex_string() {
