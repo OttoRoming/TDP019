@@ -317,6 +317,48 @@ impl<'a> Checker {
         Ok(())
     }
 
+    fn check_while_statement(&mut self, while_statement: &WhileStatement) -> Result<(), Error> {
+        let test_type = self.check_expression(&while_statement.test)?;
+        if test_type != Some(Type::Bool) {
+            return Err(error(
+                while_statement.test.region.clone(),
+                format!(
+                    "if statements can only check booleans, found {:?}",
+                    test_type
+                ),
+            ));
+        };
+
+        self.check_block(&while_statement.block)?;
+
+        Ok(())
+    }
+
+    fn check_each(&mut self, each: &EachStatement) -> Result<(), Error> {
+        let right_type = self.check_expression(&each.right)?.ok_or(error(
+            each.right.region.clone(),
+            "tried to loop over null".to_string(),
+        ))?;
+        if let Type::List(left_type) = right_type {
+            self.enter_block();
+
+            self.declare_identifier(Identifier {
+                identifier: each.left.clone(),
+                type_: *left_type,
+            });
+            self.check_block(&each.block)?;
+
+            self.exit_block();
+        } else {
+            return Err(error(
+                each.right.region.clone(),
+                format!("expected to loop over list, found {:?}", right_type),
+            ));
+        }
+
+        Ok(())
+    }
+
     fn check_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match &statement.value {
             StatementValue::Block(block) => self.check_block(block),
@@ -327,6 +369,8 @@ impl<'a> Checker {
                 self.check_function_declaration(function)
             }
             StatementValue::If(if_statement) => self.check_if_statement(if_statement),
+            StatementValue::While(while_statement) => self.check_while_statement(while_statement),
+            StatementValue::Each(each) => self.check_each(each),
             StatementValue::Expression(expression) => self.check_expression(expression).map(|_| ()),
             _ => {
                 todo!()
