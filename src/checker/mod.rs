@@ -1,3 +1,5 @@
+use std::process::id;
+
 use crate::{
     ast::*,
     error::{self, Error},
@@ -80,7 +82,7 @@ impl<'a> Checker {
     fn declare_identifier(&mut self, identifier: Identifier) {
         self.scopes.push(Scope::Identifier(identifier))
     }
-    fn _get_identifier(&'a mut self, id: &str) -> Option<&'a Type> {
+    fn get_identifier(&'a mut self, id: &str) -> Option<&'a Type> {
         for scope in self.scopes.iter().rev() {
             if let Scope::Identifier(scope_id) = scope
                 && scope_id.identifier == id
@@ -222,6 +224,57 @@ impl<'a> Checker {
         Ok(right_type)
     }
 
+    fn check_update(&mut self, update: &UpdateExpression, region: &Region) -> Result<Type, Error> {
+        let updatee_type = self.check_expression(&update.updatee)?.ok_or(error(
+            region.clone(),
+            "can not update null type".to_string(),
+        ))?;
+
+        if updatee_type != Type::Int && updatee_type != Type::Float {
+            return Err(error(
+                region.clone(),
+                format!("cannot update type {:?}", updatee_type),
+            ));
+        }
+
+        Ok(updatee_type)
+    }
+
+    fn check_unary(&mut self, unary: &UnaryExpression, region: &Region) -> Result<Type, Error> {
+        let right_type = self.check_expression(&unary.right)?.ok_or(error(region.clone(), "failed to find type of expression, hint: store the value in a variable if you are trying to reference it".to_string()))?;
+
+        let is_compatible = match unary.operator {
+            UnaryOperator::Negate => right_type == Type::Int || right_type == Type::Float,
+            UnaryOperator::Not => right_type == Type::Bool,
+            UnaryOperator::Dereference | UnaryOperator::Reference => true,
+        };
+
+        if !is_compatible {
+            return Err(error(
+                region.clone(),
+                format!(
+                    "unary operator {:?} is incompatible with type {:?}",
+                    unary.operator, right_type
+                ),
+            ));
+        }
+
+        Ok(right_type)
+    }
+
+    fn check_identifier(
+        &mut self,
+        identifier: &Identifier,
+        region: &Region,
+    ) -> Result<Type, Error> {
+        self.get_identifier(&identifier.identifier)
+            .ok_or(error(
+                region.clone(),
+                format!("undeclared identifier \"{}\"", &identifier.identifier),
+            ))
+            .map(|t| t.clone())
+    }
+
     fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
         match &expression.value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
@@ -233,6 +286,13 @@ impl<'a> Checker {
                 self.check_function_call(call, &expression.region)
             }
             ExpressionValue::Assign(assign) => self.check_assign(assign, &expression.region),
+            ExpressionValue::Update(update) => self
+                .check_update(update, &expression.region)
+                .map(|t| Some(t)),
+            ExpressionValue::Unary(unary) => {
+                self.check_unary(unary, &expression.region).map(|t| Some(t))
+            }
+            ExpressionValue::Identifier(id) => self.check_identifier(id, &expression.region).map(|t| Some(t));
             _ => todo!(),
         }
     }
