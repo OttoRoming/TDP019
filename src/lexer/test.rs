@@ -1,7 +1,7 @@
 use super::lex;
 use crate::{
     token::{Token, Value},
-    util::{Location, Region},
+    util::Region,
 };
 use pretty_assertions::assert_eq;
 
