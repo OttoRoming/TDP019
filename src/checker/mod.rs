@@ -179,6 +179,49 @@ impl<'a> Checker {
         }
     }
 
+    fn check_assign(
+        &mut self,
+        assign: &AssignmentExpression,
+        region: &Region,
+    ) -> Result<Option<Type>, Error> {
+        let assignee_type = self.check_expression(&assign.assignee)?;
+        let right_type = self.check_expression(&assign.right)?;
+
+        if assignee_type != right_type {
+            return Err(error(
+                region.clone(),
+                format!(
+                    "assign type mismatch, {:?} and {:?}",
+                    assignee_type, right_type
+                ),
+            ));
+        }
+
+        let is_operator_compatible = match assign.operator {
+            AssignmentOperator::And | AssignmentOperator::Or => right_type == Some(Type::Bool),
+            AssignmentOperator::Add
+            | AssignmentOperator::Divide
+            | AssignmentOperator::Modulo
+            | AssignmentOperator::Multiply
+            | AssignmentOperator::Subtract => {
+                right_type == Some(Type::Int) || right_type == Some(Type::Float)
+            }
+            AssignmentOperator::Equals => true,
+        };
+
+        if !is_operator_compatible {
+            return Err(error(
+                region.clone(),
+                format!(
+                    "assignment operator {:?} is incompatible with type {:?}",
+                    assign.operator, right_type
+                ),
+            ));
+        }
+
+        Ok(right_type)
+    }
+
     fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
         match &expression.value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
@@ -189,6 +232,7 @@ impl<'a> Checker {
             ExpressionValue::FunctionCall(call) => {
                 self.check_function_call(call, &expression.region)
             }
+            ExpressionValue::Assign(assign) => self.check_assign(assign, &expression.region),
             _ => todo!(),
         }
     }
