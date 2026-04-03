@@ -746,3 +746,30 @@ fn parse_if_elif_else() {
         parse("if false {} elif false {} else {}")
     )
 }
+
+#[test]
+fn parse_return() {
+    assert_eq!(
+        Ok(vec![Statement {
+            value: StatementValue::Return(ReturnStatement { expression: None }),
+            region: Region::newi(1, 1, 1, 7),
+        }]),
+        parse("return")
+    )
+}
+
+#[test]
+fn parse_return_true() {
+    assert_eq!(
+        Ok(vec![Statement {
+            value: StatementValue::Return(ReturnStatement {
+                expression: Some(Expression {
+                    value: ExpressionValue::Bool(true),
+                    region: Region::newi(1, 8, 1, 12)
+                })
+            }),
+            region: Region::newi(1, 1, 1, 12),
+        }]),
+        parse("return true")
+    )
+}

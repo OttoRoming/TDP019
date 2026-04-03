@@ -531,6 +531,17 @@ impl Parser {
         })
     }
 
+    fn parse_return(&mut self) -> Result<ReturnStatement, Error> {
+        self.expect(Value::KeywordReturn, "start of return statement")?;
+        self.advance();
+
+        let expression = self.parse_expression().ok();
+
+        Ok(ReturnStatement {
+            expression: expression,
+        })
+    }
+
     fn parse_block(&mut self) -> Result<Block, Error> {
         self.expect(Value::OpenBrace, "start of block")?;
         self.advance();
@@ -552,6 +563,7 @@ impl Parser {
                 StatementValue::VariableDeclaration(self.parse_variable_declaration()?)
             }
             Value::KeywordIf => StatementValue::If(self.parse_if_statement()?),
+            Value::KeywordReturn => StatementValue::Return(self.parse_return()?),
             _ => self.parse_expression_statement()?,
         };
         let end = self.peek(-1).region.end.clone();

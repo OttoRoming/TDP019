@@ -66,7 +66,7 @@ pub struct FunctionDeclarationStatement {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ReturnStatement {
-    pub expression: Expression,
+    pub expression: Option<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
