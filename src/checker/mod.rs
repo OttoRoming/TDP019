@@ -51,6 +51,7 @@ enum Scope {
 
 #[derive(Debug, PartialEq, Eq)]
 struct Checker {
+    function_bodies: Vec<Option<Type>>,
     scopes: Vec<Scope>,
 }
 
@@ -92,6 +93,16 @@ impl<'a> Checker {
         }
 
         None
+    }
+
+    fn enter_function_body(&mut self, fun: Option<Type>) {
+        self.function_bodies.push(fun);
+    }
+    fn exit_function_body(&mut self) {
+        self.function_bodies.pop();
+    }
+    fn get_current_return_type(&'a mut self) -> Option<&'a Option<Type>> {
+        self.function_bodies.last()
     }
 
     fn check_binary(&mut self, binary: &BinaryExpression, region: &Region) -> Result<Type, Error> {
@@ -264,7 +275,7 @@ impl<'a> Checker {
 
     fn check_identifier(
         &mut self,
-        identifier: &Identifier,
+        identifier: &IdentifierExpression,
         region: &Region,
     ) -> Result<Type, Error> {
         self.get_identifier(&identifier.identifier)
@@ -292,7 +303,9 @@ impl<'a> Checker {
             ExpressionValue::Unary(unary) => {
                 self.check_unary(unary, &expression.region).map(|t| Some(t))
             }
-            ExpressionValue::Identifier(id) => self.check_identifier(id, &expression.region).map(|t| Some(t));
+            ExpressionValue::Identifier(id) => self
+                .check_identifier(id, &expression.region)
+                .map(|t| Some(t)),
             _ => todo!(),
         }
     }
@@ -360,7 +373,11 @@ impl<'a> Checker {
                 type_: parameter.type_specifier.clone().into(),
             });
         }
+
+        let return_type: Option<Type> = function.return_type.clone().map(|t| t.into());
+        self.enter_function_body(return_type.clone());
         self.check_block(&function.block)?;
+        self.exit_function_body();
 
         self.exit_block();
 
@@ -372,7 +389,7 @@ impl<'a> Checker {
                     .iter()
                     .map(|t| t.type_specifier.clone().into())
                     .collect(),
-                return_type: Box::new(function.return_type.clone().map(|t| t.into())),
+                return_type: Box::new(return_type),
             },
         });
 
@@ -463,6 +480,45 @@ impl<'a> Checker {
         Ok(())
     }
 
+    fn check_return(
+        &mut self,
+        return_statement: &ReturnStatement,
+        region: &Region,
+    ) -> Result<(), Error> {
+        let function_type = self.get_current_return_type().ok_or(error(
+            region.clone(),
+            "return statement outside of function body".to_string(),
+        ))?;
+
+        let return_type = match &return_statement.expression {
+            Some(expression) => self.check_expression(expression)?,
+            None => {
+                if *function_type == None {
+                    return Ok(());
+                } else {
+                    return Err(error(region.clone(), "missing return value".to_string()));
+                }
+            }
+        };
+
+        // match &return_type {
+        //     Some(t) => {
+        //         if Some(t.clone()) == *function_type {
+        //             Ok(())
+        //         } else {
+        //             Err(error(
+        //                 region.clone(),
+        //                 format!(
+        //                     "return statement type mismatch, (function body: {:?}, return statement: {:?})",
+        //                     function_type, return_type
+        //                 ),
+        //             ))
+        //         }
+        //     }
+        //     None => Ok(()),
+        // }
+    }
+
     fn check_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match &statement.value {
             StatementValue::Block(block) => self.check_block(block),
@@ -476,6 +532,9 @@ impl<'a> Checker {
             StatementValue::While(while_statement) => self.check_while_statement(while_statement),
             StatementValue::Each(each) => self.check_each(each),
             StatementValue::Expression(expression) => self.check_expression(expression).map(|_| ()),
+            StatementValue::Return(return_statement) => {
+                self.check_return(return_statement, &statement.region)
+            }
             _ => {
                 todo!()
             }
@@ -500,7 +559,10 @@ impl<'a> Checker {
     }
 
     pub fn new() -> Self {
-        Checker { scopes: vec![] }
+        Checker {
+            scopes: vec![],
+            function_bodies: vec![],
+        }
     }
 }
 
