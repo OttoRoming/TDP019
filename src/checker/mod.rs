@@ -501,6 +501,7 @@ impl<'a> Checker {
             }
         };
 
+        todo!()
         // match &return_type {
         //     Some(t) => {
         //         if Some(t.clone()) == *function_type {
