@@ -15,7 +15,6 @@ pub enum Value {
     KeywordFun,    // fun
     KeywordWhile,  // while
     KeywordEach,   // each
-    KeywordNull,   // null
     KeywordReturn, // return
     KeywordTrue,   // true
     KeywordFalse,  // false

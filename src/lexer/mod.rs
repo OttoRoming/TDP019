@@ -158,7 +158,6 @@ impl Lexer {
             "fun" => Value::KeywordFun,
             "while" => Value::KeywordWhile,
             "each" => Value::KeywordEach,
-            "null" => Value::KeywordNull,
             "return" => Value::KeywordReturn,
             "true" => Value::KeywordTrue,
             "false" => Value::KeywordFalse,

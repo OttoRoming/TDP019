@@ -4,7 +4,8 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
 
 ## TODO
 - [ ] ta bort null från språket
-    - [ ] ta bort testfall relaterade till null
+    - [x] ta bort testfall relaterade till null
+    - [x] ta bort null från lexer
     - [ ] ta bort null från parser
     - [ ] ta bort null från ast
     - [ ] ändra i type checker för expressions
