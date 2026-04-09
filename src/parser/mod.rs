@@ -528,13 +528,39 @@ impl Parser {
     }
 
     fn parse_while_statement(&mut self) -> Result<WhileStatement, Error> {
-        self.expect(Value::KeywordWhile, "start of while statement")?;
+        self.expect(Value::KeywordWhile, "start of while loop")?;
         self.advance();
 
         let test = self.parse_expression()?;
         let block = self.parse_block()?;
 
         Ok(WhileStatement { test, block })
+    }
+
+    fn parse_each_statement(&mut self) -> Result<EachStatement, Error> {
+        self.expect(Value::KeywordEach, "start of each loop")?;
+        self.advance();
+
+        let left = match &self.peek(0).value {
+            Value::Identifier(id) => Ok(id.clone()),
+            _ => Err(error(
+                self.peek(0).region.clone(),
+                format!(
+                    "expected identifier for left side of each loop, found {:?}",
+                    self.peek(0).value
+                ),
+            )),
+        }?;
+        self.advance();
+
+        self.expect(Value::Colon, "after left side of each loop")?;
+        self.advance();
+
+        let right = self.parse_expression()?;
+
+        let block = self.parse_block()?;
+
+        Ok(EachStatement { left, right, block })
     }
 
     fn parse_return(&mut self) -> Result<ReturnStatement, Error> {
@@ -568,6 +594,7 @@ impl Parser {
             }
             Value::KeywordIf => StatementValue::If(self.parse_if_statement()?),
             Value::KeywordWhile => StatementValue::While(self.parse_while_statement()?),
+            Value::KeywordEach => StatementValue::Each(self.parse_each_statement()?),
             Value::KeywordReturn => StatementValue::Return(self.parse_return()?),
             _ => self.parse_expression_statement()?,
         };
