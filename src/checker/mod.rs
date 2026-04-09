@@ -308,6 +308,10 @@ impl<'a> Checker {
         }
     }
 
+    fn check_list(&mut self, list: &Vec<Expression>, region: &Region) -> Result<Type, Error> {
+        todo!()
+    }
+
     fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
         match &expression.value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
@@ -320,6 +324,7 @@ impl<'a> Checker {
             ExpressionValue::FunctionCall(call) => {
                 self.check_function_call(call, &expression.region)
             }
+            // FIXME: right side of assign expression should not be able to be of void type!!!
             ExpressionValue::Assign(assign) => self.check_assign(assign, &expression.region),
             ExpressionValue::Update(update) => {
                 self.check_update(update, &expression.region).map(Some)
@@ -329,7 +334,7 @@ impl<'a> Checker {
                 self.check_identifier(id, &expression.region).map(Some)
             }
             ExpressionValue::Index(index) => self.check_index(index, &expression.region).map(Some),
-            _ => todo!(),
+            ExpressionValue::List(list) => self.check_list(list, &expression.region).map(Some),
         }
     }
 
