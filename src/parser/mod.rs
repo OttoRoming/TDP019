@@ -534,7 +534,7 @@ impl Parser {
         let expression = self.parse_expression().ok();
 
         Ok(ReturnStatement {
-            expression: expression,
+            expression,
         })
     }
 

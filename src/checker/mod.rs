@@ -1,5 +1,3 @@
-use std::process::id;
-
 use crate::{
     ast::*,
     error::{self, Error},
@@ -283,7 +281,7 @@ impl<'a> Checker {
                 region.clone(),
                 format!("undeclared identifier \"{}\"", &identifier.identifier),
             ))
-            .map(|t| t.clone())
+            .cloned()
     }
 
     fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
@@ -296,15 +294,13 @@ impl<'a> Checker {
                 self.check_function_call(call, &expression.region)
             }
             ExpressionValue::Assign(assign) => self.check_assign(assign, &expression.region),
-            ExpressionValue::Update(update) => self
-                .check_update(update, &expression.region)
-                .map(|t| Some(t)),
-            ExpressionValue::Unary(unary) => {
-                self.check_unary(unary, &expression.region).map(|t| Some(t))
+            ExpressionValue::Update(update) => {
+                self.check_update(update, &expression.region).map(Some)
             }
-            ExpressionValue::Identifier(id) => self
-                .check_identifier(id, &expression.region)
-                .map(|t| Some(t)),
+            ExpressionValue::Unary(unary) => self.check_unary(unary, &expression.region).map(Some),
+            ExpressionValue::Identifier(id) => {
+                self.check_identifier(id, &expression.region).map(Some)
+            }
             _ => todo!(),
         }
     }
@@ -486,10 +482,10 @@ impl<'a> Checker {
             "return statement outside of function body".to_string(),
         ))?;
 
-        let return_type = match &return_statement.expression {
+        let _return_type = match &return_statement.expression {
             Some(expression) => self.check_expression(expression)?,
             None => {
-                if *function_type == None {
+                if function_type.is_none() {
                     return Ok(());
                 } else {
                     return Err(error(region.clone(), "missing return value".to_string()));
@@ -531,9 +527,6 @@ impl<'a> Checker {
             StatementValue::Expression(expression) => self.check_expression(expression).map(|_| ()),
             StatementValue::Return(return_statement) => {
                 self.check_return(return_statement, &statement.region)
-            }
-            _ => {
-                todo!()
             }
         }
     }
