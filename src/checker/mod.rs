@@ -108,12 +108,12 @@ impl<'a> Checker {
     fn check_binary(&mut self, binary: &BinaryExpression, region: &Region) -> Result<Type, Error> {
         let left = self.check_expression(&binary.left)?.ok_or(error(
             region.clone(),
-            "left expression in binary expression has unknown type".to_string(),
+            "left expression in binary expression has void type".to_string(),
         ))?;
 
         let right = self.check_expression(&binary.right)?.ok_or(error(
             region.clone(),
-            "right expression in binary expression has unknown type".to_string(),
+            "right expression in binary expression has void type".to_string(),
         ))?;
 
         if left != right {
@@ -147,15 +147,12 @@ impl<'a> Checker {
         call: &FunctionCallExpression,
         region: &Region,
     ) -> Result<Option<Type>, Error> {
-        let callee_type = self.check_expression(&call.callee)?.ok_or(error(
-            region.clone(),
-            "attempted to call null type".to_string(),
-        ))?;
+        let callee_type = self.check_expression(&call.callee)?;
 
-        if let Type::Function {
+        if let Some(Type::Function {
             parameters,
             return_type,
-        } = callee_type
+        }) = callee_type
         {
             if call.arguments.len() != parameters.len() {
                 return Err(error(
@@ -238,7 +235,7 @@ impl<'a> Checker {
     fn check_update(&mut self, update: &UpdateExpression, region: &Region) -> Result<Type, Error> {
         let updatee_type = self.check_expression(&update.updatee)?.ok_or(error(
             region.clone(),
-            "can not update null type".to_string(),
+            "can not update void type".to_string(),
         ))?;
 
         if updatee_type != Type::Int && updatee_type != Type::Float {
@@ -252,7 +249,10 @@ impl<'a> Checker {
     }
 
     fn check_unary(&mut self, unary: &UnaryExpression, region: &Region) -> Result<Type, Error> {
-        let right_type = self.check_expression(&unary.right)?.ok_or(error(region.clone(), "failed to find type of expression, hint: store the value in a variable if you are trying to reference it".to_string()))?;
+        let right_type = self.check_expression(&unary.right)?.ok_or(error(
+            region.clone(),
+            "can not perform unary operation on void type".to_string(),
+        ))?;
 
         let is_compatible = match unary.operator {
             UnaryOperator::Negate => right_type == Type::Int || right_type == Type::Float,
@@ -289,7 +289,6 @@ impl<'a> Checker {
     fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
         match &expression.value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
-            ExpressionValue::Null => Ok(None),
             ExpressionValue::Binary(binary) => {
                 self.check_binary(binary, &expression.region).map(Some)
             }
@@ -443,10 +442,7 @@ impl<'a> Checker {
         if test_type != Some(Type::Bool) {
             return Err(error(
                 while_statement.test.region.clone(),
-                format!(
-                    "if statements can only check booleans, found {:?}",
-                    test_type
-                ),
+                format!("while loops can only check booleans, found {:?}", test_type),
             ));
         };
 
@@ -458,7 +454,7 @@ impl<'a> Checker {
     fn check_each(&mut self, each: &EachStatement) -> Result<(), Error> {
         let right_type = self.check_expression(&each.right)?.ok_or(error(
             each.right.region.clone(),
-            "tried to loop over null".to_string(),
+            "tried to loop over void type".to_string(),
         ))?;
         if let Type::List(left_type) = right_type {
             self.enter_block();

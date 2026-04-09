@@ -3,12 +3,12 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
 @sermuns
 
 ## TODO
-- [ ] ta bort null från språket
+- [x] ta bort null från språket
     - [x] ta bort testfall relaterade till null
     - [x] ta bort null från lexer
     - [x] ta bort null från parser
     - [x] ta bort null från ast
-    - [ ] ändra i type checker för expressions
+    - [x] ändra i type checker för expressions
 - [-] färdigställa parser
     - [x] block
     - [x] if
