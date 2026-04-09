@@ -284,9 +284,36 @@ impl<'a> Checker {
             .cloned()
     }
 
+    fn check_index(&mut self, index: &IndexExpression, region: &Region) -> Result<Type, Error> {
+        let collection_type = self.check_expression(&index.collection)?;
+
+        if let Some(Type::List(inner_type)) = collection_type {
+            let index_type = self.check_expression(&index.index)?;
+            if index_type != Some(Type::Int) {
+                return Err(error(
+                    region.clone(),
+                    format!(
+                        "tried to index into collection withh non int type, {:?}",
+                        index_type
+                    ),
+                ));
+            }
+
+            Ok(*inner_type)
+        } else {
+            Err(error(
+                region.clone(),
+                format!("tried to index into non list type, {:?}", collection_type),
+            ))
+        }
+    }
+
     fn check_expression(&mut self, expression: &Expression) -> Result<Option<Type>, Error> {
         match &expression.value {
             ExpressionValue::Bool(_) => Ok(Some(Type::Bool)),
+            ExpressionValue::String(_) => Ok(Some(Type::String)),
+            ExpressionValue::Int(_) => Ok(Some(Type::Int)),
+            ExpressionValue::Float(_) => Ok(Some(Type::Float)),
             ExpressionValue::Binary(binary) => {
                 self.check_binary(binary, &expression.region).map(Some)
             }
@@ -301,6 +328,7 @@ impl<'a> Checker {
             ExpressionValue::Identifier(id) => {
                 self.check_identifier(id, &expression.region).map(Some)
             }
+            ExpressionValue::Index(index) => self.check_index(index, &expression.region).map(Some),
             _ => todo!(),
         }
     }
