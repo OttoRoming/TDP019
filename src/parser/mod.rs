@@ -108,10 +108,6 @@ impl Parser {
                 self.advance();
                 Ok(ExpressionValue::Bool(false))
             }
-            Value::KeywordNull => {
-                self.advance();
-                Ok(ExpressionValue::Null)
-            }
             Value::Int(i) => {
                 let expression = ExpressionValue::Int(*i);
                 self.advance();

@@ -6,7 +6,7 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
 - [ ] ta bort null från språket
     - [x] ta bort testfall relaterade till null
     - [x] ta bort null från lexer
-    - [ ] ta bort null från parser
+    - [x] ta bort null från parser
     - [ ] ta bort null från ast
     - [ ] ändra i type checker för expressions
 - [-] färdigställa parser
