@@ -32,6 +32,13 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
         - [x] list
   - [ ] lägga till "matching" method till Type för att kolla om två typer kan matcha, så som till exempel en tom list och en lista med ints matchar
 
+måste fixa display för typer så att man inte får dessa felmedelanden
+```
+Check error: variable declaration type mismatch (specified: List(Some(Int)); got: Int)
+  --> 1:1 -> 1:25
+1 | var nums: List<Int> = 10
+```
+
 ## Källor
 - https://www.ida.liu.se/~TDP019/
 - https://interpreterbook.com/
