@@ -527,15 +527,23 @@ impl Parser {
         })
     }
 
+    fn parse_while_statement(&mut self) -> Result<WhileStatement, Error> {
+        self.expect(Value::KeywordIf, "start of while statement")?;
+        self.advance();
+
+        let test = self.parse_expression()?;
+        let block = self.parse_block()?;
+
+        Ok(WhileStatement { test, block })
+    }
+
     fn parse_return(&mut self) -> Result<ReturnStatement, Error> {
         self.expect(Value::KeywordReturn, "start of return statement")?;
         self.advance();
 
         let expression = self.parse_expression().ok();
 
-        Ok(ReturnStatement {
-            expression,
-        })
+        Ok(ReturnStatement { expression })
     }
 
     fn parse_block(&mut self) -> Result<Block, Error> {
@@ -559,6 +567,7 @@ impl Parser {
                 StatementValue::VariableDeclaration(self.parse_variable_declaration()?)
             }
             Value::KeywordIf => StatementValue::If(self.parse_if_statement()?),
+            Value::KeywordWhile => StatementValue::While(self.parse_while_statement()?),
             Value::KeywordReturn => StatementValue::Return(self.parse_return()?),
             _ => self.parse_expression_statement()?,
         };

@@ -12,7 +12,7 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
 - [-] färdigställa parser
     - [x] block
     - [x] if
-    - [ ] while
+    - [x] while
     - [ ] each
     - [x] var
     - [ ] fun
