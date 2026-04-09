@@ -15,7 +15,7 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
     - [x] while
     - [x] each
     - [x] var
-    - [ ] fun
+    - [x] fun
     - [x] return
     - [-] expressions
         - [x] assign
