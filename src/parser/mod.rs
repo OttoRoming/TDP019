@@ -585,6 +585,76 @@ impl Parser {
         Ok(Block { statements })
     }
 
+    fn parse_function_declaration(&mut self) -> Result<FunctionDeclarationStatement, Error> {
+        self.expect(Value::KeywordFun, "start of function declaration")?;
+        self.advance();
+
+        let identifier = match &self.peek(0).value {
+            Value::Identifier(id) => Ok(id.clone()),
+            _ => Err(error(
+                self.peek(0).region.clone(),
+                format!(
+                    "expected identifier for the function name, found {:?}",
+                    self.peek(0).value
+                ),
+            )),
+        }?;
+        self.advance();
+
+        self.expect(Value::OpenParenthesis, "start of function declaration")?;
+        self.advance();
+
+        let mut parameters: Vec<Parameter> = vec![];
+        while self.peek(0).value != Value::CloseParenthesis {
+            let parameter_id = match &self.peek(0).value {
+                Value::Identifier(id) => Ok(id.clone()),
+                _ => Err(error(
+                    self.peek(0).region.clone(),
+                    format!(
+                        "expected identifier for the parameter name, found {:?}",
+                        self.peek(0).value
+                    ),
+                )),
+            }?;
+            self.advance();
+
+            self.expect(Value::Colon, "after parameter name")?;
+            self.advance();
+
+            let parameter_type = self.parse_type_specifier()?;
+
+            parameters.push(Parameter {
+                identifier: parameter_id,
+                type_specifier: parameter_type,
+            });
+
+            if self.peek(0).value == Value::Comma {
+                self.advance();
+            } else {
+                break;
+            }
+        }
+
+        self.expect(Value::CloseParenthesis, "end of parameter list")?;
+        self.advance();
+
+        let return_type = if self.peek(0).value == Value::Colon {
+            self.advance();
+            Some(self.parse_type_specifier()?)
+        } else {
+            None
+        };
+
+        let block = self.parse_block()?;
+
+        Ok(FunctionDeclarationStatement {
+            identifier,
+            parameters,
+            return_type,
+            block,
+        })
+    }
+
     fn parse_statement(&mut self) -> Result<Statement, Error> {
         let start = self.peek(0).region.start.clone();
         let value = match self.peek(0).value {
@@ -596,6 +666,9 @@ impl Parser {
             Value::KeywordWhile => StatementValue::While(self.parse_while_statement()?),
             Value::KeywordEach => StatementValue::Each(self.parse_each_statement()?),
             Value::KeywordReturn => StatementValue::Return(self.parse_return()?),
+            Value::KeywordFun => {
+                StatementValue::FunctionDeclaration(self.parse_function_declaration()?)
+            }
             _ => self.parse_expression_statement()?,
         };
         let end = self.peek(-1).region.end.clone();
