@@ -13,7 +13,7 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
     - [x] block
     - [x] if
     - [x] while
-    - [ ] each
+    - [x] each
     - [x] var
     - [ ] fun
     - [x] return
