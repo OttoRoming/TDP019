@@ -14,7 +14,7 @@ enum Type {
     Float,
     Bool,
     String,
-    List(Box<Type>),
+    List(Option<Box<Type>>),
     Ref(Box<Type>),
     Function {
         parameters: Vec<Type>,
@@ -29,7 +29,7 @@ impl From<TypeSpecifier> for Type {
             TypeSpecifier::Float => Type::Float,
             TypeSpecifier::String => Type::String,
             TypeSpecifier::Bool => Type::Bool,
-            TypeSpecifier::List(inner) => Type::List(Box::new((*inner).into())),
+            TypeSpecifier::List(inner) => Type::List(Some(Box::new((*inner).into()))),
             TypeSpecifier::Ref(inner) => Type::Ref(Box::new((*inner).into())),
         }
     }
@@ -284,7 +284,11 @@ impl<'a> Checker {
             .cloned()
     }
 
-    fn check_index(&mut self, index: &IndexExpression, region: &Region) -> Result<Type, Error> {
+    fn check_index(
+        &mut self,
+        index: &IndexExpression,
+        region: &Region,
+    ) -> Result<Option<Type>, Error> {
         let collection_type = self.check_expression(&index.collection)?;
 
         if let Some(Type::List(inner_type)) = collection_type {
@@ -299,7 +303,7 @@ impl<'a> Checker {
                 ));
             }
 
-            Ok(*inner_type)
+            Ok(inner_type.map(|t| *t))
         } else {
             Err(error(
                 region.clone(),
@@ -332,7 +336,7 @@ impl<'a> Checker {
             ExpressionValue::Identifier(id) => {
                 self.check_identifier(id, &expression.region).map(Some)
             }
-            ExpressionValue::Index(index) => self.check_index(index, &expression.region).map(Some),
+            ExpressionValue::Index(index) => self.check_index(index, &expression.region),
             ExpressionValue::List(list) => self.check_list(list, &expression.region).map(Some),
         }
     }
@@ -485,15 +489,22 @@ impl<'a> Checker {
             "tried to loop over void type".to_string(),
         ))?;
         if let Type::List(left_type) = right_type {
-            self.enter_block();
+            if let Some(left_type) = left_type {
+                self.enter_block();
 
-            self.declare_identifier(Identifier {
-                identifier: each.left.clone(),
-                type_: *left_type,
-            });
-            self.check_block(&each.block)?;
+                self.declare_identifier(Identifier {
+                    identifier: each.left.clone(),
+                    type_: *left_type,
+                });
+                self.check_block(&each.block)?;
 
-            self.exit_block();
+                self.exit_block();
+            } else {
+                return Err(error(
+                    each.right.region.clone(),
+                    format!("failed to find inner type of list"),
+                ));
+            }
         } else {
             return Err(error(
                 each.right.region.clone(),
