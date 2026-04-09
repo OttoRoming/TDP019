@@ -324,7 +324,6 @@ impl<'a> Checker {
             ExpressionValue::FunctionCall(call) => {
                 self.check_function_call(call, &expression.region)
             }
-            // FIXME: right side of assign expression should not be able to be of void type!!!
             ExpressionValue::Assign(assign) => self.check_assign(assign, &expression.region),
             ExpressionValue::Update(update) => {
                 self.check_update(update, &expression.region).map(Some)
