@@ -9,7 +9,7 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
     - [x] ta bort null från parser
     - [x] ta bort null från ast
     - [x] ändra i type checker för expressions
-- [-] färdigställa parser
+- [x] färdigställa parser
     - [x] block
     - [x] if
     - [x] while
@@ -17,14 +17,14 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
     - [x] var
     - [x] fun
     - [x] return
-    - [-] expressions
+    - [x] expressions
         - [x] assign
         - [x] update
         - [x] binary
         - [x] unary
         - [x] identifier
         - [x] call
-        - [ ] index
+        - [x] index
         - [x] string
         - [x] int
         - [x] float

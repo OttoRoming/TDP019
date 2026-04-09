@@ -185,6 +185,32 @@ impl Parser {
         Ok(expression)
     }
 
+    fn parse_index(&mut self) -> Result<Expression, Error> {
+        let start = self.peek(0).region.start.clone();
+        let mut expression = self.parse_call()?;
+
+        while self.peek(0).value == Value::OpenBracket {
+            self.advance();
+
+            let index = self.parse_expression()?;
+
+            self.expect(Value::CloseBracket, "end of index expression")?;
+            self.advance();
+
+            let end = self.peek(-1).region.end.clone();
+            let region = Region::new(start.clone(), end);
+            expression = Expression {
+                value: ExpressionValue::Index(Box::new(IndexExpression {
+                    collection: expression,
+                    index,
+                })),
+                region,
+            }
+        }
+
+        Ok(expression)
+    }
+
     fn parse_unary(&mut self) -> Result<Expression, Error> {
         Ok(
             if let Some(operator) = match self.peek(0).value {
@@ -196,7 +222,7 @@ impl Parser {
             } {
                 let start = self.peek(0).region.start.clone();
                 self.advance();
-                let right = self.parse_call()?;
+                let right = self.parse_index()?;
                 let end = self.peek(-1).region.end.clone();
                 let region = Region::new(start, end);
                 Expression {
@@ -204,7 +230,7 @@ impl Parser {
                     region,
                 }
             } else {
-                self.parse_call()?
+                self.parse_index()?
             },
         )
     }
