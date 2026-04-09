@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+#[allow(dead_code)]
 enum Value {
     Int(i64),
     Float(f64),
@@ -10,6 +11,7 @@ enum Value {
     Function {},
 }
 
+#[allow(dead_code)]
 enum ControlFlow {}
 
 // pub fn eval(source: &str) -> Result<> {

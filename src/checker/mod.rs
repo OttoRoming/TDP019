@@ -312,20 +312,20 @@ impl<'a> Checker {
         }
     }
 
-    fn check_list(&mut self, list: &Vec<Expression>, region: &Region) -> Result<Type, Error> {
+    fn check_list(&mut self, list: &[Expression], region: &Region) -> Result<Type, Error> {
         if list.is_empty() {
             return Ok(Type::List(None));
         }
 
         let inner_type = self.check_expression(list.first().unwrap())?.ok_or(error(
             list.first().unwrap().region.clone(),
-            format!("list can not include void type"),
+            "list can not include void type".to_string(),
         ))?;
 
         for expression in list.iter().skip(1) {
             let expression_type = self.check_expression(expression)?.ok_or(error(
                 list.first().unwrap().region.clone(),
-                format!("list can not include void type"),
+                "list can not include void type".to_string(),
             ))?;
             if inner_type != expression_type {
                 return Err(error(
@@ -527,7 +527,7 @@ impl<'a> Checker {
             } else {
                 return Err(error(
                     each.right.region.clone(),
-                    format!("failed to find inner type of list"),
+                    "failed to find inner type of list".to_string(),
                 ));
             }
         } else {
