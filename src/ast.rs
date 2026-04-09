@@ -189,7 +189,6 @@ pub enum ExpressionValue {
     Float(f64),
     Bool(bool),
     List(Vec<Expression>),
-    Null,
 }
 
 #[derive(Debug, PartialEq, Clone)]
