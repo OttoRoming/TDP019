@@ -7,6 +7,7 @@ mod parser;
 mod token;
 mod util;
 
+use evaluator::eval;
 use std::{env, fs, io::Read, path::PathBuf};
 
 fn main() {
@@ -42,10 +43,13 @@ fn main() {
         }
     };
 
-    match checker::check(&ast) {
-        Ok(_) => {}
+    match eval(&source) {
+        Ok(result) => {
+            dbg!(&result);
+        }
         Err(err) => {
             err.print(&source);
+            panic!()
         }
     };
 }
