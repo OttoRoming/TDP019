@@ -1,1 +1,1 @@
-fun arst(arst: Int) {}
+var nums: List<Int> = 10
