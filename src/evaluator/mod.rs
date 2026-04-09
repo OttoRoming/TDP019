@@ -9,13 +9,14 @@ use std::rc::Rc;
 use variantly::Variantly;
 
 #[derive(Variantly, Debug, PartialEq)]
-enum Value {
+pub enum Value {
     Int(i64),
     Float(f64),
     Bool(bool),
     String(String),
     List(Vec<Value>),
     Reference(Rc<Value>),
+    Void,
     Function {},
 }
 
@@ -76,9 +77,14 @@ impl<'a> Evaluator {
         Self { scopes: vec![] }
     }
 
+    fn eval_call(&mut self, call: &FunctionCallExpression) -> Value {
+        todo!()
+    }
+
     fn eval_expression(&mut self, expression: &Expression) -> Value {
-        match expression.value {
-            ExpressionValue::Bool(b) => Value::Bool(b),
+        match &expression.value {
+            ExpressionValue::Bool(b) => Value::Bool(*b),
+            ExpressionValue::FunctionCall(call) => self.eval_call(call),
             _ => todo!(),
         }
     }
