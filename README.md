@@ -30,6 +30,7 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
         - [x] float
         - [x] bool
         - [x] list
+  - [ ] lägga till "matching" method till Type för att kolla om två typer kan matcha, så som till exempel en tom list och en lista med ints matchar
 
 ## Källor
 - https://www.ida.liu.se/~TDP019/
