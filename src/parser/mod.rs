@@ -528,7 +528,7 @@ impl Parser {
     }
 
     fn parse_while_statement(&mut self) -> Result<WhileStatement, Error> {
-        self.expect(Value::KeywordIf, "start of while statement")?;
+        self.expect(Value::KeywordWhile, "start of while statement")?;
         self.advance();
 
         let test = self.parse_expression()?;
