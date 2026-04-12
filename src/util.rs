@@ -11,7 +11,7 @@ pub struct Region {
 
 impl Region {
     pub fn contains(&self, location: Location) -> bool {
-        location >= self.start && location <= self.end
+        location >= self.start && location < self.end
     }
 
     pub fn new(start: Location, end: Location) -> Self {
