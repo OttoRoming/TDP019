@@ -39,9 +39,11 @@ impl Type {
     #[allow(unused)]
     fn is_matching(&self, other: &Self) -> bool {
         match (self, other) {
-            (Type::List(self_inner), Type::List(other_inner)) => {
-                self_inner.is_none() || other_inner.is_none() || self_inner == other_inner
-            }
+            (Type::List(self_inner), Type::List(other_inner)) => match (self_inner, other_inner) {
+                (None, _) => true,
+                (_, None) => true,
+                (Some(self_inner), Some(other_inner)) => self_inner.is_matching(other_inner),
+            },
             _ => self == other,
         }
     }
