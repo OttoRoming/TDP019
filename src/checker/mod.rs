@@ -36,6 +36,7 @@ impl From<TypeSpecifier> for Type {
 }
 
 impl Type {
+    #[allow(unused)]
     fn is_matching(&self, other: &Self) -> bool {
         match (self, other) {
             (Type::List(self_inner), Type::List(other_inner)) => {

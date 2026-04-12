@@ -32,14 +32,12 @@ fn main() {
         }
     };
 
-    let ast = match parser::parse(&source) {
+    match parser::parse(&source) {
         Ok(ast) => {
             dbg!(&ast);
-            ast
         }
         Err(err) => {
             err.print(&source);
-            panic!()
         }
     };
 

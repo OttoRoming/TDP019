@@ -17,6 +17,7 @@ pub struct Argument {
 
 #[derive(Debug, PartialEq, Clone)]
 #[allow(unpredictable_function_pointer_comparisons)]
+#[allow(unused)]
 pub enum Function {
     Custom {
         args: Vec<Argument>,
@@ -26,6 +27,7 @@ pub enum Function {
 }
 
 #[derive(Variantly, Debug, PartialEq, Clone)]
+#[allow(unused)]
 pub enum Value {
     Int(i64),
     Float(f64),
@@ -49,6 +51,7 @@ struct Identifier {
 }
 
 #[derive(Debug, PartialEq)]
+#[allow(unused)]
 enum Scope {
     Block,
     Identifier(Identifier),
@@ -59,7 +62,7 @@ struct Evaluator {
 }
 
 impl<'a> Evaluator {
-    fn exit_block(&mut self) {
+    fn _exit_block(&mut self) {
         while *self
             .scopes
             .last()
@@ -72,7 +75,7 @@ impl<'a> Evaluator {
         // pop the block
         self.scopes.pop();
     }
-    fn enter_block(&mut self) {
+    fn _enter_block(&mut self) {
         self.scopes.push(Scope::Block);
     }
     fn declare_identifier(&mut self, identifier: Identifier) {
@@ -141,8 +144,7 @@ impl<'a> Evaluator {
         match &statement.value {
             StatementValue::VariableDeclaration(var) => self.eval_variable_declaration(var),
             StatementValue::Expression(expr) => {
-                self.eval_expression(&expr);
-                ()
+                self.eval_expression(expr);
             }
             _ => {
                 todo!()
@@ -152,7 +154,7 @@ impl<'a> Evaluator {
 
     pub fn eval_ast(&mut self, ast: &[Statement]) -> Value {
         for statement in ast {
-            self.eval_statement(&statement);
+            self.eval_statement(statement);
         }
 
         Value::Bool(true)
