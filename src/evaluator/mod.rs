@@ -1,14 +1,31 @@
 use crate::{
     ast::*,
-    ast::{Statement, VariableDeclarationStatement},
-    checker::check,
+    checker::{Type, check},
     error::Error,
     parser::parse,
 };
 use std::rc::Rc;
 use variantly::Variantly;
 
-#[derive(Variantly, Debug, PartialEq)]
+mod builtins;
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Argument {
+    pub identifier: String,
+    pub type_: Type,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+#[allow(unpredictable_function_pointer_comparisons)]
+pub enum Function {
+    Custom {
+        args: Vec<Argument>,
+        body: Vec<Statement>,
+    },
+    Builtin(fn(args: Vec<Value>) -> Value),
+}
+
+#[derive(Variantly, Debug, PartialEq, Clone)]
 pub enum Value {
     Int(i64),
     Float(f64),
@@ -17,7 +34,7 @@ pub enum Value {
     List(Vec<Value>),
     Reference(Rc<Value>),
     Void,
-    Function {},
+    Function(Function),
 }
 
 #[allow(dead_code)]
@@ -74,17 +91,39 @@ impl<'a> Evaluator {
     }
 
     pub fn new() -> Self {
-        Self { scopes: vec![] }
+        Self {
+            scopes: vec![Scope::Identifier(Identifier {
+                identifier: "puts".to_string(),
+                value: Value::Function(Function::Builtin(builtins::puts)),
+            })],
+        }
     }
 
     fn eval_call(&mut self, call: &FunctionCallExpression) -> Value {
-        todo!()
+        let callee = self.eval_expression(&call.callee);
+
+        match callee.unwrap_function() {
+            Function::Builtin(f) => {
+                let arg_values = call
+                    .arguments
+                    .iter()
+                    .map(|a| self.eval_expression(a))
+                    .collect();
+
+                f(arg_values)
+            }
+            Function::Custom { args: _, body: _ } => {
+                todo!()
+            }
+        }
     }
 
     fn eval_expression(&mut self, expression: &Expression) -> Value {
         match &expression.value {
             ExpressionValue::Bool(b) => Value::Bool(*b),
             ExpressionValue::FunctionCall(call) => self.eval_call(call),
+            ExpressionValue::Identifier(id) => self.get_identifier(&id.identifier).clone(),
+            ExpressionValue::String(s) => Value::String(s.clone()),
             _ => todo!(),
         }
     }
@@ -101,6 +140,10 @@ impl<'a> Evaluator {
     fn eval_statement(&mut self, statement: &Statement) {
         match &statement.value {
             StatementValue::VariableDeclaration(var) => self.eval_variable_declaration(var),
+            StatementValue::Expression(expr) => {
+                self.eval_expression(&expr);
+                ()
+            }
             _ => {
                 todo!()
             }

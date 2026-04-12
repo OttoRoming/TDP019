@@ -9,7 +9,7 @@ mod test;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(unused)]
-enum Type {
+pub enum Type {
     Int,
     Float,
     Bool,
@@ -629,7 +629,13 @@ impl<'a> Checker {
 
     pub fn new() -> Self {
         Checker {
-            scopes: vec![],
+            scopes: vec![Scope::Identifier(Identifier {
+                identifier: "puts".to_string(),
+                type_: Type::Function {
+                    parameters: vec![Type::String],
+                    return_type: Box::new(Some(Type::String)),
+                },
+            })],
             function_bodies: vec![],
         }
     }
