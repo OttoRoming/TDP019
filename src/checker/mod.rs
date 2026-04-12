@@ -35,6 +35,17 @@ impl From<TypeSpecifier> for Type {
     }
 }
 
+impl Type {
+    fn is_matching(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Type::List(self_inner), Type::List(other_inner)) => {
+                self_inner.is_none() || other_inner.is_none() || self_inner == other_inner
+            }
+            _ => self == other,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 struct Identifier {
     pub identifier: String,
