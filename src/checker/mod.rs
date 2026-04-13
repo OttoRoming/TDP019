@@ -150,6 +150,16 @@ impl<'a> Checker {
                     ),
                 )),
             },
+            BinaryOperator::Equals => match left {
+                Type::Function {
+                    parameters: _,
+                    return_type: _,
+                } => Err(error(
+                    region.clone(),
+                    "equals comparison is not allowed between functions".to_string(),
+                )),
+                _ => Ok(left),
+            },
             _ => todo!(),
         }
     }
