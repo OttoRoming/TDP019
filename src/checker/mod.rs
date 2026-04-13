@@ -401,7 +401,7 @@ impl<'a> Checker {
         if let Some(specifier) = var.type_specifier.as_ref().map(|s| Type::from(s.clone())) {
             // Variable declarations with specified type
             if let Some(expression) = expression_type_check
-                && specifier != expression
+                && !specifier.is_matching(&expression)
             {
                 return Err(error(
                     region.clone(),
