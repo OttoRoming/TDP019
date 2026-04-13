@@ -30,7 +30,7 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
         - [x] float
         - [x] bool
         - [x] list
-  - [ ] lägga till "matching" method till Type för att kolla om två typer kan matcha, så som till exempel en tom list och en lista med ints matchar
+  - [x] lägga till "matching" method till Type för att kolla om två typer kan matcha, så som till exempel en tom list och en lista med ints matchar
   - [ ] förbjuda == mellan funktioner
 
 måste fixa display för typer så att man inte får dessa felmedelanden

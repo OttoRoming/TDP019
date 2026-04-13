@@ -128,7 +128,7 @@ impl<'a> Checker {
             "right expression in binary expression has void type".to_string(),
         ))?;
 
-        if left != right {
+        if !left.is_matching(&right) {
             return Err(error(
                 region.clone(),
                 format!("binary expression type mismatch ({:?}, {:?})", left, right),
@@ -180,7 +180,7 @@ impl<'a> Checker {
             for (parameter, argument) in parameters.iter().zip(call.arguments.iter()) {
                 let argument_type = self.check_expression(argument)?;
                 if let Some(argument_type) = argument_type
-                    && *parameter != argument_type
+                    && !parameter.is_matching(&argument_type)
                 {
                     return Err(error(
                         region.clone(),
@@ -205,43 +205,52 @@ impl<'a> Checker {
         &mut self,
         assign: &AssignmentExpression,
         region: &Region,
-    ) -> Result<Option<Type>, Error> {
+    ) -> Result<Type, Error> {
         let assignee_type = self.check_expression(&assign.assignee)?;
         let right_type = self.check_expression(&assign.right)?;
 
-        if assignee_type != right_type {
-            return Err(error(
-                region.clone(),
-                format!(
-                    "assign type mismatch, {:?} and {:?}",
-                    assignee_type, right_type
-                ),
-            ));
-        }
-
-        let is_operator_compatible = match assign.operator {
-            AssignmentOperator::And | AssignmentOperator::Or => right_type == Some(Type::Bool),
-            AssignmentOperator::Add
-            | AssignmentOperator::Divide
-            | AssignmentOperator::Modulo
-            | AssignmentOperator::Multiply
-            | AssignmentOperator::Subtract => {
-                right_type == Some(Type::Int) || right_type == Some(Type::Float)
+        if let Some(assignee_type) = assignee_type
+            && let Some(right_type) = right_type
+        {
+            if assignee_type.is_matching(&right_type) {
+                return Err(error(
+                    region.clone(),
+                    format!(
+                        "assign type mismatch, {:?} and {:?}",
+                        assignee_type, right_type
+                    ),
+                ));
             }
-            AssignmentOperator::Equals => true,
-        };
 
-        if !is_operator_compatible {
-            return Err(error(
+            let is_operator_compatible = match assign.operator {
+                AssignmentOperator::And | AssignmentOperator::Or => right_type == Type::Bool,
+                AssignmentOperator::Add
+                | AssignmentOperator::Divide
+                | AssignmentOperator::Modulo
+                | AssignmentOperator::Multiply
+                | AssignmentOperator::Subtract => {
+                    right_type == Type::Int || right_type == Type::Float
+                }
+                AssignmentOperator::Equals => true,
+            };
+
+            if !is_operator_compatible {
+                return Err(error(
+                    region.clone(),
+                    format!(
+                        "assignment operator {:?} is incompatible with type {:?}",
+                        assign.operator, right_type
+                    ),
+                ));
+            }
+
+            Ok(right_type)
+        } else {
+            Err(error(
                 region.clone(),
-                format!(
-                    "assignment operator {:?} is incompatible with type {:?}",
-                    assign.operator, right_type
-                ),
-            ));
+                "can not assign to or with no type".to_string(),
+            ))
         }
-
-        Ok(right_type)
     }
 
     fn check_update(&mut self, update: &UpdateExpression, region: &Region) -> Result<Type, Error> {
@@ -367,7 +376,9 @@ impl<'a> Checker {
             ExpressionValue::FunctionCall(call) => {
                 self.check_function_call(call, &expression.region)
             }
-            ExpressionValue::Assign(assign) => self.check_assign(assign, &expression.region),
+            ExpressionValue::Assign(assign) => {
+                self.check_assign(assign, &expression.region).map(Some)
+            }
             ExpressionValue::Update(update) => {
                 self.check_update(update, &expression.region).map(Some)
             }
