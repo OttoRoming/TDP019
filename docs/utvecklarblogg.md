@@ -6,7 +6,7 @@ Påbörjade funktionssyntax
 
 ## 2026-02-18
 
-Utvecklade språkidéen och skrev om den till latex
+Utvecklade språkidén och skrev om den till LaTeX
 
 ## 2026-02-19
 
@@ -26,15 +26,15 @@ Fick hjälp med att utveckla grammatiken på handledningstillfälle 2 och börja
 
 ## 2026-03-01
 
-Arbetade på lexern till ett stadie då det känndes färidigt. Förbättrade hur felmedelanden skrevs ut till terminalen
+Arbetade på lexern till ett stadium då det kändes färdigt. Förbättrade hur felmeddelanden skrevs ut till terminalen
 
 ## 2026-03-03
 
-Skapade structs och enums i Rust för att representera AST strukturen som jag hade utvecklat under handledningstillfällena. Gjorde så att lexern kan hantera string escape sequences så som \n
+Skapade structs och enums i Rust för att representera AST-strukturen som jag hade utvecklat under handledningstillfällena. Gjorde så att lexern kan hantera string escape sequences som \n
 
 ## 2026-03-05
 
-Skapade en rust modul för parsern och började arbeta på parser koden.
+Skapade en Rust-modul för parsern och började arbeta på parserkoden.
 
 ## 2026-03-06
 
@@ -54,7 +54,7 @@ Fixade parsing för variabeldeklarationer
 
 ## 2026-03-11
 
-Implementrade parsing för if statements och dess grenar. Skapade rust modulen för typechecking.
+Implementerade parsing för if statements och dess grenar. Skapade Rust-modulen för typechecking.
 
 ## 2026-03-13
 
@@ -66,7 +66,7 @@ Arbetade på att försöka rengöra den mycket långa koden för alla tester til
 
 ## 2026-03-24
 
-Implementrade en WIP version av typcheckingen av binära uttryck
+Implementerade en WIP-version av typcheckingen av binära uttryck
 
 ## 2026-03-30
 
@@ -74,7 +74,7 @@ Försökte optimisera koden i parsern och organisera om hur AST trädet är repr
 
 ## 2026-03-31
 
-Fixade de tidigare misstagen jag gjorde i parsern så alla test fungerar nu. Nu använder också testerna pretty_assertions biblioteket för att göra tester som misslyckas lättare att tolka
+Fixade de tidigare misstagen jag gjorde i parsern så alla test fungerar nu. Nu använder också testerna pretty_assertions-biblioteket för att göra tester som misslyckas lättare att tolka
 
 ## 2026-04-02
 
