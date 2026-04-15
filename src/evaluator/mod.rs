@@ -123,10 +123,12 @@ impl<'a> Evaluator {
 
     fn eval_expression(&mut self, expression: &Expression) -> Value {
         match &expression.value {
-            ExpressionValue::Bool(b) => Value::Bool(*b),
             ExpressionValue::FunctionCall(call) => self.eval_call(call),
             ExpressionValue::Identifier(id) => self.get_identifier(&id.identifier).clone(),
+            ExpressionValue::Bool(b) => Value::Bool(*b),
             ExpressionValue::String(s) => Value::String(s.clone()),
+            ExpressionValue::Int(i) => Value::Int(*i),
+            ExpressionValue::Float(f) => Value::Float(*f),
             _ => todo!(),
         }
     }
