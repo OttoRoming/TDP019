@@ -4,7 +4,10 @@ use crate::{
     error::Error,
     parser::parse,
 };
-use std::rc::Rc;
+use std::{
+    cell::{Ref, RefCell, RefMut},
+    rc::Rc,
+};
 use variantly::Variantly;
 
 mod builtins;
@@ -23,7 +26,7 @@ pub enum Function {
         args: Vec<Argument>,
         body: Vec<Statement>,
     },
-    Builtin(fn(args: Vec<Value>) -> Value),
+    Builtin(fn(args: Vec<Rc<RefCell<Value>>>) -> Rc<RefCell<Value>>),
 }
 
 #[derive(Variantly, Debug, PartialEq, Clone)]
@@ -47,7 +50,7 @@ enum ControlFlow {
 #[derive(Debug, PartialEq)]
 struct Identifier {
     pub identifier: String,
-    pub value: Value,
+    pub value: Rc<RefCell<Value>>,
 }
 
 struct Scope {
@@ -62,12 +65,12 @@ impl Scope {
             data: ScopeData::Block,
         })
     }
-    pub fn new_id(upper: Rc<Scope>, id: String, value: Value) -> Rc<Self> {
+    pub fn new_id(upper: Rc<Scope>, id: String, value: Rc<RefCell<Value>>) -> Rc<Self> {
         Rc::new(Self {
             upper: Some(upper),
             data: ScopeData::Identifier(Identifier {
                 identifier: id,
-                value: value,
+                value,
             }),
         })
     }
@@ -79,12 +82,12 @@ enum ScopeData {
     Identifier(Identifier),
 }
 
-fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Value {
+fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Rc<RefCell<Value>> {
     let callee = eval_expression(Rc::clone(&scope), &call.callee);
 
-    match callee.unwrap_function() {
+    match callee.borrow().clone().unwrap_function() {
         Function::Builtin(f) => {
-            let arg_values = call
+            let arg_values: Vec<Rc<RefCell<Value>>> = call
                 .arguments
                 .iter()
                 .map(|a| eval_expression(Rc::clone(&scope), a))
@@ -98,7 +101,7 @@ fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Value {
     }
 }
 
-fn eval_identifier(scope: Rc<Scope>, identifier: &IdentifierExpression) -> Value {
+fn eval_identifier(scope: Rc<Scope>, identifier: &IdentifierExpression) -> Rc<RefCell<Value>> {
     let upper = Rc::clone(
         scope
             .upper
@@ -118,14 +121,48 @@ fn eval_identifier(scope: Rc<Scope>, identifier: &IdentifierExpression) -> Value
     }
 }
 
-fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Value {
+// fn assign_equals(left: RefMut<Value>, right: Ref<Value>) {
+// {
+//     match &mut *left {
+//         Value::String(s) => s.push_str(" world"),
+//         _ => panic!("expected String"),
+//     };
+// }
+// }
+
+fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Value>> {
+    let left = eval_expression(Rc::clone(&scope), &assign.assignee);
+    let right = eval_expression(scope, &assign.right);
+
+    {
+        match assign.operator {
+            AssignmentOperator::Equals => {
+                let mut v = left.borrow_mut();
+                match &mut *v {
+                    Value::String(s) => {
+                        s.clear();
+                        s.push_str(right.borrow().string_ref().unwrap())
+                    }
+                    Value::Bool(b) => *b = *right.borrow().bool_ref().unwrap(),
+                    _ => todo!(),
+                }
+            }
+            _ => todo!(),
+        }
+    }
+
+    left
+}
+
+fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Rc<RefCell<Value>> {
     match &expression.value {
         ExpressionValue::FunctionCall(call) => eval_call(scope, call),
         ExpressionValue::Identifier(id) => eval_identifier(scope, id),
-        ExpressionValue::Bool(b) => Value::Bool(*b),
-        ExpressionValue::String(s) => Value::String(s.clone()),
-        ExpressionValue::Int(i) => Value::Int(*i),
-        ExpressionValue::Float(f) => Value::Float(*f),
+        ExpressionValue::Assign(assign) => eval_assign(scope, assign),
+        ExpressionValue::Bool(b) => Rc::new(RefCell::new(Value::Bool(*b))),
+        ExpressionValue::String(s) => Rc::new(RefCell::new(Value::String(s.clone()))),
+        ExpressionValue::Int(i) => Rc::new(RefCell::new(Value::Int(*i))),
+        ExpressionValue::Float(f) => Rc::new(RefCell::new(Value::Float(*f))),
         _ => todo!(),
     }
 }
@@ -158,7 +195,9 @@ pub fn eval_ast(ast: &[Statement]) -> Value {
     scope = Scope::new_id(
         scope,
         "puts".to_string(),
-        Value::Function(Function::Builtin(builtins::puts)),
+        Rc::new(RefCell::new(Value::Function(Function::Builtin(
+            builtins::puts,
+        )))),
     );
 
     for statement in ast {

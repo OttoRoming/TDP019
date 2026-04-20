@@ -114,4 +114,4 @@ Utökade evaluatorn med stöd för fler primära uttryck.
 
 ## 2026-04-20
 
-Ändrade hur flera scopes hanteras till att istället använda mig av att varje scope har en referens räknad pekare (Rc i rust) för att hålla reda på det övre scopet. Jag tror detta kommer underlätta den statiska bindingen då en funktion kan lagra en pekare till det scope där den var definierad.
+Ändrade hur flera scopes hanteras till att istället använda mig av att varje scope har en referens räknad pekare (Rc i rust) för att hålla reda på det övre scopet. Jag tror detta kommer underlätta den statiska bindingen då en funktion kan lagra en pekare till det scope där den var definierad. Värden hanteras nu som Rc<RefCell<Value>> alltså referensräknade med intär muterbarhet för att kunna hantera assignments (då värdena måste ändras).

@@ -47,3 +47,4 @@ Check error: variable declaration type mismatch (specified: List(Some(Int)); got
 - https://www.w3schools.com/cpp/cpp_operators_precedence.asp
 - https://en.wikipedia.org/wiki/Escape_sequences_in_C
 - https://www.reddit.com/r/ProgrammingLanguages/comments/pemg55
+- https://youtu.be/HwupNf9iCJk
