@@ -111,3 +111,7 @@ Gjorde typmatchning rekursiv, förbjöd == mellan funktioner och lade till built
 ## 2026-04-15
 
 Utökade evaluatorn med stöd för fler primära uttryck.
+
+## 2026-04-20
+
+Ändrade hur flera scopes hanteras till att istället använda mig av att varje scope har en referens räknad pekare (Rc i rust) för att hålla reda på det övre scopet. Jag tror detta kommer underlätta den statiska bindingen då en funktion kan lagra en pekare till det scope där den var definierad.

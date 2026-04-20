@@ -1,1 +1,3 @@
-puts("hello world");
+var i = "hello"
+
+puts(i);

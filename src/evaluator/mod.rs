@@ -50,123 +50,129 @@ struct Identifier {
     pub value: Value,
 }
 
+struct Scope {
+    upper: Option<Rc<Scope>>,
+    data: ScopeData,
+}
+
+impl Scope {
+    pub fn new_block(upper: Option<Rc<Scope>>) -> Rc<Self> {
+        Rc::new(Self {
+            upper,
+            data: ScopeData::Block,
+        })
+    }
+    pub fn new_id(upper: Rc<Scope>, id: String, value: Value) -> Rc<Self> {
+        Rc::new(Self {
+            upper: Some(upper),
+            data: ScopeData::Identifier(Identifier {
+                identifier: id,
+                value: value,
+            }),
+        })
+    }
+}
+
 #[derive(Debug, PartialEq)]
-#[allow(unused)]
-enum Scope {
+enum ScopeData {
     Block,
     Identifier(Identifier),
 }
 
-struct Evaluator {
-    scopes: Vec<Scope>,
+fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Value {
+    let callee = eval_expression(Rc::clone(&scope), &call.callee);
+
+    match callee.unwrap_function() {
+        Function::Builtin(f) => {
+            let arg_values = call
+                .arguments
+                .iter()
+                .map(|a| eval_expression(Rc::clone(&scope), a))
+                .collect();
+
+            f(arg_values)
+        }
+        Function::Custom { args: _, body: _ } => {
+            todo!()
+        }
+    }
 }
 
-impl<'a> Evaluator {
-    fn _exit_block(&mut self) {
-        while *self
-            .scopes
-            .last()
-            .expect("type checker environment is empty")
-            != Scope::Block
-        {
-            // pop the identifiers inside the block
-            self.scopes.pop();
-        }
-        // pop the block
-        self.scopes.pop();
-    }
-    fn _enter_block(&mut self) {
-        self.scopes.push(Scope::Block);
-    }
-    fn declare_identifier(&mut self, identifier: Identifier) {
-        self.scopes.push(Scope::Identifier(identifier))
-    }
-    fn get_identifier(&'a mut self, id: &str) -> &'a Value {
-        for scope in self.scopes.iter().rev() {
-            if let Scope::Identifier(scope_id) = scope
-                && scope_id.identifier == id
-            {
-                return &scope_id.value;
+fn eval_identifier(scope: Rc<Scope>, identifier: &IdentifierExpression) -> Value {
+    let upper = Rc::clone(
+        scope
+            .upper
+            .as_ref()
+            .expect("reached top scope in eval_identifier"),
+    );
+
+    match &scope.data {
+        ScopeData::Block => eval_identifier(upper, identifier),
+        ScopeData::Identifier(id) => {
+            if identifier.identifier == id.identifier {
+                return id.value.clone();
+            } else {
+                eval_identifier(upper, identifier)
             }
         }
-
-        panic!("tried to get undeclared identifier")
-    }
-
-    pub fn new() -> Self {
-        Self {
-            scopes: vec![Scope::Identifier(Identifier {
-                identifier: "puts".to_string(),
-                value: Value::Function(Function::Builtin(builtins::puts)),
-            })],
-        }
-    }
-
-    fn eval_call(&mut self, call: &FunctionCallExpression) -> Value {
-        let callee = self.eval_expression(&call.callee);
-
-        match callee.unwrap_function() {
-            Function::Builtin(f) => {
-                let arg_values = call
-                    .arguments
-                    .iter()
-                    .map(|a| self.eval_expression(a))
-                    .collect();
-
-                f(arg_values)
-            }
-            Function::Custom { args: _, body: _ } => {
-                todo!()
-            }
-        }
-    }
-
-    fn eval_expression(&mut self, expression: &Expression) -> Value {
-        match &expression.value {
-            ExpressionValue::FunctionCall(call) => self.eval_call(call),
-            ExpressionValue::Identifier(id) => self.get_identifier(&id.identifier).clone(),
-            ExpressionValue::Bool(b) => Value::Bool(*b),
-            ExpressionValue::String(s) => Value::String(s.clone()),
-            ExpressionValue::Int(i) => Value::Int(*i),
-            ExpressionValue::Float(f) => Value::Float(*f),
-            _ => todo!(),
-        }
-    }
-
-    fn eval_variable_declaration(&mut self, var: &VariableDeclarationStatement) {
-        let value = self.eval_expression(&var.expression);
-
-        self.declare_identifier(Identifier {
-            identifier: var.identifier.clone(),
-            value,
-        });
-    }
-
-    fn eval_statement(&mut self, statement: &Statement) {
-        match &statement.value {
-            StatementValue::VariableDeclaration(var) => self.eval_variable_declaration(var),
-            StatementValue::Expression(expr) => {
-                self.eval_expression(expr);
-            }
-            _ => {
-                todo!()
-            }
-        }
-    }
-
-    pub fn eval_ast(&mut self, ast: &[Statement]) -> Value {
-        for statement in ast {
-            self.eval_statement(statement);
-        }
-
-        Value::Bool(true)
     }
 }
+
+fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Value {
+    match &expression.value {
+        ExpressionValue::FunctionCall(call) => eval_call(scope, call),
+        ExpressionValue::Identifier(id) => eval_identifier(scope, id),
+        ExpressionValue::Bool(b) => Value::Bool(*b),
+        ExpressionValue::String(s) => Value::String(s.clone()),
+        ExpressionValue::Int(i) => Value::Int(*i),
+        ExpressionValue::Float(f) => Value::Float(*f),
+        _ => todo!(),
+    }
+}
+
+fn eval_variable_declaration(scope: Rc<Scope>, var: &VariableDeclarationStatement) -> Rc<Scope> {
+    let value = eval_expression(Rc::clone(&scope), &var.expression);
+    let new_scope = Scope::new_id(scope, var.identifier.clone(), value);
+    return new_scope;
+    // self.declare_identifier(Identifier {
+    //     identifier: var.identifier.clone(),
+    //     value,
+    // });
+}
+
+fn eval_statement(scope: Rc<Scope>, statement: &Statement) -> Rc<Scope> {
+    match &statement.value {
+        StatementValue::VariableDeclaration(var) => eval_variable_declaration(scope, var),
+        StatementValue::Expression(expr) => {
+            eval_expression(Rc::clone(&scope), expr);
+            scope
+        }
+        _ => {
+            todo!()
+        }
+    }
+}
+
+pub fn eval_ast(ast: &[Statement]) -> Value {
+    let mut scope = Scope::new_block(None);
+    scope = Scope::new_id(
+        scope,
+        "puts".to_string(),
+        Value::Function(Function::Builtin(builtins::puts)),
+    );
+
+    for statement in ast {
+        scope = eval_statement(Rc::clone(&scope), statement);
+    }
+
+    Value::Bool(true)
+}
+// }
 
 pub fn eval(source: &str) -> Result<Value, Error> {
     let ast = parse(source)?;
     check(&ast)?;
 
-    let mut evaluator = Evaluator::new();
-    Ok(evaluator.eval_ast(&ast))
+    // let mut evaluator = Evaluator::new();
+    Ok(eval_ast(&ast))
 }
