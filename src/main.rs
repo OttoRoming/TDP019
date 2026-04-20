@@ -38,6 +38,7 @@ fn main() {
         }
         Err(err) => {
             err.print(&source);
+            panic!()
         }
     };
 
