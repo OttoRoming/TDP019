@@ -32,6 +32,7 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
         - [x] list
   - [x] lägga till "matching" method till Type för att kolla om två typer kan matcha, så som till exempel en tom list och en lista med ints matchar
   - [x] förbjuda == mellan funktioner
+  - [ ] avskaffa variantly craten eftersom så jag slipper *value.bool_ref().unwrap()
 
 måste fixa display för typer så att man inte får dessa felmedelanden
 ```
