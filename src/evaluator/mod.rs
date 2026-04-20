@@ -121,15 +121,6 @@ fn eval_identifier(scope: Rc<Scope>, identifier: &IdentifierExpression) -> Rc<Re
     }
 }
 
-// fn assign_equals(left: RefMut<Value>, right: Ref<Value>) {
-// {
-//     match &mut *left {
-//         Value::String(s) => s.push_str(" world"),
-//         _ => panic!("expected String"),
-//     };
-// }
-// }
-
 fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Value>> {
     let left = eval_expression(Rc::clone(&scope), &assign.assignee);
     let right = eval_expression(scope, &assign.right);
