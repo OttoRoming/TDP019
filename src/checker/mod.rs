@@ -222,7 +222,7 @@ impl<'a> Checker {
         if let Some(assignee_type) = assignee_type
             && let Some(right_type) = right_type
         {
-            if assignee_type.is_matching(&right_type) {
+            if !assignee_type.is_matching(&right_type) {
                 return Err(error(
                     region.clone(),
                     format!(
