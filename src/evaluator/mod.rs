@@ -162,10 +162,6 @@ fn eval_variable_declaration(scope: Rc<Scope>, var: &VariableDeclarationStatemen
     let value = eval_expression(Rc::clone(&scope), &var.expression);
     let new_scope = Scope::new_id(scope, var.identifier.clone(), value);
     return new_scope;
-    // self.declare_identifier(Identifier {
-    //     identifier: var.identifier.clone(),
-    //     value,
-    // });
 }
 
 fn eval_statement(scope: Rc<Scope>, statement: &Statement) -> Rc<Scope> {
