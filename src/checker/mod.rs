@@ -150,7 +150,7 @@ impl<'a> Checker {
                     ),
                 )),
             },
-            BinaryOperator::Equals => match left {
+            BinaryOperator::Equals | BinaryOperator::NotEquals => match left {
                 Type::Function {
                     parameters: _,
                     return_type: _,
@@ -173,7 +173,16 @@ impl<'a> Checker {
                     ),
                 )),
             },
-            _ => todo!(),
+            BinaryOperator::And | BinaryOperator::Or => match left {
+                Type::Bool => Ok(Type::Bool),
+                _ => Err(error(
+                    region.clone(),
+                    format!(
+                        "{:?} is incompatible with operator {:?}",
+                        left, binary.operator
+                    ),
+                )),
+            },
         }
     }
 
