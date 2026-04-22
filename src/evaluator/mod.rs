@@ -277,30 +277,30 @@ fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>
         BinaryOperator::GreaterThan => Value::Bool(match *l {
             Value::Int(l) => l > r.unwrap_int(),
             Value::Float(l) => l > r.unwrap_float(),
-            _ => todo!(),
+            _ => unreachable!(),
         }),
         BinaryOperator::GreaterThanOrEqual => Value::Bool(match *l {
             Value::Int(l) => l >= r.unwrap_int(),
             Value::Float(l) => l >= r.unwrap_float(),
-            _ => todo!(),
+            _ => unreachable!(),
         }),
         BinaryOperator::LessThan => Value::Bool(match *l {
             Value::Int(l) => l < r.unwrap_int(),
             Value::Float(l) => l < r.unwrap_float(),
-            _ => todo!(),
+            _ => unreachable!(),
         }),
         BinaryOperator::LessThanOrEqual => Value::Bool(match *l {
             Value::Int(l) => l <= r.unwrap_int(),
             Value::Float(l) => l <= r.unwrap_float(),
-            _ => todo!(),
+            _ => unreachable!(),
         }),
         BinaryOperator::And => Value::Bool(match *l {
             Value::Bool(l) => l && r.unwrap_bool(),
-            _ => todo!(),
+            _ => unreachable!(),
         }),
         BinaryOperator::Or => Value::Bool(match *l {
             Value::Bool(l) => l || r.unwrap_bool(),
-            _ => todo!(),
+            _ => unreachable!(),
         }),
     }))
 }
