@@ -6,7 +6,7 @@ use crate::{
 use pretty_assertions::assert_eq;
 
 #[test]
-fn lex_string() {
+fn string() {
     assert_eq!(
         Ok(vec![
             Token {
@@ -23,7 +23,7 @@ fn lex_string() {
 }
 
 #[test]
-fn lex_string_escape() {
+fn string_escape() {
     assert_eq!(
         Ok(vec![
             Token {
@@ -40,7 +40,7 @@ fn lex_string_escape() {
 }
 
 #[test]
-fn lex_ignore_whitespace() {
+fn ignore_whitespace() {
     assert_eq!(
         Ok(vec![Token {
             region: Region::newi(4, 1, 4, 1),
@@ -51,7 +51,7 @@ fn lex_ignore_whitespace() {
 }
 
 #[test]
-fn lex_ignore_comments() {
+fn ignore_comments() {
     assert_eq!(
         Ok(vec![Token {
             region: Region::newi(2, 1, 2, 1),
@@ -62,7 +62,7 @@ fn lex_ignore_comments() {
 }
 
 #[test]
-fn lex_ignore_comments_without_newline() {
+fn ignore_comments_without_newline() {
     assert_eq!(
         Ok(vec![Token {
             region: Region::newi(1, 21, 1, 21),
