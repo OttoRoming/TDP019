@@ -333,19 +333,18 @@ fn eval_index(scope: Rc<Scope>, index: &IndexExpression) -> Rc<RefCell<Value>> {
     let collection_borrow = collection.borrow();
 
     let list = collection_borrow.unwrap_list_ref();
-    let result = Rc::clone(
+
+    Rc::clone(
         list.get(index_value.borrow().unwrap_int() as usize)
             .unwrap(),
-    );
-
-    result
+    )
 }
 
-fn eval_list(scope: Rc<Scope>, list: &Vec<Expression>) -> Rc<RefCell<Value>> {
+fn eval_list(scope: Rc<Scope>, list: &[Expression]) -> Rc<RefCell<Value>> {
     let values: Vec<Rc<RefCell<Value>>> = list
         .iter()
         .map(|e| eval_expression(Rc::clone(&scope), e))
-        .map(|v| deep_copy(v))
+        .map(deep_copy)
         .collect();
 
     Rc::new(RefCell::new(Value::List(values)))
