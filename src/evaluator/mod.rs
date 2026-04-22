@@ -96,8 +96,8 @@ fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Rc<RefCell<Valu
                     fun_scope,
                     id.to_string(),
                     Rc::new(RefCell::new(Value::Function(Function::Custom {
-                        scope: scope,
-                        parameters: parameters,
+                        scope,
+                        parameters,
                         body: Rc::clone(&body),
                     }))),
                 );
@@ -155,7 +155,7 @@ fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Va
                 }
                 Value::List(l) => {
                     l.clear();
-                    l.extend(r.unwrap_list_ref().iter().map(|r| Rc::clone(r)));
+                    l.extend(r.unwrap_list_ref().iter().map(Rc::clone));
                 }
                 Value::Reference(l) => *l = r.unwrap_reference(),
                 Value::Function(l) => *l = r.clone().unwrap_function(),
@@ -279,7 +279,6 @@ fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>
             Value::Bool(l) => l || r.unwrap_bool(),
             _ => todo!(),
         }),
-        _ => todo!(),
     }))
 }
 
@@ -337,10 +336,10 @@ fn eval_if_statement(scope: Rc<Scope>, if_statement: &IfStatement) -> Option<Ret
 
 #[must_use]
 fn eval_return(scope: Rc<Scope>, return_statement: &ReturnStatement) -> Return {
-    let value = match &return_statement.expression {
-        Some(expression) => Some(eval_expression(scope, expression)),
-        None => None,
-    };
+    let value = return_statement
+        .expression
+        .as_ref()
+        .map(|expression| eval_expression(scope, expression));
 
     Return { value }
 }
@@ -416,10 +415,7 @@ pub fn eval_ast(ast: &[Statement]) -> Option<Rc<RefCell<Value>>> {
     }
 
     match return_value {
-        Some(r) => match r.value {
-            Some(v) => Some(v),
-            None => None,
-        },
+        Some(r) => r.value,
         None => None,
     }
 }
