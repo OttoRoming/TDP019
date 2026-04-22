@@ -61,6 +61,7 @@ impl Lexer {
             }
             self.advance();
         }
+        self.skip_whitespace();
     }
 
     fn tokenize_string(&mut self) -> Result<Token, Error> {
@@ -243,7 +244,7 @@ impl Lexer {
         } else {
             Err(error(
                 self.current_region(),
-                format!("unxepceted character found ({})", self.peek(0)),
+                format!("unexpceted character found ({})", self.peek(0)),
             ))
         }
     }

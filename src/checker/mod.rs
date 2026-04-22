@@ -113,7 +113,7 @@ impl<'a> Checker {
     fn exit_function_body(&mut self) {
         self.function_bodies.pop();
     }
-    fn get_current_return_type(&'a mut self) -> Option<&'a Option<Type>> {
+    fn get_current_return_type(&'a self) -> Option<&'a Option<Type>> {
         self.function_bodies.last()
     }
 
@@ -158,7 +158,20 @@ impl<'a> Checker {
                     region.clone(),
                     "equals comparison is not allowed between functions".to_string(),
                 )),
-                _ => Ok(left),
+                _ => Ok(Type::Bool),
+            },
+            BinaryOperator::GreaterThan
+            | BinaryOperator::GreaterThanOrEqual
+            | BinaryOperator::LessThan
+            | BinaryOperator::LessThanOrEqual => match left {
+                Type::Int | Type::Float => Ok(Type::Bool),
+                _ => Err(error(
+                    region.clone(),
+                    format!(
+                        "{:?} is incompatible with operator {:?}",
+                        left, binary.operator
+                    ),
+                )),
             },
             _ => todo!(),
         }
@@ -455,7 +468,21 @@ impl<'a> Checker {
     fn check_function_declaration(
         &mut self,
         function: &FunctionDeclarationStatement,
+        region: &Region,
     ) -> Result<(), Error> {
+        let return_type: Option<Type> = function.return_type.clone().map(|t| t.into());
+        self.declare_identifier(Identifier {
+            identifier: function.identifier.clone(),
+            type_: Type::Function {
+                parameters: function
+                    .parameters
+                    .iter()
+                    .map(|t| t.type_specifier.clone().into())
+                    .collect(),
+                return_type: Box::new(return_type.clone()),
+            },
+        });
+
         self.enter_block();
 
         for parameter in &function.parameters {
@@ -465,24 +492,18 @@ impl<'a> Checker {
             });
         }
 
-        let return_type: Option<Type> = function.return_type.clone().map(|t| t.into());
         self.enter_function_body(return_type.clone());
-        self.check_block(&function.block)?;
+        let includes_return = self.check_block(&function.block)?;
         self.exit_function_body();
 
-        self.exit_block();
+        if return_type.is_some() && !includes_return {
+            return Err(error(
+                region.clone(),
+                "type checker could not ensure that the function is returned from; hint: add a return statement with the correct type at the bottom of the function body".to_string(),
+            ));
+        }
 
-        self.declare_identifier(Identifier {
-            identifier: function.identifier.clone(),
-            type_: Type::Function {
-                parameters: function
-                    .parameters
-                    .iter()
-                    .map(|t| t.type_specifier.clone().into())
-                    .collect(),
-                return_type: Box::new(return_type),
-            },
-        });
+        self.exit_block();
 
         Ok(())
     }
@@ -580,12 +601,18 @@ impl<'a> Checker {
         return_statement: &ReturnStatement,
         region: &Region,
     ) -> Result<(), Error> {
-        let function_type = self.get_current_return_type().ok_or(error(
-            region.clone(),
-            "return statement outside of function body".to_string(),
-        ))?;
+        let function_type = match self.get_current_return_type() {
+            Some(ft) => ft.clone(),
+            None => {
+                // returns statements outside functions are allowed to contain anything
+                if let Some(expression) = &return_statement.expression {
+                    self.check_expression(expression)?;
+                }
+                return Ok(());
+            }
+        };
 
-        let _return_type = match &return_statement.expression {
+        let return_type = match &return_statement.expression {
             Some(expression) => self.check_expression(expression)?,
             None => {
                 if function_type.is_none() {
@@ -596,33 +623,32 @@ impl<'a> Checker {
             }
         };
 
-        todo!()
-        // match &return_type {
-        //     Some(t) => {
-        //         if Some(t.clone()) == *function_type {
-        //             Ok(())
-        //         } else {
-        //             Err(error(
-        //                 region.clone(),
-        //                 format!(
-        //                     "return statement type mismatch, (function body: {:?}, return statement: {:?})",
-        //                     function_type, return_type
-        //                 ),
-        //             ))
-        //         }
-        //     }
-        //     None => Ok(()),
-        // }
+        match &return_type {
+            Some(t) => {
+                if Some(t.clone()) == function_type {
+                    Ok(())
+                } else {
+                    Err(error(
+                        region.clone(),
+                        format!(
+                            "return statement type mismatch, (function body: {:?}, return statement: {:?})",
+                            function_type, return_type
+                        ),
+                    ))
+                }
+            }
+            None => Ok(()),
+        }
     }
 
     fn check_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match &statement.value {
-            StatementValue::Block(block) => self.check_block(block),
+            StatementValue::Block(block) => self.check_block(block).map(|_| ()),
             StatementValue::VariableDeclaration(var) => {
                 self.check_variable_declaration(var, &statement.region)
             }
             StatementValue::FunctionDeclaration(function) => {
-                self.check_function_declaration(function)
+                self.check_function_declaration(function, &statement.region)
             }
             StatementValue::If(if_statement) => self.check_if_statement(if_statement),
             StatementValue::While(while_statement) => self.check_while_statement(while_statement),
@@ -634,14 +660,20 @@ impl<'a> Checker {
         }
     }
 
-    fn check_block(&mut self, block: &Block) -> Result<(), Error> {
+    /// returns true if there was a return statement directly inside of the block
+    fn check_block(&mut self, block: &Block) -> Result<bool, Error> {
+        let mut found_return = false;
+
         self.enter_block();
         for statement in block.statements.iter() {
+            if let StatementValue::Return(_) = statement.value {
+                found_return = true;
+            }
             self.check_statement(statement)?;
         }
         self.exit_block();
 
-        Ok(())
+        Ok(found_return)
     }
 
     pub fn check(&mut self, program: &Vec<Statement>) -> Result<(), Error> {
@@ -668,6 +700,5 @@ impl<'a> Checker {
 pub fn check(program: &Vec<Statement>) -> Result<(), Error> {
     let mut checker = Checker::new();
     checker.check(program)?;
-    dbg!(checker);
     Ok(())
 }

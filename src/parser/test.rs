@@ -4,7 +4,7 @@ use crate::util::Region;
 use pretty_assertions::assert_eq;
 
 #[test]
-fn parse_parenthesized() {
+fn parenthesized() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -18,7 +18,7 @@ fn parse_parenthesized() {
 }
 
 #[test]
-fn parse_list_literal() {
+fn list_literal() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -45,7 +45,7 @@ fn parse_list_literal() {
 }
 
 #[test]
-fn parse_list_literal_empty() {
+fn list_literal_empty() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -59,7 +59,7 @@ fn parse_list_literal_empty() {
 }
 
 #[test]
-fn parse_logical_or() {
+fn logical_or() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -83,7 +83,7 @@ fn parse_logical_or() {
 }
 
 #[test]
-fn parse_logical_and() {
+fn logical_and() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -107,7 +107,7 @@ fn parse_logical_and() {
 }
 
 #[test]
-fn parse_logical_equality_equals() {
+fn logical_equality_equals() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -131,7 +131,7 @@ fn parse_logical_equality_equals() {
 }
 
 #[test]
-fn parse_logical_equality_not_equals() {
+fn logical_equality_not_equals() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -155,7 +155,7 @@ fn parse_logical_equality_not_equals() {
 }
 
 #[test]
-fn parse_comparison_less_than() {
+fn comparison_less_than() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -179,7 +179,7 @@ fn parse_comparison_less_than() {
 }
 
 #[test]
-fn parse_comparison_less_than_or_equal() {
+fn comparison_less_than_or_equal() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -203,7 +203,7 @@ fn parse_comparison_less_than_or_equal() {
 }
 
 #[test]
-fn parse_comparison_greater_than() {
+fn comparison_greater_than() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -227,7 +227,7 @@ fn parse_comparison_greater_than() {
 }
 
 #[test]
-fn parse_comparison_greater_than_or_equal() {
+fn comparison_greater_than_or_equal() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -251,7 +251,7 @@ fn parse_comparison_greater_than_or_equal() {
 }
 
 #[test]
-fn parse_additive_add() {
+fn additive_add() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -275,7 +275,7 @@ fn parse_additive_add() {
 }
 
 #[test]
-fn parse_additive_subtract() {
+fn additive_subtract() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -299,7 +299,7 @@ fn parse_additive_subtract() {
 }
 
 #[test]
-fn parse_multiplicative_multiply() {
+fn multiplicative_multiply() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -323,7 +323,7 @@ fn parse_multiplicative_multiply() {
 }
 
 #[test]
-fn parse_multiplicative_divide() {
+fn multiplicative_divide() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -347,7 +347,7 @@ fn parse_multiplicative_divide() {
 }
 
 #[test]
-fn parse_multiplicative_modulo() {
+fn multiplicative_modulo() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -371,7 +371,7 @@ fn parse_multiplicative_modulo() {
 }
 
 #[test]
-fn parse_function_call() {
+fn function_call() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -406,7 +406,7 @@ fn parse_function_call() {
 }
 
 #[test]
-fn parse_function_call_simple() {
+fn function_call_simple() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -428,7 +428,7 @@ fn parse_function_call_simple() {
 }
 
 #[test]
-fn parse_unary_negate() {
+fn unary_negate() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -448,7 +448,7 @@ fn parse_unary_negate() {
 }
 
 #[test]
-fn parse_unary_not() {
+fn unary_not() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -468,7 +468,7 @@ fn parse_unary_not() {
 }
 
 #[test]
-fn parse_unary_reference() {
+fn unary_reference() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -488,7 +488,7 @@ fn parse_unary_reference() {
 }
 
 #[test]
-fn parse_unary_dereference() {
+fn unary_dereference() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Expression(Expression {
@@ -508,7 +508,7 @@ fn parse_unary_dereference() {
 }
 
 #[test]
-fn parse_block() {
+fn block() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Block(Block { statements: vec![] }),
@@ -519,7 +519,7 @@ fn parse_block() {
 }
 
 #[test]
-fn parse_variable_declaration() {
+fn variable_declaration() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::VariableDeclaration(VariableDeclarationStatement {
@@ -537,7 +537,7 @@ fn parse_variable_declaration() {
 }
 
 #[test]
-fn parse_variable_declaration_with_type() {
+fn variable_declaration_with_type() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::VariableDeclaration(VariableDeclarationStatement {
@@ -555,7 +555,7 @@ fn parse_variable_declaration_with_type() {
 }
 
 #[test]
-fn parse_variable_declaration_with_generic_type() {
+fn variable_declaration_with_generic_type() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::VariableDeclaration(VariableDeclarationStatement {
@@ -586,7 +586,7 @@ fn parse_variable_declaration_with_generic_type() {
 }
 
 #[test]
-fn parse_variable_declaration_with_extra_generic_type() {
+fn variable_declaration_with_extra_generic_type() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::VariableDeclaration(VariableDeclarationStatement {
@@ -676,7 +676,7 @@ fn parse_if() {
 }
 
 #[test]
-fn parse_if_elif() {
+fn if_elif() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::If(IfStatement {
@@ -701,7 +701,7 @@ fn parse_if_elif() {
 }
 
 #[test]
-fn parse_if_else() {
+fn if_else() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::If(IfStatement {
@@ -721,7 +721,7 @@ fn parse_if_else() {
 }
 
 #[test]
-fn parse_if_elif_else() {
+fn if_elif_else() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::If(IfStatement {
@@ -759,7 +759,7 @@ fn parse_return() {
 }
 
 #[test]
-fn parse_return_true() {
+fn return_true() {
     assert_eq!(
         Ok(vec![Statement {
             value: StatementValue::Return(ReturnStatement {

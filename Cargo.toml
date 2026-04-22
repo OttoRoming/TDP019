@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+color-backtrace = "0.7.2"
 owo-colors = "4.3.0"
-variantly = "0.4.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
