@@ -77,7 +77,16 @@ impl Value {
         }
     }
 
+    #[allow(unused)]
     pub fn unwrap_list(self) -> Vec<Rc<RefCell<Value>>> {
+        if let Value::List(l) = self {
+            l
+        } else {
+            panic!("called `Value::unwrap_list()` on a non `List` value")
+        }
+    }
+
+    pub fn unwrap_list_ref(&self) -> &Vec<Rc<RefCell<Value>>> {
         if let Value::List(l) = self {
             l
         } else {

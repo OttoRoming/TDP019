@@ -146,52 +146,52 @@ fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Va
 
         match assign.operator {
             AssignmentOperator::Equals => match &mut *l {
-                Value::Int(i) => *i = r.unwrap_int(),
-                Value::Float(f) => *f = r.unwrap_float(),
-                Value::Bool(b) => *b = r.unwrap_bool(),
-                Value::String(s) => {
-                    s.clear();
-                    s.push_str(r.unwrap_str())
+                Value::Int(l) => *l = r.unwrap_int(),
+                Value::Float(l) => *l = r.unwrap_float(),
+                Value::Bool(l) => *l = r.unwrap_bool(),
+                Value::String(l) => {
+                    l.clear();
+                    l.push_str(r.unwrap_str())
                 }
                 Value::List(l) => {
                     l.clear();
-                    l.extend(r.clone().unwrap_list());
+                    l.extend(r.unwrap_list_ref().iter().map(|r| Rc::clone(r)));
                 }
-                Value::Reference(reference) => *reference = r.unwrap_reference(),
-                Value::Function(f) => *f = r.clone().unwrap_function(),
+                Value::Reference(l) => *l = r.unwrap_reference(),
+                Value::Function(l) => *l = r.clone().unwrap_function(),
                 Value::Void => unreachable!(),
             },
             AssignmentOperator::Add => match &mut *l {
-                Value::Int(i) => *i += r.unwrap_int(),
-                Value::Float(f) => *f += r.unwrap_float(),
+                Value::Int(l) => *l += r.unwrap_int(),
+                Value::Float(l) => *l += r.unwrap_float(),
                 _ => unreachable!(),
             },
             AssignmentOperator::Divide => match &mut *l {
-                Value::Int(i) => *i /= r.unwrap_int(),
-                Value::Float(f) => *f /= r.unwrap_float(),
+                Value::Int(l) => *l /= r.unwrap_int(),
+                Value::Float(l) => *l /= r.unwrap_float(),
                 _ => unreachable!(),
             },
             AssignmentOperator::Modulo => match &mut *l {
-                Value::Int(i) => *i %= r.unwrap_int(),
-                Value::Float(f) => *f %= r.unwrap_float(),
+                Value::Int(l) => *l %= r.unwrap_int(),
+                Value::Float(l) => *l %= r.unwrap_float(),
                 _ => unreachable!(),
             },
             AssignmentOperator::Multiply => match &mut *l {
-                Value::Int(i) => *i *= r.unwrap_int(),
-                Value::Float(f) => *f *= r.unwrap_float(),
+                Value::Int(l) => *l *= r.unwrap_int(),
+                Value::Float(l) => *l *= r.unwrap_float(),
                 _ => unreachable!(),
             },
             AssignmentOperator::Subtract => match &mut *l {
-                Value::Int(i) => *i -= r.unwrap_int(),
-                Value::Float(f) => *f -= r.unwrap_float(),
+                Value::Int(l) => *l -= r.unwrap_int(),
+                Value::Float(l) => *l -= r.unwrap_float(),
                 _ => unreachable!(),
             },
             AssignmentOperator::And => match &mut *l {
-                Value::Bool(b) => *b &= r.unwrap_bool(),
+                Value::Bool(l) => *l &= r.unwrap_bool(),
                 _ => unreachable!(),
             },
             AssignmentOperator::Or => match &mut *l {
-                Value::Bool(b) => *b |= r.unwrap_bool(),
+                Value::Bool(l) => *l |= r.unwrap_bool(),
                 _ => unreachable!(),
             },
         }
@@ -208,22 +208,77 @@ fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>
     let r = right.borrow();
 
     Rc::new(RefCell::new(match &binary.operator {
-        BinaryOperator::Equals => Value::Bool(match *l {
-            Value::Int(i) => i == r.unwrap_int(),
+        BinaryOperator::Add => match *l {
+            Value::Int(l) => Value::Int(l + r.unwrap_int()),
+            Value::Float(l) => Value::Float(l + r.unwrap_float()),
+            _ => unreachable!(),
+        },
+        BinaryOperator::Subtract => match *l {
+            Value::Int(l) => Value::Int(l - r.unwrap_int()),
+            Value::Float(l) => Value::Float(l - r.unwrap_float()),
+            _ => unreachable!(),
+        },
+        BinaryOperator::Multiply => match *l {
+            Value::Int(l) => Value::Int(l * r.unwrap_int()),
+            Value::Float(l) => Value::Float(l * r.unwrap_float()),
+            _ => unreachable!(),
+        },
+        BinaryOperator::Divide => match *l {
+            Value::Int(l) => Value::Int(l / r.unwrap_int()),
+            Value::Float(l) => Value::Float(l / r.unwrap_float()),
+            _ => unreachable!(),
+        },
+        BinaryOperator::Modulo => match *l {
+            Value::Int(l) => Value::Int(l % r.unwrap_int()),
+            Value::Float(l) => Value::Float(l % r.unwrap_float()),
+            _ => unreachable!(),
+        },
+        BinaryOperator::Equals => Value::Bool(match &*l {
+            Value::Int(l) => *l == r.unwrap_int(),
+            Value::Float(l) => *l == r.unwrap_float(),
+            Value::Bool(l) => *l == r.unwrap_bool(),
+            Value::Reference(l) => *l == r.unwrap_reference(),
+            Value::String(l) => l == r.unwrap_str(),
+            Value::List(l) => l == r.unwrap_list_ref(),
+            _ => unreachable!(),
+        }),
+        BinaryOperator::NotEquals => Value::Bool(match &*l {
+            Value::Int(l) => *l != r.unwrap_int(),
+            Value::Float(l) => *l != r.unwrap_float(),
+            Value::Bool(l) => *l != r.unwrap_bool(),
+            Value::Reference(l) => *l != r.unwrap_reference(),
+            Value::String(l) => l != r.unwrap_str(),
+            Value::List(l) => l != r.unwrap_list_ref(),
+            _ => unreachable!(),
+        }),
+        BinaryOperator::GreaterThan => Value::Bool(match *l {
+            Value::Int(l) => l > r.unwrap_int(),
+            Value::Float(l) => l > r.unwrap_float(),
+            _ => todo!(),
+        }),
+        BinaryOperator::GreaterThanOrEqual => Value::Bool(match *l {
+            Value::Int(l) => l >= r.unwrap_int(),
+            Value::Float(l) => l >= r.unwrap_float(),
             _ => todo!(),
         }),
         BinaryOperator::LessThan => Value::Bool(match *l {
-            Value::Int(i) => i < r.unwrap_int(),
+            Value::Int(l) => l < r.unwrap_int(),
+            Value::Float(l) => l < r.unwrap_float(),
             _ => todo!(),
         }),
-        BinaryOperator::Add => match *l {
-            Value::Int(i) => Value::Int(i + r.unwrap_int()),
+        BinaryOperator::LessThanOrEqual => Value::Bool(match *l {
+            Value::Int(l) => l <= r.unwrap_int(),
+            Value::Float(l) => l <= r.unwrap_float(),
             _ => todo!(),
-        },
-        BinaryOperator::Subtract => match *l {
-            Value::Int(i) => Value::Int(i - r.unwrap_int()),
+        }),
+        BinaryOperator::And => Value::Bool(match *l {
+            Value::Bool(l) => l && r.unwrap_bool(),
             _ => todo!(),
-        },
+        }),
+        BinaryOperator::Or => Value::Bool(match *l {
+            Value::Bool(l) => l || r.unwrap_bool(),
+            _ => todo!(),
+        }),
         _ => todo!(),
     }))
 }
