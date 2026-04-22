@@ -1,5 +1,6 @@
 use super::{Value, eval};
 use pretty_assertions::assert_eq;
+use std::{cell::RefCell, rc::Rc};
 
 // https://stackoverflow.com/questions/30856285/assert-eq-with-floating-point-numbers-and-delta
 macro_rules! assert_delta {
@@ -100,15 +101,31 @@ fn assign_equals_string() {
 }
 
 #[test]
-#[ignore = "todo"]
 fn assign_equals_list() {
-    todo!()
+    assert_eq!(
+        Ok(Value::List(vec![Rc::new(RefCell::new(Value::Int(1)))])),
+        eval(
+            "
+                var l: List<Int> = []
+                l = [1];
+                return l
+            "
+        )
+    )
 }
 
 #[test]
-#[ignore = "todo"]
 fn assign_equals_reference() {
-    todo!()
+    assert_eq!(
+        Ok(Value::Reference(Rc::new(RefCell::new(Value::Int(2))))),
+        eval(
+            "
+                var r: Ref<Int> = &1
+                r = &2;
+                return r
+            "
+        )
+    )
 }
 
 #[test]

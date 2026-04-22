@@ -36,7 +36,6 @@ impl From<TypeSpecifier> for Type {
 }
 
 impl Type {
-    #[allow(unused)]
     fn is_matching(&self, other: &Self) -> bool {
         match (self, other) {
             (Type::List(self_inner), Type::List(other_inner)) => match (self_inner, other_inner) {
@@ -45,6 +44,26 @@ impl Type {
                 (Some(self_inner), Some(other_inner)) => self_inner.is_matching(other_inner),
             },
             _ => self == other,
+        }
+    }
+
+    fn is_ambigous(&self) -> bool {
+        if let Type::List(inner) = self {
+            if let Some(inner) = inner {
+                inner.is_ambigous()
+            } else {
+                true
+            }
+        } else {
+            false
+        }
+    }
+
+    fn unwrap_ref(self) -> Self {
+        if let Type::Ref(inner) = self {
+            *inner
+        } else {
+            panic!("called `Type::unwrap_ref()` on a non `Ref` value")
         }
     }
 }
@@ -323,7 +342,13 @@ impl<'a> Checker {
             ));
         }
 
-        Ok(right_type)
+        let new_type = match unary.operator {
+            UnaryOperator::Reference => Type::Ref(Box::new(right_type)),
+            UnaryOperator::Dereference => right_type.unwrap_ref(),
+            _ => right_type,
+        };
+
+        Ok(new_type)
     }
 
     fn check_identifier(
@@ -448,12 +473,18 @@ impl<'a> Checker {
         } else {
             // Infered type
             if let Some(expression) = expression_type_check {
-                Ok(expression)
+                if expression.is_ambigous() {
+                    Err(error(
+                        region.clone(),
+                        "type checker could not infer type of variable, hint: add a type annoation to the variable declaration".to_string(),
+                    ))
+                } else {
+                    Ok(expression)
+                }
             } else {
                 Err(error(
                     region.clone(),
-                    "could not infer type for variable declaration, hint: add a type specifier"
-                        .to_string(),
+                    "variable is not allowed to have no value".to_string(),
                 ))
             }
         }
