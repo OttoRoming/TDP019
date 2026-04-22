@@ -441,8 +441,7 @@ fn fibonacci_recursive_10() {
     assert_eq!(
         Ok(Value::Int(55)),
         eval(&format!(
-            "{}{}",
-            FIBONACCI_RECURSIVE_DECLARATIION, "return fib(10)"
+            "{FIBONACCI_RECURSIVE_DECLARATIION} return fib(10)",
         ))
     );
 }
@@ -452,8 +451,7 @@ fn fibonacci_recursive_20() {
     assert_eq!(
         Ok(Value::Int(6765)),
         eval(&format!(
-            "{}{}",
-            FIBONACCI_RECURSIVE_DECLARATIION, "return fib(20)"
+            "{FIBONACCI_RECURSIVE_DECLARATIION} return fib(20)",
         ))
     );
 }
