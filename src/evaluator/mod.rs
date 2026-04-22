@@ -326,6 +326,30 @@ fn eval_unary(scope: Rc<Scope>, unary: &UnaryExpression) -> Rc<RefCell<Value>> {
     }))
 }
 
+fn eval_index(scope: Rc<Scope>, index: &IndexExpression) -> Rc<RefCell<Value>> {
+    let collection = eval_expression(Rc::clone(&scope), &index.collection);
+    let index_value = eval_expression(Rc::clone(&scope), &index.index);
+
+    let collection_borrow = collection.borrow();
+
+    let list = collection_borrow.unwrap_list_ref();
+    let result = Rc::clone(
+        list.get(index_value.borrow().unwrap_int() as usize)
+            .unwrap(),
+    );
+
+    result
+}
+
+fn eval_list(scope: Rc<Scope>, list: &Vec<Expression>) -> Rc<RefCell<Value>> {
+    let values: Vec<Rc<RefCell<Value>>> = list
+        .iter()
+        .map(|e| eval_expression(Rc::clone(&scope), e))
+        .collect();
+
+    Rc::new(RefCell::new(Value::List(values)))
+}
+
 fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Rc<RefCell<Value>> {
     match &expression.value {
         ExpressionValue::FunctionCall(call) => eval_call(scope, call),
@@ -334,11 +358,12 @@ fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Rc<RefCell<Valu
         ExpressionValue::Update(update) => eval_update(scope, update),
         ExpressionValue::Binary(binary) => eval_binary(scope, binary),
         ExpressionValue::Unary(unary) => eval_unary(scope, unary),
+        ExpressionValue::Index(index) => eval_index(scope, index),
+        ExpressionValue::List(list) => eval_list(scope, list),
         ExpressionValue::Bool(b) => Rc::new(RefCell::new(Value::Bool(*b))),
         ExpressionValue::String(s) => Rc::new(RefCell::new(Value::String(s.clone()))),
         ExpressionValue::Int(i) => Rc::new(RefCell::new(Value::Int(*i))),
         ExpressionValue::Float(f) => Rc::new(RefCell::new(Value::Float(*f))),
-        _ => todo!(),
     }
 }
 
