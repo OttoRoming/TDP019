@@ -305,6 +305,27 @@ fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>
     }))
 }
 
+fn eval_unary(scope: Rc<Scope>, unary: &UnaryExpression) -> Rc<RefCell<Value>> {
+    let right = eval_expression(Rc::clone(&scope), &unary.right);
+
+    Rc::new(RefCell::new(match &unary.operator {
+        UnaryOperator::Negate => match *right.borrow() {
+            Value::Int(r) => Value::Int(-r),
+            Value::Float(r) => Value::Float(-r),
+            _ => unreachable!(),
+        },
+        UnaryOperator::Not => Value::Bool(match *right.borrow() {
+            Value::Bool(r) => !r,
+            _ => unreachable!(),
+        }),
+        UnaryOperator::Dereference => match &*right.borrow() {
+            Value::Reference(r) => r.borrow().clone(),
+            _ => unreachable!(),
+        },
+        UnaryOperator::Reference => Value::Reference(right),
+    }))
+}
+
 fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Rc<RefCell<Value>> {
     match &expression.value {
         ExpressionValue::FunctionCall(call) => eval_call(scope, call),
@@ -312,6 +333,7 @@ fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Rc<RefCell<Valu
         ExpressionValue::Assign(assign) => eval_assign(scope, assign),
         ExpressionValue::Update(update) => eval_update(scope, update),
         ExpressionValue::Binary(binary) => eval_binary(scope, binary),
+        ExpressionValue::Unary(unary) => eval_unary(scope, unary),
         ExpressionValue::Bool(b) => Rc::new(RefCell::new(Value::Bool(*b))),
         ExpressionValue::String(s) => Rc::new(RefCell::new(Value::String(s.clone()))),
         ExpressionValue::Int(i) => Rc::new(RefCell::new(Value::Int(*i))),
