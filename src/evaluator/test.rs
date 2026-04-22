@@ -410,6 +410,23 @@ fn assign_or_true_true() {
     )
 }
 
+#[test]
+fn list_mutation_no_side_effects() {
+    assert_eq!(
+        Ok(Value::Int(1)),
+        eval(
+            "
+                var i = 1
+                var l = [i]
+
+                l[0]++;
+
+                return i
+            "
+        )
+    )
+}
+
 static FIBONACCI_RECURSIVE_DECLARATIION: &'static str = "
     fun fib(n: Int): Int {
         if n < 2 {

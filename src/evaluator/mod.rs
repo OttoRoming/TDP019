@@ -345,6 +345,7 @@ fn eval_list(scope: Rc<Scope>, list: &Vec<Expression>) -> Rc<RefCell<Value>> {
     let values: Vec<Rc<RefCell<Value>>> = list
         .iter()
         .map(|e| eval_expression(Rc::clone(&scope), e))
+        .map(|v| deep_copy(v))
         .collect();
 
     Rc::new(RefCell::new(Value::List(values)))
