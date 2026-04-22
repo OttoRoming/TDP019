@@ -129,9 +129,24 @@ fn assign_equals_reference() {
 }
 
 #[test]
-#[ignore = "todo"]
 fn assign_equals_function() {
-    todo!()
+    assert_eq!(
+        Ok(Value::Int(2)),
+        eval(
+            "
+                fun foo(): Int {
+                    return 1
+                }
+
+                fun return2(): Int {
+                    return 2
+                }
+
+                foo = return2;
+                return foo()
+            "
+        )
+    )
 }
 
 #[test]
