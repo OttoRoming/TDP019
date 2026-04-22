@@ -8,7 +8,7 @@ pub enum Function {
     Custom {
         scope: Rc<Scope>,
         parameters: Vec<Parameter>,
-        body: Block,
+        body: Rc<Block>,
     },
     Builtin(builtins::Function),
 }

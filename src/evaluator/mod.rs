@@ -98,7 +98,7 @@ fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Rc<RefCell<Valu
                     Rc::new(RefCell::new(Value::Function(Function::Custom {
                         scope: scope,
                         parameters: parameters,
-                        body: body.clone(),
+                        body: Rc::clone(&body),
                     }))),
                 );
             }
@@ -313,7 +313,7 @@ fn eval_function_declaration(scope: Rc<Scope>, fun: &FunctionDeclarationStatemen
         Rc::new(RefCell::new(Value::Function(Function::Custom {
             scope,
             parameters: fun.parameters.clone(),
-            body: fun.block.clone(),
+            body: Rc::new(fun.block.clone()),
         }))),
     )
 }
