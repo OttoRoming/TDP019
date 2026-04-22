@@ -200,6 +200,29 @@ fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Va
     left
 }
 
+fn eval_update(scope: Rc<Scope>, update: &UpdateExpression) -> Rc<RefCell<Value>> {
+    let updatee_value = eval_expression(scope, &update.updatee);
+
+    {
+        let mut u = updatee_value.borrow_mut();
+
+        match update.operator {
+            UpdateOperator::Increment => match &mut *u {
+                Value::Int(u) => *u += 1,
+                Value::Float(u) => *u += 1.0,
+                _ => unreachable!(),
+            },
+            UpdateOperator::Decrement => match &mut *u {
+                Value::Int(u) => *u -= 1,
+                Value::Float(u) => *u -= 1.0,
+                _ => unreachable!(),
+            },
+        }
+    }
+
+    updatee_value
+}
+
 fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>> {
     let left = eval_expression(Rc::clone(&scope), &binary.left);
     let right = eval_expression(scope, &binary.right);
@@ -287,6 +310,7 @@ fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Rc<RefCell<Valu
         ExpressionValue::FunctionCall(call) => eval_call(scope, call),
         ExpressionValue::Identifier(id) => eval_identifier(scope, id),
         ExpressionValue::Assign(assign) => eval_assign(scope, assign),
+        ExpressionValue::Update(update) => eval_update(scope, update),
         ExpressionValue::Binary(binary) => eval_binary(scope, binary),
         ExpressionValue::Bool(b) => Rc::new(RefCell::new(Value::Bool(*b))),
         ExpressionValue::String(s) => Rc::new(RefCell::new(Value::String(s.clone()))),
