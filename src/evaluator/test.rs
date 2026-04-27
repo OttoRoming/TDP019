@@ -759,6 +759,22 @@ fn not_equals_list_not_equals() {
 }
 
 #[test]
+fn list_mutate_content() {
+    assert_eq!(
+        Ok(Value::List(vec![Rc::new(RefCell::new(Value::Int(3)))])),
+        eval(
+            "
+                var l = [1]
+
+                l[0] += 2;
+
+                return l
+            "
+        )
+    )
+}
+
+#[test]
 fn list_mutation_no_side_effects() {
     assert_eq!(
         Ok(Value::Int(1)),
