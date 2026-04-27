@@ -239,7 +239,7 @@ impl Lexer {
             self.tokenize_string()
         } else if self.peek(0).is_ascii_digit() {
             self.tokenize_int_or_float()
-        } else if self.peek(0).is_alphabetic() {
+        } else if self.peek(0).is_alphabetic() || self.peek(0) == '_' {
             self.tokenize_mutlichar()
         } else {
             Err(error(
