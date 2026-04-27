@@ -232,9 +232,10 @@ fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>
     let r = right.borrow();
 
     Rc::new(RefCell::new(match &binary.operator {
-        BinaryOperator::Add => match *l {
+        BinaryOperator::Add => match &*l {
             Value::Int(l) => Value::Int(l + r.unwrap_int()),
             Value::Float(l) => Value::Float(l + r.unwrap_float()),
+            Value::String(l) => Value::String(format!("{}{}", l, r.unwrap_str())),
             _ => unreachable!(),
         },
         BinaryOperator::Subtract => match *l {

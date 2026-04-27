@@ -1,7 +1,7 @@
-fun mutate(v: String) {
-    v += " world";
+fun mutate(v: Ref<String>) {
+    *v += " world";
 }
 
 var s = "hello"
-mutate(s);
+mutate(&s);
 puts(s);

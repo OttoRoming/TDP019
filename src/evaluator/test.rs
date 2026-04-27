@@ -187,7 +187,8 @@ fn assign_add_string() {
         eval(
             "
                 var s = \"hello\"
-                s += \" world\";
+                s += \" \";
+                s += \"world\";
                 return s
             "
         )
@@ -422,6 +423,339 @@ fn assign_or_true_true() {
             "
         )
     )
+}
+
+#[test]
+fn add_int() {
+    assert_eq!(Ok(Value::Int(3)), eval("return 1 + 2"))
+}
+
+#[test]
+fn add_float() {
+    assert_delta!(
+        0.3,
+        eval("return 0.1 + 0.2").unwrap().unwrap_float(),
+        0.0001
+    )
+}
+
+#[test]
+fn add_string() {
+    assert_eq!(
+        Ok(Value::String("hello world".to_string())),
+        eval("return \"hello\" + \" \" + \"world\"")
+    )
+}
+
+#[test]
+fn subtract_int() {
+    assert_eq!(Ok(Value::Int(1)), eval("return 3 - 2"))
+}
+
+#[test]
+fn subtract_float() {
+    assert_delta!(
+        0.1,
+        eval("return 0.3 - 0.1").unwrap().unwrap_float(),
+        0.0001
+    )
+}
+
+#[test]
+fn multiply_int() {
+    assert_eq!(Ok(Value::Int(15)), eval("return 3*5"))
+}
+
+#[test]
+fn multiply_float() {
+    assert_eq!(Ok(Value::Float(0.15)), eval("return 0.3*0.5"))
+}
+
+#[test]
+fn divide_int() {
+    assert_eq!(Ok(Value::Int(5)), eval("return 15/3"))
+}
+
+#[test]
+fn divide_float() {
+    assert_eq!(Ok(Value::Float(0.5)), eval("return 0.15/0.3"))
+}
+
+#[test]
+fn modulo_int() {
+    assert_eq!(Ok(Value::Int(4)), eval("return 14%10"))
+}
+
+#[test]
+fn modulo_float() {
+    assert_delta!(0.4, eval("return 1.4%1.0").unwrap().unwrap_float(), 0.0001)
+}
+
+#[test]
+fn and_false_false() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return false && false"))
+}
+
+#[test]
+fn and_false_true() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return false && true"))
+}
+
+#[test]
+fn and_true_false() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return true && false"))
+}
+
+#[test]
+fn and_true_true() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return true && true"))
+}
+
+#[test]
+fn or_false_false() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return false || false"))
+}
+
+#[test]
+fn or_false_true() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return false || true"))
+}
+
+#[test]
+fn or_true_false() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return true || false"))
+}
+
+#[test]
+fn or_true_true() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return true || true"))
+}
+
+#[test]
+fn less_than_int_less_than() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 1 < 2"))
+}
+
+#[test]
+fn less_than_int_equal() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 2 < 2"))
+}
+
+#[test]
+fn less_than_int_greater_than() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 3 < 2"))
+}
+
+#[test]
+fn less_than_float_less_than() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 0.1 < 0.2"))
+}
+
+#[test]
+fn less_than_float_equal() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 0.2 < 0.2"))
+}
+
+#[test]
+fn less_than_float_greater_than() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 0.3 < 0.2"))
+}
+
+#[test]
+fn greater_than_int_less_than() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 1 > 2"))
+}
+
+#[test]
+fn greater_than_int_equal() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 2 > 2"))
+}
+
+#[test]
+fn greater_than_int_greater_than() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 3 > 2"))
+}
+
+#[test]
+fn greater_than_float_less_than() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 0.1 > 0.2"))
+}
+
+#[test]
+fn greater_than_float_equal() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 0.2 > 0.2"))
+}
+
+#[test]
+fn greater_than_float_greater_than() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 0.3 > 0.2"))
+}
+
+#[test]
+fn less_than_or_equal_int_less_than() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 1 <= 2"))
+}
+
+#[test]
+fn less_than_or_equal_int_equal() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 2 <= 2"))
+}
+
+#[test]
+fn less_than_or_equal_int_greater_than() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 3 <= 2"))
+}
+
+#[test]
+fn less_than_or_equal_float_less_than() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 0.1 <= 0.2"))
+}
+
+#[test]
+fn less_than_or_equal_float_equal() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 0.2 <= 0.2"))
+}
+
+#[test]
+fn less_than_or_equal_float_greater_than() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 0.3 <= 0.2"))
+}
+
+#[test]
+fn greater_than_or_equal_int_less_than() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 1 >= 2"))
+}
+
+#[test]
+fn greater_than_or_equal_int_equal() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 2 >= 2"))
+}
+
+#[test]
+fn greater_than_or_equal_int_greater_than() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 3 >= 2"))
+}
+
+#[test]
+fn greater_than_or_equal_float_less_than() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 0.1 >= 0.2"))
+}
+
+#[test]
+fn greater_than_or_equal_float_equal() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 0.2 >= 0.2"))
+}
+
+#[test]
+fn greater_than_or_equal_float_greater_than() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 0.3 >= 0.2"))
+}
+
+#[test]
+fn equals_int_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 1 == 1"))
+}
+
+#[test]
+fn equals_int_not_equals() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 1 == 2"))
+}
+
+#[test]
+fn not_equals_int_equals() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 1 != 1"))
+}
+
+#[test]
+fn not_equals_int_not_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 1 != 2"))
+}
+
+#[test]
+fn equals_float_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 0.1 == 0.1"))
+}
+
+#[test]
+fn equals_float_not_equals() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 0.1 == 0.2"))
+}
+
+#[test]
+fn not_equals_float_equals() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return 0.1 != 0.1"))
+}
+
+#[test]
+fn not_equals_float_not_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return 0.1 != 0.2"))
+}
+
+#[test]
+fn equals_bool_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return false == false"))
+}
+
+#[test]
+fn equals_bool_not_equals() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return false == true"))
+}
+
+#[test]
+fn not_equals_bool_equals() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return false != false"))
+}
+
+#[test]
+fn not_equals_bool_not_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return false != true"))
+}
+
+#[test]
+fn equals_string_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return \"hello\" == \"hello\""))
+}
+
+#[test]
+fn equals_string_not_equals() {
+    assert_eq!(
+        Ok(Value::Bool(false)),
+        eval("return \"hello\" == \"world\"")
+    )
+}
+
+#[test]
+fn not_equals_string_equals() {
+    assert_eq!(
+        Ok(Value::Bool(false)),
+        eval("return \"hello\" != \"hello\"")
+    )
+}
+
+#[test]
+fn not_equals_string_not_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return \"hello\" != \"world\""))
+}
+
+// -
+#[test]
+fn equals_list_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return [] == []"))
+}
+
+#[test]
+fn equals_list_not_equals() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return [] == [1]"))
+}
+
+#[test]
+fn not_equals_list_equals() {
+    assert_eq!(Ok(Value::Bool(false)), eval("return [] != []"))
+}
+
+#[test]
+fn not_equals_list_not_equals() {
+    assert_eq!(Ok(Value::Bool(true)), eval("return [] != [1]"))
 }
 
 #[test]
