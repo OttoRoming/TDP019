@@ -681,6 +681,40 @@ impl Parser {
         })
     }
 
+    fn parse_throw(&mut self) -> Result<Throw, Error> {
+        self.expect(Value::KeywordThrow, "start of throw statement")?;
+        self.advance();
+
+        let message = self.parse_expression()?;
+        Ok(Throw { message })
+    }
+
+    fn parse_try_catch(&mut self) -> Result<TryCatch, Error> {
+        self.expect(Value::KeywordTry, "start of try statement")?;
+        self.advance();
+
+        let try_block = self.parse_block()?;
+
+        self.expect(Value::KeywordCatch, "code after try block")?;
+        self.advance();
+
+        let exception_identifier = match &self.peek(0).value {
+            Value::Identifier(id) => Some(id.clone()),
+            _ => None,
+        };
+        if exception_identifier.is_some() {
+            self.advance();
+        }
+
+        let catch_block = self.parse_block()?;
+
+        Ok(TryCatch {
+            try_block,
+            exception_identifier,
+            catch_block,
+        })
+    }
+
     fn parse_statement(&mut self) -> Result<Statement, Error> {
         let start = self.peek(0).region.start.clone();
         let value = match self.peek(0).value {
@@ -694,6 +728,16 @@ impl Parser {
             Value::KeywordReturn => StatementValue::Return(self.parse_return()?),
             Value::KeywordFun => {
                 StatementValue::FunctionDeclaration(self.parse_function_declaration()?)
+            }
+            Value::KeywordThrow => StatementValue::Throw(self.parse_throw()?),
+            Value::KeywordTry => StatementValue::TryCatch(self.parse_try_catch()?),
+            Value::KeywordContinue => {
+                self.advance();
+                StatementValue::Continue
+            }
+            Value::KeywordBreak => {
+                self.advance();
+                StatementValue::Break
             }
             _ => self.parse_expression_statement()?,
         };

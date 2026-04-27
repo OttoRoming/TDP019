@@ -698,6 +698,37 @@ impl<'a> Checker {
         }
     }
 
+    fn check_throw(&mut self, throw: &Throw) -> Result<(), Error> {
+        let message = self.check_expression(&throw.message)?;
+
+        if message != Some(Type::String) {
+            Err(error(
+                throw.message.region.clone(),
+                format!("expected message to be of type string, found {:?}", message),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn check_try_catch(&mut self, try_catch: &TryCatch) -> Result<(), Error> {
+        self.check_block(&try_catch.try_block)?;
+
+        self.enter_block();
+
+        if let Some(identifier) = &try_catch.exception_identifier {
+            self.declare_identifier(Identifier {
+                identifier: identifier.clone(),
+                type_: Type::String,
+            });
+        }
+        self.check_block(&try_catch.catch_block)?;
+
+        self.exit_block();
+
+        Ok(())
+    }
+
     fn check_statement(&mut self, statement: &Statement) -> Result<(), Error> {
         match &statement.value {
             StatementValue::Block(block) => self.check_block(block).map(|_| ()),
@@ -714,6 +745,9 @@ impl<'a> Checker {
             StatementValue::Return(return_statement) => {
                 self.check_return(return_statement, &statement.region)
             }
+            StatementValue::Throw(throw) => self.check_throw(throw),
+            StatementValue::TryCatch(try_catch) => self.check_try_catch(try_catch),
+            StatementValue::Continue | StatementValue::Break => Ok(()),
         }
     }
 

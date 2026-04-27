@@ -1,11 +1,20 @@
-fun mutate(v: Ref<String>) {
-    *v += " world";
-# var x = "hello"
-# x += " world";
-# puts("v = " + *v);
-# puts("x = " + x);
+each i : ["1", "2", "3"] {
+    if i == "3" {
+        continue
+    }
+
+    puts(i);
 }
 
-var s = "hello"
-mutate(&s);
-puts("s = " + s);
+while true {
+    break
+    puts("uwu");
+}
+
+try {
+    throw "my exception"
+
+    puts("try block");
+} catch e {
+    puts("catch block, " + e);
+}

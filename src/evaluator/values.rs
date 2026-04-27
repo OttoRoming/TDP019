@@ -103,18 +103,17 @@ impl Value {
     }
 }
 
-#[allow(unused)]
 pub struct Return {
     pub value: Option<Rc<RefCell<Value>>>,
 }
 
-#[allow(unused)]
-struct Exception {
-    message: String,
+pub struct Exception {
+    pub message: String,
 }
 
-#[allow(unused)]
-enum ControlFlow {
+pub enum ControlFlow {
     Return(Return),
     Exception(Exception),
+    Continue,
+    Break,
 }

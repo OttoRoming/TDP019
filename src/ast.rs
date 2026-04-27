@@ -70,6 +70,18 @@ pub struct ReturnStatement {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub struct Throw {
+    pub message: Expression,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct TryCatch {
+    pub try_block: Block,
+    pub exception_identifier: Option<String>,
+    pub catch_block: Block,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 #[allow(dead_code)]
 pub enum StatementValue {
     Block(Block),
@@ -79,6 +91,10 @@ pub enum StatementValue {
     VariableDeclaration(VariableDeclarationStatement),
     FunctionDeclaration(FunctionDeclarationStatement),
     Return(ReturnStatement),
+    Throw(Throw),
+    TryCatch(TryCatch),
+    Continue,
+    Break,
     Expression(Expression),
 }
 
