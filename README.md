@@ -33,7 +33,8 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
   - [x] lägga till "matching" method till Type för att kolla om två typer kan matcha, så som till exempel en tom list och en lista med ints matchar
   - [x] förbjuda == mellan funktioner
   - [x] avskaffa variantly craten eftersom så jag slipper *value.bool_ref().unwrap()
-  - [ ] varna mot var l = [] för att det skapar en variabel med ambigous type
+  - [x] varna mot var l = [] för att det skapar en variabel med ambigous type
+  - [ ] referenser fungerar inte
 
 måste fixa display för typer så att man inte får dessa felmedelanden
 ```
