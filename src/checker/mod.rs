@@ -342,7 +342,11 @@ impl<'a> Checker {
         let is_compatible = match unary.operator {
             UnaryOperator::Negate => right_type == Type::Int || right_type == Type::Float,
             UnaryOperator::Not => right_type == Type::Bool,
-            UnaryOperator::Dereference | UnaryOperator::Reference => true,
+            UnaryOperator::Dereference => match right_type {
+                Type::Ref(_) => true,
+                _ => false,
+            },
+            UnaryOperator::Reference => true,
         };
 
         if !is_compatible {
