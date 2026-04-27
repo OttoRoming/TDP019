@@ -1,7 +1,11 @@
 fun mutate(v: Ref<String>) {
     *v += " world";
+# var x = "hello"
+# x += " world";
+# puts("v = " + *v);
+# puts("x = " + x);
 }
 
 var s = "hello"
 mutate(&s);
-puts(s);
+puts("s = " + s);

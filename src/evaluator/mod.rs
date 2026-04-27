@@ -310,6 +310,10 @@ fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>
 fn eval_unary(scope: Rc<Scope>, unary: &UnaryExpression) -> Rc<RefCell<Value>> {
     let right = eval_expression(Rc::clone(&scope), &unary.right);
 
+    if &unary.operator == &UnaryOperator::Dereference {
+        return right.borrow().unwrap_reference();
+    }
+
     Rc::new(RefCell::new(match &unary.operator {
         UnaryOperator::Negate => match *right.borrow() {
             Value::Int(r) => Value::Int(-r),
