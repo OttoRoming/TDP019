@@ -444,6 +444,45 @@ fn eval_function_declaration(scope: Rc<Scope>, fun: &FunctionDeclarationStatemen
 }
 
 #[must_use]
+fn eval_while(scope: Rc<Scope>, while_statement: &WhileStatement) -> Option<Return> {
+    let return_value: Option<Return> = None;
+
+    loop {
+        let test = eval_expression(Rc::clone(&scope), &while_statement.test);
+        if !test.borrow().unwrap_bool() {
+            break;
+        }
+
+        let return_value = eval_block(Rc::clone(&scope), &while_statement.block);
+        if return_value.is_some() {
+            break;
+        }
+    }
+
+    return_value
+}
+
+fn eval_each(scope: Rc<Scope>, each: &EachStatement) -> Option<Return> {
+    let mut return_value: Option<Return> = None;
+
+    let right = eval_expression(Rc::clone(&scope), &each.right);
+    let right_borrow = right.borrow();
+    let right_list = right_borrow.unwrap_list_ref();
+
+    for i in right_list {
+        let mut each_scope = Scope::new_block(Some(Rc::clone(&scope)));
+        each_scope = Scope::new_id(each_scope, each.left.clone(), deep_copy(Rc::clone(i)));
+
+        return_value = eval_block(each_scope, &each.block);
+        if return_value.is_some() {
+            break;
+        }
+    }
+
+    return_value
+}
+
+#[must_use]
 fn eval_statement(scope: Rc<Scope>, statement: &Statement) -> (Rc<Scope>, Option<Return>) {
     let mut new_scope = Rc::clone(&scope);
     let mut return_value: Option<Return> = None;
@@ -463,9 +502,8 @@ fn eval_statement(scope: Rc<Scope>, statement: &Statement) -> (Rc<Scope>, Option
         StatementValue::FunctionDeclaration(fun) => {
             new_scope = eval_function_declaration(scope, fun);
         }
-        _ => {
-            todo!()
-        }
+        StatementValue::While(while_statement) => return_value = eval_while(scope, while_statement), // _ => {
+        StatementValue::Each(each) => return_value = eval_each(scope, each),
     };
 
     (new_scope, return_value)
