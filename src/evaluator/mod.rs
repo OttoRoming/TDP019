@@ -164,6 +164,7 @@ fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Va
             AssignmentOperator::Add => match &mut *l {
                 Value::Int(l) => *l += r.unwrap_int(),
                 Value::Float(l) => *l += r.unwrap_float(),
+                Value::String(l) => l.push_str(r.unwrap_str()),
                 _ => unreachable!(),
             },
             AssignmentOperator::Divide => match &mut *l {

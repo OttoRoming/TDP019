@@ -181,6 +181,20 @@ fn assign_add_float() {
 }
 
 #[test]
+fn assign_add_string() {
+    assert_eq!(
+        Ok(Value::String("hello world".to_string())),
+        eval(
+            "
+                var s = \"hello\"
+                s += \" world\";
+                return s
+            "
+        )
+    )
+}
+
+#[test]
 fn assign_divide_int() {
     assert_eq!(
         Ok(Value::Int(5)),

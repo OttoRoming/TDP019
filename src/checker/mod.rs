@@ -155,8 +155,17 @@ impl<'a> Checker {
         }
 
         match binary.operator {
-            BinaryOperator::Add
-            | BinaryOperator::Subtract
+            BinaryOperator::Add => match left {
+                Type::Int | Type::Float | Type::String => Ok(left),
+                _ => Err(error(
+                    region.clone(),
+                    format!(
+                        "{:?} is incompatible with operator {:?}",
+                        left, binary.operator
+                    ),
+                )),
+            },
+            BinaryOperator::Subtract
             | BinaryOperator::Multiply
             | BinaryOperator::Divide
             | BinaryOperator::Modulo => match left {
@@ -275,8 +284,12 @@ impl<'a> Checker {
 
             let is_operator_compatible = match assign.operator {
                 AssignmentOperator::And | AssignmentOperator::Or => right_type == Type::Bool,
-                AssignmentOperator::Add
-                | AssignmentOperator::Divide
+                AssignmentOperator::Add => {
+                    right_type == Type::Int
+                        || right_type == Type::Float
+                        || right_type == Type::String
+                }
+                AssignmentOperator::Divide
                 | AssignmentOperator::Modulo
                 | AssignmentOperator::Multiply
                 | AssignmentOperator::Subtract => {

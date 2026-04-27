@@ -1,12 +1,7 @@
-fun fib(n: Int): Int {
-    if n < 2 {
-        return n
-    }
-    return fib(n - 1) + fib(n - 2)
+fun mutate(v: String) {
+    v += " world";
 }
 
-if fib(30) == 832040 {
-    puts("fib correctly calculated");
-}
-
-return 0
+var s = "hello"
+mutate(s);
+puts(s);
