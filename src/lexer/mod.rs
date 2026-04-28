@@ -193,6 +193,7 @@ impl Lexer {
             ('|', '=') => Some(Value::OrAssign),
             ('+', '+') => Some(Value::Increment),
             ('-', '-') => Some(Value::Decrement),
+            ('<', '-') => Some(Value::Arrow),
             _ => None,
         };
         if let Some(value) = token_value {

@@ -1,7 +1,16 @@
-fun mutate(v: Ref<String>) {
-    *v += " world";
-}
+# var i = 6
+# i += 7;
 
-var s = "hello"
-mutate(&s);
-puts(s);
+var a = 0
+var b = 0
+a = b = 2;
+
+
+# var board_width = 20
+# var board_height = 20
+# 
+# var board: List<List<Bool>> = []
+# 
+# each i : range(10) {
+#     puts("uwu");
+# }

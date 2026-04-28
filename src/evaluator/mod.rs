@@ -1,7 +1,7 @@
 use crate::{ast::*, checker::check, error::Error, parser::parse};
 use std::{cell::RefCell, rc::Rc};
 
-mod builtins;
+pub mod builtins;
 pub mod values;
 
 #[cfg(test)]
@@ -193,6 +193,12 @@ fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Va
             },
             AssignmentOperator::Or => match &mut *l {
                 Value::Bool(l) => *l |= r.unwrap_bool(),
+                _ => unreachable!(),
+            },
+            AssignmentOperator::Append => match &mut *l {
+                Value::List(l) => {
+                    l.push(Rc::new(RefCell::new(r.clone())));
+                }
                 _ => unreachable!(),
             },
         }
@@ -512,8 +518,9 @@ fn eval_statement(scope: Rc<Scope>, statement: &Statement) -> (Rc<Scope>, Option
 }
 
 pub fn eval_ast(ast: &[Statement]) -> Option<Rc<RefCell<Value>>> {
-    let mut scope = Scope::new_block(None);
-    scope = Scope::new_builtin(scope, "puts", builtins::puts);
+    // let mut scope = Scope::new_block(None);
+    // scope = Scope::new_builtin(scope, "puts", builtins::puts);
+    let mut scope = builtins::evaluator_scopes();
 
     let mut return_value: Option<Return> = None;
 

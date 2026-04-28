@@ -98,6 +98,7 @@ pub enum AssignmentOperator {
     Modulo,   // %=
     And,      // &=
     Or,       // |=
+    Append,   // <-
 }
 
 #[derive(Debug, PartialEq, Clone)]

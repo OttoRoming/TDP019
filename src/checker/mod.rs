@@ -1,6 +1,7 @@
 use crate::{
     ast::*,
     error::{self, Error},
+    evaluator::builtins,
     util::Region,
 };
 
@@ -69,13 +70,13 @@ impl Type {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct Identifier {
+pub struct Identifier {
     pub identifier: String,
     pub type_: Type,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-enum Scope {
+pub enum Scope {
     Block,
     Identifier(Identifier),
 }
@@ -269,7 +270,19 @@ impl<'a> Checker {
         let assignee_type = self.check_expression(&assign.assignee)?;
         let right_type = self.check_expression(&assign.right)?;
 
-        if let Some(assignee_type) = assignee_type
+        if assign.operator == AssignmentOperator::Append
+            && let Some(Type::List(Some(list_inner_type))) = &assignee_type
+            && let Some(right_type) = right_type
+        {
+            if list_inner_type.is_matching(&right_type) {
+                return Ok(assignee_type.unwrap());
+            } else {
+                return Err(error(
+                    region.clone(),
+                    "incompatible types used for appending".to_string(),
+                ));
+            }
+        } else if let Some(assignee_type) = assignee_type
             && let Some(right_type) = right_type
         {
             if !assignee_type.is_matching(&right_type) {
@@ -296,6 +309,7 @@ impl<'a> Checker {
                     right_type == Type::Int || right_type == Type::Float
                 }
                 AssignmentOperator::Equals => true,
+                AssignmentOperator::Append => false,
             };
 
             if !is_operator_compatible {
@@ -738,13 +752,7 @@ impl<'a> Checker {
 
     pub fn new() -> Self {
         Checker {
-            scopes: vec![Scope::Identifier(Identifier {
-                identifier: "puts".to_string(),
-                type_: Type::Function {
-                    parameters: vec![Type::String],
-                    return_type: Box::new(Some(Type::String)),
-                },
-            })],
+            scopes: builtins::checker_scopes(),
             function_bodies: vec![],
         }
     }
