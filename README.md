@@ -34,7 +34,8 @@ Implemented in 100% safe Rust 🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀�
   - [x] förbjuda == mellan funktioner
   - [x] avskaffa variantly craten eftersom så jag slipper *value.bool_ref().unwrap()
   - [x] varna mot var l = [] för att det skapar en variabel med ambigous type
-  - [ ] referenser fungerar inte
+  - [x] referenser fungerar inte
+  - [ ] kommentarer måste vara i början av en rad
 
 måste fixa display för typer så att man inte får dessa felmedelanden
 ```

@@ -765,9 +765,7 @@ fn list_mutate_content() {
         eval(
             "
                 var l = [1]
-
                 l[0] += 2;
-
                 return l
             "
         )
@@ -786,6 +784,23 @@ fn list_mutation_no_side_effects() {
                 l[0]++;
 
                 return i
+            "
+        )
+    )
+}
+
+#[test]
+fn mutate_reference() {
+    assert_eq!(
+        Ok(Value::String("hello world".to_string())),
+        eval(
+            "
+                fun add_suffix(s: Ref<String>) {
+                    *s += \" world\";
+                }
+                var s = \"hello\"
+                add_suffix(&s);
+                return s
             "
         )
     )

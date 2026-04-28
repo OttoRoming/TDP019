@@ -144,7 +144,7 @@ impl Lexer {
         let start = self.location.clone();
 
         let mut content = String::new();
-        while self.peek(0).is_alphanumeric() {
+        while self.peek(0).is_alphanumeric() || self.peek(0) == '_' {
             content.push(self.peek(0));
             self.advance();
         }
@@ -163,6 +163,11 @@ impl Lexer {
             "true" => Value::KeywordTrue,
             "false" => Value::KeywordFalse,
             "var" => Value::KeywordVar,
+            "throw" => Value::KeywordThrow,
+            "try" => Value::KeywordTry,
+            "catch" => Value::KeywordCatch,
+            "continue" => Value::KeywordContinue,
+            "break" => Value::KeywordBreak,
             "Int" => Value::TypeInt,
             "Float" => Value::TypeFloat,
             "String" => Value::TypeString,
@@ -240,7 +245,7 @@ impl Lexer {
             self.tokenize_string()
         } else if self.peek(0).is_ascii_digit() {
             self.tokenize_int_or_float()
-        } else if self.peek(0).is_alphabetic() {
+        } else if self.peek(0).is_alphabetic() || self.peek(0) == '_' {
             self.tokenize_mutlichar()
         } else {
             Err(error(

@@ -9,16 +9,21 @@ pub struct Token {
 #[derive(Debug, PartialEq)]
 pub enum Value {
     // keyword tokens
-    KeywordIf,     // if
-    KeywordElif,   // elif
-    KeywordElse,   // else
-    KeywordFun,    // fun
-    KeywordWhile,  // while
-    KeywordEach,   // each
-    KeywordReturn, // return
-    KeywordTrue,   // true
-    KeywordFalse,  // false
-    KeywordVar,    // var
+    KeywordIf,       // if
+    KeywordElif,     // elif
+    KeywordElse,     // else
+    KeywordFun,      // fun
+    KeywordWhile,    // while
+    KeywordEach,     // each
+    KeywordReturn,   // return
+    KeywordTrue,     // true
+    KeywordFalse,    // false
+    KeywordVar,      // var
+    KeywordThrow,    // throw
+    KeywordTry,      // try
+    KeywordCatch,    // catch
+    KeywordContinue, // continue
+    KeywordBreak,    // break
 
     TypeInt,    // Int
     TypeFloat,  // Float
