@@ -1,16 +1,17 @@
-# var i = 6
-# i += 7;
-
-var a = 0
-var b = 0
-a = b = 2;
-
-
-# var board_width = 20
-# var board_height = 20
+# var l = [[1]]
+# var l2 = l
+# l[0][0] = 3;
 # 
-# var board: List<List<Bool>> = []
-# 
-# each i : range(10) {
-#     puts("uwu");
+# if l2[0][0] == 3 {
+#     puts("ono");
+# } elif l2[0][0] == 1 {
+#     puts("good");
 # }
+
+var i = -1 + 10
+i %= 10;
+
+puts(i_to_s(i));
+if i == -15 {
+    # puts("uwu");
+}

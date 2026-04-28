@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 color-backtrace = "0.7.2"
+fastrand = "2.4.1"
 owo-colors = "4.3.0"
 
 [dev-dependencies]

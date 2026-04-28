@@ -22,7 +22,12 @@ pub struct Scope {
 }
 
 fn deep_copy(value: Rc<RefCell<Value>>) -> Rc<RefCell<Value>> {
-    Rc::new(RefCell::new(value.borrow().clone()))
+    match &*value.borrow() {
+        Value::List(l) => Rc::new(RefCell::new(Value::List(
+            l.iter().map(|v| deep_copy(Rc::clone(v))).collect(),
+        ))),
+        _ => Rc::new(RefCell::new(value.borrow().clone())),
+    }
 }
 
 impl Scope {
