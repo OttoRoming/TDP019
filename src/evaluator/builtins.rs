@@ -60,23 +60,23 @@ pub fn checker_scopes() -> Vec<checker::Scope> {
 
 pub fn evaluator_scopes() -> Rc<super::Scope> {
     Scope::new_builtin(
-        Scope::new_builtin(
-            Scope::new_builtin(
-                Scope::new_builtin(
-                    Scope::new_builtin(
-                        Scope::new_builtin(Scope::new_block(None), "puts", puts),
+        Some(Scope::new_builtin(
+            Some(Scope::new_builtin(
+                Some(Scope::new_builtin(
+                    Some(Scope::new_builtin(
+                        Some(Scope::new_builtin(None, "puts", puts)),
                         "range",
                         range,
-                    ),
+                    )),
                     "random",
                     random,
-                ),
+                )),
                 "sleep",
                 sleep,
-            ),
+            )),
             "clear",
             clear,
-        ),
+        )),
         "i_to_s",
         i_to_s,
     )

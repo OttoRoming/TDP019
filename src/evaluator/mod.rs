@@ -18,7 +18,7 @@ struct Identifier {
 #[derive(Debug, PartialEq)]
 pub struct Scope {
     upper: Option<Rc<Scope>>,
-    data: ScopeData,
+    identifier: Identifier,
 }
 
 fn deep_copy(value: Rc<RefCell<Value>>) -> Rc<RefCell<Value>> {
@@ -31,40 +31,35 @@ fn deep_copy(value: Rc<RefCell<Value>>) -> Rc<RefCell<Value>> {
 }
 
 impl Scope {
-    pub fn new_block(upper: Option<Rc<Scope>>) -> Rc<Self> {
+    pub fn new(upper: Option<Rc<Scope>>, id: String, value: Rc<RefCell<Value>>) -> Rc<Self> {
         Rc::new(Self {
             upper,
-            data: ScopeData::Block,
-        })
-    }
-    pub fn new_id(upper: Rc<Scope>, id: String, value: Rc<RefCell<Value>>) -> Rc<Self> {
-        Rc::new(Self {
-            upper: Some(upper),
-            data: ScopeData::Identifier(Identifier {
+            identifier: Identifier {
                 identifier: id,
                 value,
-            }),
+            },
         })
     }
-    pub fn new_builtin(upper: Rc<Scope>, id: &str, builtin: builtins::Function) -> Rc<Self> {
+    pub fn new_builtin(
+        upper: Option<Rc<Scope>>,
+        id: &str,
+        builtin: builtins::Function,
+    ) -> Rc<Self> {
         Rc::new(Self {
-            upper: Some(upper),
-            data: ScopeData::Identifier(Identifier {
+            upper,
+            identifier: Identifier {
                 identifier: id.to_string(),
                 value: Rc::new(RefCell::new(Value::Function(Function::Builtin(builtin)))),
-            }),
+            },
         })
     }
 }
 
-#[derive(Debug, PartialEq)]
-enum ScopeData {
-    Block,
-    Identifier(Identifier),
-}
-
-fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Rc<RefCell<Value>> {
-    let callee = eval_expression(Rc::clone(&scope), &call.callee);
+fn eval_call(
+    scope: Rc<Scope>,
+    call: &FunctionCallExpression,
+) -> Result<Rc<RefCell<Value>>, Exception> {
+    let callee = eval_expression(Rc::clone(&scope), &call.callee)?;
     let callee_id = if let ExpressionValue::Identifier(id) = &call.callee.value {
         Some(&id.identifier)
     } else {
@@ -75,20 +70,20 @@ fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Rc<RefCell<Valu
         .arguments
         .iter()
         .map(|a| eval_expression(Rc::clone(&scope), a))
-        .collect();
+        .collect::<Result<Vec<Rc<RefCell<Value>>>, Exception>>()?;
 
-    match callee.borrow().clone().unwrap_function() {
+    Ok(match callee.borrow().clone().unwrap_function() {
         Function::Builtin(f) => f(arg_values),
         Function::Custom {
             scope,
             parameters,
             body,
         } => {
-            let mut fun_scope = Scope::new_block(Some(Rc::clone(&scope)));
+            let mut fun_scope = Rc::clone(&scope);
 
             for (i, value) in arg_values.iter().enumerate() {
-                fun_scope = Scope::new_id(
-                    fun_scope,
+                fun_scope = Scope::new(
+                    Some(fun_scope),
                     parameters[i].identifier.clone(),
                     deep_copy(Rc::clone(value)),
                 );
@@ -97,8 +92,8 @@ fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Rc<RefCell<Valu
             // allow for recursive function calling by declaring
             // the current function in it's scope
             if let Some(id) = callee_id {
-                fun_scope = Scope::new_id(
-                    fun_scope,
+                fun_scope = Scope::new(
+                    Some(fun_scope),
                     id.to_string(),
                     Rc::new(RefCell::new(Value::Function(Function::Custom {
                         scope,
@@ -110,39 +105,38 @@ fn eval_call(scope: Rc<Scope>, call: &FunctionCallExpression) -> Rc<RefCell<Valu
 
             let block_result = eval_block(fun_scope, &body);
 
-            if let Some(ControlFlow::Return(r)) = block_result {
-                r.value
-                    .unwrap_or_else(|| Rc::new(RefCell::new(Value::Void)))
-            } else {
-                Rc::new(RefCell::new(Value::Void))
+            match block_result {
+                Err(ControlFlow::Return(r)) => r
+                    .value
+                    .unwrap_or_else(|| Rc::new(RefCell::new(Value::Void))),
+                Err(ControlFlow::Exception(e)) => return Err(e),
+                _ => Rc::new(RefCell::new(Value::Void)),
             }
         }
-    }
+    })
 }
 
 fn eval_identifier(scope: Rc<Scope>, identifier: &IdentifierExpression) -> Rc<RefCell<Value>> {
-    let upper = Rc::clone(
-        scope
-            .upper
-            .as_ref()
-            .expect("reached top scope in eval_identifier"),
-    );
+    if identifier.identifier == scope.identifier.identifier {
+        Rc::clone(&scope.identifier.value)
+    } else {
+        let upper = Rc::clone(
+            scope
+                .upper
+                .as_ref()
+                .expect("reached top scope in eval_identifier"),
+        );
 
-    match &scope.data {
-        ScopeData::Block => eval_identifier(upper, identifier),
-        ScopeData::Identifier(id) => {
-            if identifier.identifier == id.identifier {
-                Rc::clone(&id.value)
-            } else {
-                eval_identifier(upper, identifier)
-            }
-        }
+        eval_identifier(upper, identifier)
     }
 }
 
-fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Value>> {
-    let left = eval_expression(Rc::clone(&scope), &assign.assignee);
-    let right = eval_expression(scope, &assign.right);
+fn eval_assign(
+    scope: Rc<Scope>,
+    assign: &AssignmentExpression,
+) -> Result<Rc<RefCell<Value>>, Exception> {
+    let left = eval_expression(Rc::clone(&scope), &assign.assignee)?;
+    let right = eval_expression(scope, &assign.right)?;
 
     {
         let mut l = left.borrow_mut();
@@ -208,11 +202,14 @@ fn eval_assign(scope: Rc<Scope>, assign: &AssignmentExpression) -> Rc<RefCell<Va
         }
     }
 
-    left
+    Ok(left)
 }
 
-fn eval_update(scope: Rc<Scope>, update: &UpdateExpression) -> Rc<RefCell<Value>> {
-    let updatee_value = eval_expression(scope, &update.updatee);
+fn eval_update(
+    scope: Rc<Scope>,
+    update: &UpdateExpression,
+) -> Result<Rc<RefCell<Value>>, Exception> {
+    let updatee_value = eval_expression(scope, &update.updatee)?;
 
     {
         let mut u = updatee_value.borrow_mut();
@@ -231,17 +228,20 @@ fn eval_update(scope: Rc<Scope>, update: &UpdateExpression) -> Rc<RefCell<Value>
         }
     }
 
-    updatee_value
+    Ok(updatee_value)
 }
 
-fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>> {
-    let left = eval_expression(Rc::clone(&scope), &binary.left);
-    let right = eval_expression(scope, &binary.right);
+fn eval_binary(
+    scope: Rc<Scope>,
+    binary: &BinaryExpression,
+) -> Result<Rc<RefCell<Value>>, Exception> {
+    let left = eval_expression(Rc::clone(&scope), &binary.left)?;
+    let right = eval_expression(scope, &binary.right)?;
 
     let l = left.borrow();
     let r = right.borrow();
 
-    Rc::new(RefCell::new(match &binary.operator {
+    Ok(Rc::new(RefCell::new(match &binary.operator {
         BinaryOperator::Add => match &*l {
             Value::Int(l) => Value::Int(l + r.unwrap_int()),
             Value::Float(l) => Value::Float(l + r.unwrap_float()),
@@ -314,17 +314,17 @@ fn eval_binary(scope: Rc<Scope>, binary: &BinaryExpression) -> Rc<RefCell<Value>
             Value::Bool(l) => l || r.unwrap_bool(),
             _ => unreachable!(),
         }),
-    }))
+    })))
 }
 
-fn eval_unary(scope: Rc<Scope>, unary: &UnaryExpression) -> Rc<RefCell<Value>> {
-    let right = eval_expression(Rc::clone(&scope), &unary.right);
+fn eval_unary(scope: Rc<Scope>, unary: &UnaryExpression) -> Result<Rc<RefCell<Value>>, Exception> {
+    let right = eval_expression(Rc::clone(&scope), &unary.right)?;
 
     if &unary.operator == &UnaryOperator::Dereference {
-        return right.borrow().unwrap_reference();
+        return Ok(right.borrow().unwrap_reference());
     }
 
-    Rc::new(RefCell::new(match &unary.operator {
+    Ok(Rc::new(RefCell::new(match &unary.operator {
         UnaryOperator::Negate => match *right.borrow() {
             Value::Int(r) => Value::Int(-r),
             Value::Float(r) => Value::Float(-r),
@@ -339,69 +339,83 @@ fn eval_unary(scope: Rc<Scope>, unary: &UnaryExpression) -> Rc<RefCell<Value>> {
             _ => unreachable!(),
         },
         UnaryOperator::Reference => Value::Reference(right),
-    }))
+    })))
 }
 
-fn eval_index(scope: Rc<Scope>, index: &IndexExpression) -> Rc<RefCell<Value>> {
-    let collection = eval_expression(Rc::clone(&scope), &index.collection);
-    let index_value = eval_expression(Rc::clone(&scope), &index.index);
+fn eval_index(scope: Rc<Scope>, index: &IndexExpression) -> Result<Rc<RefCell<Value>>, Exception> {
+    let collection = eval_expression(Rc::clone(&scope), &index.collection)?;
+    let index_value = eval_expression(Rc::clone(&scope), &index.index)?;
 
     let collection_borrow = collection.borrow();
 
     let list = collection_borrow.unwrap_list_ref();
 
-    Rc::clone(
-        list.get(index_value.borrow().unwrap_int() as usize)
-            .unwrap(),
-    )
+    let get = &list
+        .get(index_value.borrow().unwrap_int() as usize)
+        .ok_or(Exception {
+            message: "index out of range".to_string(),
+        })?;
+
+    Ok(Rc::clone(get))
 }
 
-fn eval_list(scope: Rc<Scope>, list: &[Expression]) -> Rc<RefCell<Value>> {
-    let values: Vec<Rc<RefCell<Value>>> = list
+fn eval_list(scope: Rc<Scope>, list: &[Expression]) -> Result<Rc<RefCell<Value>>, Exception> {
+    let values = list
         .iter()
         .map(|e| eval_expression(Rc::clone(&scope), e))
-        .map(deep_copy)
-        .collect();
+        .map(|r| r.map(deep_copy))
+        .collect::<Result<Vec<Rc<RefCell<Value>>>, Exception>>()?;
 
-    Rc::new(RefCell::new(Value::List(values)))
+    Ok(Rc::new(RefCell::new(Value::List(values))))
 }
 
-fn eval_expression(scope: Rc<Scope>, expression: &Expression) -> Rc<RefCell<Value>> {
+fn eval_expression(
+    scope: Rc<Scope>,
+    expression: &Expression,
+) -> Result<Rc<RefCell<Value>>, Exception> {
     match &expression.value {
         ExpressionValue::FunctionCall(call) => eval_call(scope, call),
-        ExpressionValue::Identifier(id) => eval_identifier(scope, id),
+        ExpressionValue::Identifier(id) => Ok(eval_identifier(scope, id)),
         ExpressionValue::Assign(assign) => eval_assign(scope, assign),
         ExpressionValue::Update(update) => eval_update(scope, update),
         ExpressionValue::Binary(binary) => eval_binary(scope, binary),
         ExpressionValue::Unary(unary) => eval_unary(scope, unary),
         ExpressionValue::Index(index) => eval_index(scope, index),
         ExpressionValue::List(list) => eval_list(scope, list),
-        ExpressionValue::Bool(b) => Rc::new(RefCell::new(Value::Bool(*b))),
-        ExpressionValue::String(s) => Rc::new(RefCell::new(Value::String(s.clone()))),
-        ExpressionValue::Int(i) => Rc::new(RefCell::new(Value::Int(*i))),
-        ExpressionValue::Float(f) => Rc::new(RefCell::new(Value::Float(*f))),
+        ExpressionValue::Bool(b) => Ok(Rc::new(RefCell::new(Value::Bool(*b)))),
+        ExpressionValue::String(s) => Ok(Rc::new(RefCell::new(Value::String(s.clone())))),
+        ExpressionValue::Int(i) => Ok(Rc::new(RefCell::new(Value::Int(*i)))),
+        ExpressionValue::Float(f) => Ok(Rc::new(RefCell::new(Value::Float(*f)))),
     }
 }
 
 #[must_use]
-fn eval_variable_declaration(scope: Rc<Scope>, var: &VariableDeclarationStatement) -> Rc<Scope> {
-    let value = eval_expression(Rc::clone(&scope), &var.expression);
+fn eval_variable_declaration(
+    scope: Rc<Scope>,
+    var: &VariableDeclarationStatement,
+) -> Result<Rc<Scope>, Exception> {
+    let value = eval_expression(Rc::clone(&scope), &var.expression)?;
 
-    Scope::new_id(scope, var.identifier.clone(), deep_copy(value))
+    Ok(Scope::new(
+        Some(scope),
+        var.identifier.clone(),
+        deep_copy(value),
+    ))
 }
 
 #[must_use]
-fn eval_if_branch(scope: Rc<Scope>, branch: &IfBranch) -> Option<ControlFlow> {
+fn eval_if_branch(scope: Rc<Scope>, branch: &IfBranch) -> Result<(), ControlFlow> {
     match branch {
         IfBranch::Elif(elif) => {
-            let test = eval_expression(Rc::clone(&scope), &elif.test);
+            let test =
+                eval_expression(Rc::clone(&scope), &elif.test).map_err(ControlFlow::Exception)?;
 
             if test.borrow().unwrap_bool() {
                 eval_block(scope, &elif.block)
             } else if let Some(inner_branch) = &*elif.branch {
                 eval_if_branch(scope, inner_branch)
             } else {
-                None
+                Ok(())
             }
         }
         IfBranch::Else(els) => eval_block(scope, &els.block),
@@ -409,47 +423,51 @@ fn eval_if_branch(scope: Rc<Scope>, branch: &IfBranch) -> Option<ControlFlow> {
 }
 
 #[must_use]
-fn eval_if_statement(scope: Rc<Scope>, if_statement: &IfStatement) -> Option<ControlFlow> {
-    let test = eval_expression(Rc::clone(&scope), &if_statement.test);
+fn eval_if_statement(scope: Rc<Scope>, if_statement: &IfStatement) -> Result<(), ControlFlow> {
+    let test =
+        eval_expression(Rc::clone(&scope), &if_statement.test).map_err(ControlFlow::Exception)?;
 
     if test.borrow().unwrap_bool() {
         eval_block(scope, &if_statement.block)
     } else if let Some(branch) = &if_statement.branch {
         eval_if_branch(scope, branch)
     } else {
-        None
+        Ok(())
     }
 }
 
 #[must_use]
-fn eval_return(scope: Rc<Scope>, return_statement: &ReturnStatement) -> Return {
-    let value = return_statement
+fn eval_return(scope: Rc<Scope>, return_statement: &ReturnStatement) -> ControlFlow {
+    let result = return_statement
         .expression
         .as_ref()
         .map(|expression| eval_expression(scope, expression));
 
-    Return { value }
+    if let Some(result) = result {
+        match result {
+            Ok(v) => ControlFlow::Return(Return { value: Some(v) }),
+            Err(e) => ControlFlow::Exception(e),
+        }
+    } else {
+        ControlFlow::Return(Return { value: None })
+    }
 }
 
 #[must_use]
-fn eval_block(scope: Rc<Scope>, block: &Block) -> Option<ControlFlow> {
-    let mut block_scope = Scope::new_block(Some(scope));
-    let mut control_flow: Option<ControlFlow> = None;
+fn eval_block(scope: Rc<Scope>, block: &Block) -> Result<(), ControlFlow> {
+    let mut block_scope = scope;
 
     for statement in block.statements.iter() {
-        (block_scope, control_flow) = eval_statement(block_scope, statement);
-        if control_flow.is_some() {
-            break;
-        }
+        block_scope = eval_statement(block_scope, statement)?;
     }
 
-    control_flow
+    Ok(())
 }
 
 #[must_use]
 fn eval_function_declaration(scope: Rc<Scope>, fun: &FunctionDeclarationStatement) -> Rc<Scope> {
-    Scope::new_id(
-        Rc::clone(&scope),
+    Scope::new(
+        Some(Rc::clone(&scope)),
         fun.identifier.clone(),
         Rc::new(RefCell::new(Value::Function(Function::Custom {
             scope,
@@ -460,86 +478,69 @@ fn eval_function_declaration(scope: Rc<Scope>, fun: &FunctionDeclarationStatemen
 }
 
 #[must_use]
-fn eval_while(scope: Rc<Scope>, while_statement: &WhileStatement) -> Option<ControlFlow> {
-    let mut control_flow: Option<ControlFlow> = None;
-
+fn eval_while(scope: Rc<Scope>, while_statement: &WhileStatement) -> Result<(), ControlFlow> {
     loop {
-        let test = eval_expression(Rc::clone(&scope), &while_statement.test);
+        let test = eval_expression(Rc::clone(&scope), &while_statement.test)
+            .map_err(ControlFlow::Exception)?;
         if !test.borrow().unwrap_bool() {
             break;
         }
 
-        control_flow = eval_block(Rc::clone(&scope), &while_statement.block);
-        if let Some(cf) = &control_flow {
-            match cf {
-                ControlFlow::Continue => {
-                    control_flow = None;
-                    continue;
-                }
-                ControlFlow::Break => {
-                    control_flow = None;
-                    break;
-                }
-                _ => break,
-            }
+        let result = eval_block(Rc::clone(&scope), &while_statement.block);
+        match result {
+            Err(ControlFlow::Continue) => continue,
+            Err(ControlFlow::Break) => break,
+            _ => {}
         }
     }
 
-    control_flow
+    Ok(())
 }
 
-fn eval_each(scope: Rc<Scope>, each: &EachStatement) -> Option<ControlFlow> {
-    let mut control_flow: Option<ControlFlow> = None;
-
-    let right = eval_expression(Rc::clone(&scope), &each.right);
+fn eval_each(scope: Rc<Scope>, each: &EachStatement) -> Result<(), ControlFlow> {
+    let right = eval_expression(Rc::clone(&scope), &each.right).map_err(ControlFlow::Exception)?;
     let right_borrow = right.borrow();
     let right_list = right_borrow.unwrap_list_ref();
 
     for i in right_list {
-        let each_scope = Scope::new_id(
-            Rc::clone(&scope),
+        let each_scope = Scope::new(
+            Some(Rc::clone(&scope)),
             each.left.clone(),
             deep_copy(Rc::clone(i)),
         );
 
-        control_flow = eval_block(each_scope, &each.block);
-        if let Some(cf) = &control_flow {
-            match cf {
-                ControlFlow::Continue => {
-                    control_flow = None;
-                    continue;
-                }
-                ControlFlow::Break => {
-                    control_flow = None;
-                    break;
-                }
-                _ => break,
-            }
+        let result = eval_block(each_scope, &each.block);
+        match result {
+            Err(ControlFlow::Continue) => continue,
+            Err(ControlFlow::Break) => break,
+            _ => {}
         }
     }
 
-    control_flow
+    Ok(())
 }
 
 #[must_use]
 fn eval_throw(scope: Rc<Scope>, throw: &Throw) -> Exception {
-    let message = eval_expression(scope, &throw.message)
-        .borrow()
-        .clone()
-        .unwrap_string();
+    let value = match eval_expression(scope, &throw.message) {
+        Ok(v) => v,
+        Err(e) => return e,
+    };
+
+    let message = value.borrow().clone().unwrap_string();
 
     Exception { message }
 }
 
 #[must_use]
-fn eval_try_catch(scope: Rc<Scope>, try_catch: &TryCatch) -> Option<ControlFlow> {
+fn eval_try_catch(scope: Rc<Scope>, try_catch: &TryCatch) -> Result<(), ControlFlow> {
     let try_result = eval_block(Rc::clone(&scope), &try_catch.try_block);
 
-    if let Some(ControlFlow::Exception(e)) = try_result {
+    if let Err(ControlFlow::Exception(e)) = try_result {
         let mut catch_scope = scope;
         if let Some(exception_identifier) = &try_catch.exception_identifier {
-            catch_scope = Scope::new_id(
-                catch_scope,
+            catch_scope = Scope::new(
+                Some(catch_scope),
                 exception_identifier.clone(),
                 Rc::new(RefCell::new(Value::String(e.message))),
             );
@@ -552,79 +553,75 @@ fn eval_try_catch(scope: Rc<Scope>, try_catch: &TryCatch) -> Option<ControlFlow>
 }
 
 #[must_use]
-fn eval_statement(scope: Rc<Scope>, statement: &Statement) -> (Rc<Scope>, Option<ControlFlow>) {
+fn eval_statement(scope: Rc<Scope>, statement: &Statement) -> Result<Rc<Scope>, ControlFlow> {
     let mut new_scope = Rc::clone(&scope);
-    let mut control_flow: Option<ControlFlow> = None;
 
     match &statement.value {
         StatementValue::VariableDeclaration(var) => {
-            new_scope = eval_variable_declaration(scope, var);
+            new_scope = eval_variable_declaration(scope, var).map_err(ControlFlow::Exception)?;
         }
-        StatementValue::If(if_statement) => control_flow = eval_if_statement(scope, if_statement),
+        StatementValue::If(if_statement) => eval_if_statement(scope, if_statement)?,
         StatementValue::Return(return_statement) => {
-            control_flow = Some(ControlFlow::Return(eval_return(scope, return_statement)))
+            return Err(eval_return(scope, return_statement));
         }
-        StatementValue::Block(block) => control_flow = eval_block(scope, block),
+        StatementValue::Block(block) => eval_block(scope, block)?,
         StatementValue::Expression(expr) => {
-            eval_expression(scope, expr);
+            eval_expression(scope, expr).map_err(ControlFlow::Exception)?;
         }
         StatementValue::FunctionDeclaration(fun) => {
             new_scope = eval_function_declaration(scope, fun);
         }
-        StatementValue::While(while_statement) => control_flow = eval_while(scope, while_statement), // _ => {
-        StatementValue::Each(each) => control_flow = eval_each(scope, each),
+        StatementValue::While(while_statement) => eval_while(scope, while_statement)?, // _ => {
+        StatementValue::Each(each) => eval_each(scope, each)?,
         StatementValue::Throw(throw) => {
-            control_flow = Some(ControlFlow::Exception(eval_throw(scope, throw)))
+            return Err(ControlFlow::Exception(eval_throw(scope, throw)));
         }
-        StatementValue::TryCatch(try_catch) => control_flow = eval_try_catch(scope, try_catch),
-        StatementValue::Continue => control_flow = Some(ControlFlow::Continue),
-        StatementValue::Break => control_flow = Some(ControlFlow::Break), // _ => todo!(),
-    };
-
-    (new_scope, control_flow)
-}
-
-pub fn eval_ast(ast: &[Statement]) -> Option<Rc<RefCell<Value>>> {
-    // let mut scope = Scope::new_block(None);
-    // scope = Scope::new_builtin(scope, "puts", builtins::puts);
-    let mut scope = builtins::evaluator_scopes();
-
-    let mut control_flow: Option<ControlFlow> = None;
-
-    for statement in ast {
-        if control_flow.is_some() {
-            break;
-        }
-
-        (scope, control_flow) = eval_statement(Rc::clone(&scope), statement);
+        StatementValue::TryCatch(try_catch) => eval_try_catch(scope, try_catch)?,
+        StatementValue::Continue => return Err(ControlFlow::Continue),
+        StatementValue::Break => return Err(ControlFlow::Break),
     }
 
-    match control_flow {
-        Some(control_flow) => match control_flow {
-            ControlFlow::Break => {
+    Ok(new_scope)
+}
+
+pub fn eval_ast(ast: &[Statement]) -> Value {
+    let mut scope = builtins::evaluator_scopes();
+
+    const DEFAULT_RETURN: Value = Value::Int(0);
+
+    for statement in ast {
+        let result = eval_statement(Rc::clone(&scope), statement);
+
+        match result {
+            Ok(s) => scope = s,
+            Err(ControlFlow::Break) => {
                 println!("broke outside of loop");
                 exit(2);
             }
-            ControlFlow::Continue => {
+            Err(ControlFlow::Continue) => {
                 println!("continued outside of loop");
                 exit(3);
             }
-            ControlFlow::Exception(e) => {
+            Err(ControlFlow::Exception(e)) => {
                 println!("unhandled runtime exception, {}", e.message);
-                exit(1);
+                exit(3);
             }
-            ControlFlow::Return(r) => r.value,
-        },
-        None => None,
+            Err(ControlFlow::Return(r)) => {
+                if let Some(v) = r.value {
+                    return v.borrow().clone();
+                } else {
+                    return DEFAULT_RETURN;
+                }
+            }
+        }
     }
+
+    DEFAULT_RETURN
 }
 
 pub fn eval(source: &str) -> Result<Value, Error> {
     let ast = parse(source)?;
     check(&ast)?;
 
-    Ok(match eval_ast(&ast) {
-        Some(v) => v.borrow().clone(),
-        None => Value::Int(0),
-    })
+    Ok(eval_ast(&ast))
 }
