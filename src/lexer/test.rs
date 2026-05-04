@@ -27,7 +27,7 @@ fn string_escape() {
     assert_eq!(
         Ok(vec![
             Token {
-                value: Value::String("\u{7}\u{101}\u{33}\u{12}\n\r\t\u{11}\\\"".to_string()),
+                value: Value::String("\u{07}\u{08}\u{1B}\u{0C}\n\r\t\u{0B}\\\"".to_string()),
                 region: Region::newi(1, 1, 1, 23),
             },
             Token {
@@ -65,7 +65,7 @@ fn ignore_comments() {
 fn ignore_comments_without_newline() {
     assert_eq!(
         Ok(vec![Token {
-            region: Region::newi(1, 21, 1, 21),
+            region: Region::newi(1, 20, 1, 20),
             value: Value::Eof
         }]),
         lex("#!/usr/bin/env oeno")

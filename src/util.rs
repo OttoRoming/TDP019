@@ -1,6 +1,7 @@
 use std::{
     cmp::{Ord, Ordering, PartialOrd},
     fmt,
+    ops::Add,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -76,5 +77,17 @@ impl Ord for Location {
 impl PartialOrd for Location {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+// https://stackoverflow.com/questions/28005134/how-do-i-implement-the-add-trait-for-a-reference-to-a-struct
+impl Add<usize> for Location {
+    type Output = Location;
+
+    fn add(self, rhs: usize) -> Self {
+        Self {
+            line: self.line,
+            column: self.column + rhs,
+        }
     }
 }
