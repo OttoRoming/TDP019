@@ -50,14 +50,20 @@ impl<'a> Lexer<'a> {
     }
 
     fn read_char(&mut self) {
-        self.char = self
-            .source
-            .chars()
-            .nth(self.read_position)
-            .unwrap_or(NULL_CHAR);
+        if self.read_position >= self.source.len() {
+            self.char = NULL_CHAR;
+            self.position = self.read_position;
+            self.read_position += 1;
+            self.location.column += 1;
+            return;
+        }
 
+        let mut iter = self.source[self.read_position..].chars();
+        let next_char = iter.next().unwrap_or(NULL_CHAR);
+
+        self.char = next_char;
         self.position = self.read_position;
-        self.read_position += 1;
+        self.read_position += next_char.len_utf8();
 
         if self.char == '\n' {
             self.location.line += 1;
@@ -68,9 +74,13 @@ impl<'a> Lexer<'a> {
     }
 
     fn peek(&self) -> char {
-        self.source
+        if self.read_position >= self.source.len() {
+            return NULL_CHAR;
+        }
+
+        self.source[self.read_position..]
             .chars()
-            .nth(self.read_position)
+            .next()
             .unwrap_or(NULL_CHAR)
     }
 
@@ -183,7 +193,6 @@ impl<'a> Lexer<'a> {
             if self.char == '\\' {
                 // Escape sequences taken from https://en.wikipedia.org/wiki/Escape_sequences_in_C
                 // Correct assci value taken from https://www.ascii-code.com/
-                dbg!(self.peek());
                 let escaped_char = match self.peek() {
                     'a' => '\u{07}', // bell
                     'b' => '\u{08}', // backspace
