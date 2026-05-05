@@ -1,13 +1,16 @@
+use std::fmt;
+
 use crate::{
     ast::*,
     error::{self, Error},
+    evaluator::builtins,
     util::Region,
 };
 
 #[cfg(test)]
 mod test;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 #[allow(unused)]
 pub enum Type {
     Int,
@@ -32,6 +35,43 @@ impl From<TypeSpecifier> for Type {
             TypeSpecifier::List(inner) => Type::List(Some(Box::new((*inner).into()))),
             TypeSpecifier::Ref(inner) => Type::Ref(Box::new((*inner).into())),
         }
+    }
+}
+
+impl fmt::Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Type::Int => write!(f, "Int"),
+            Type::Float => write!(f, "Float"),
+            Type::Bool => write!(f, "Bool"),
+            Type::String => write!(f, "String"),
+            Type::List(inner) => match inner {
+                Some(inner) => write!(f, "List<{}>", inner),
+                None => write!(f, "List<unknown>"),
+            },
+            Type::Ref(inner) => write!(f, "Ref<{}>", inner),
+            Type::Function {
+                parameters,
+                return_type,
+            } => {
+                let parameters = parameters
+                    .iter()
+                    .map(|p| format!("{}", p))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+
+                match **return_type {
+                    Some(ref return_type) => write!(f, "fun({}): {}", parameters, return_type),
+                    None => write!(f, "fun({})", parameters),
+                }
+            }
+        }
+    }
+}
+
+impl fmt::Debug for Type {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
     }
 }
 
@@ -69,13 +109,13 @@ impl Type {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-struct Identifier {
+pub struct Identifier {
     pub identifier: String,
     pub type_: Type,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-enum Scope {
+pub enum Scope {
     Block,
     Identifier(Identifier),
 }
@@ -150,7 +190,7 @@ impl<'a> Checker {
         if !left.is_matching(&right) {
             return Err(error(
                 region.clone(),
-                format!("binary expression type mismatch ({:?}, {:?})", left, right),
+                format!("binary expression type mismatch ({}, {})", left, right),
             ));
         }
 
@@ -160,7 +200,7 @@ impl<'a> Checker {
                 _ => Err(error(
                     region.clone(),
                     format!(
-                        "{:?} is incompatible with operator {:?}",
+                        "{} is incompatible with operator {:?}",
                         left, binary.operator
                     ),
                 )),
@@ -173,7 +213,7 @@ impl<'a> Checker {
                 _ => Err(error(
                     region.clone(),
                     format!(
-                        "{:?} is incompatible with operator {:?}",
+                        "{} is incompatible with operator {:?}",
                         left, binary.operator
                     ),
                 )),
@@ -196,7 +236,7 @@ impl<'a> Checker {
                 _ => Err(error(
                     region.clone(),
                     format!(
-                        "{:?} is incompatible with operator {:?}",
+                        "{} is incompatible with operator {:?}",
                         left, binary.operator
                     ),
                 )),
@@ -206,7 +246,7 @@ impl<'a> Checker {
                 _ => Err(error(
                     region.clone(),
                     format!(
-                        "{:?} is incompatible with operator {:?}",
+                        "{} is incompatible with operator {:?}",
                         left, binary.operator
                     ),
                 )),
@@ -245,7 +285,7 @@ impl<'a> Checker {
                     return Err(error(
                         region.clone(),
                         format!(
-                            "argument type mismatch in function call (expected: {:?}, got: {:?})",
+                            "argument type mismatch in function call (expected: {}, got: {})",
                             parameter, argument_type
                         ),
                     ));
@@ -269,16 +309,25 @@ impl<'a> Checker {
         let assignee_type = self.check_expression(&assign.assignee)?;
         let right_type = self.check_expression(&assign.right)?;
 
-        if let Some(assignee_type) = assignee_type
+        if assign.operator == AssignmentOperator::Append
+            && let Some(Type::List(Some(list_inner_type))) = &assignee_type
+            && let Some(right_type) = right_type
+        {
+            if list_inner_type.is_matching(&right_type) {
+                return Ok(assignee_type.unwrap());
+            } else {
+                return Err(error(
+                    region.clone(),
+                    "incompatible types used for appending".to_string(),
+                ));
+            }
+        } else if let Some(assignee_type) = assignee_type
             && let Some(right_type) = right_type
         {
             if !assignee_type.is_matching(&right_type) {
                 return Err(error(
                     region.clone(),
-                    format!(
-                        "assign type mismatch, {:?} and {:?}",
-                        assignee_type, right_type
-                    ),
+                    format!("assign type mismatch, {} and {}", assignee_type, right_type),
                 ));
             }
 
@@ -296,13 +345,14 @@ impl<'a> Checker {
                     right_type == Type::Int || right_type == Type::Float
                 }
                 AssignmentOperator::Equals => true,
+                AssignmentOperator::Append => false,
             };
 
             if !is_operator_compatible {
                 return Err(error(
                     region.clone(),
                     format!(
-                        "assignment operator {:?} is incompatible with type {:?}",
+                        "assignment operator {:?} is incompatible with type {}",
                         assign.operator, right_type
                     ),
                 ));
@@ -326,7 +376,7 @@ impl<'a> Checker {
         if updatee_type != Type::Int && updatee_type != Type::Float {
             return Err(error(
                 region.clone(),
-                format!("cannot update type {:?}", updatee_type),
+                format!("cannot update type {}", updatee_type),
             ));
         }
 
@@ -353,7 +403,7 @@ impl<'a> Checker {
             return Err(error(
                 region.clone(),
                 format!(
-                    "unary operator {:?} is incompatible with type {:?}",
+                    "unary operator {:?} is incompatible with type {}",
                     unary.operator, right_type
                 ),
             ));
@@ -394,7 +444,7 @@ impl<'a> Checker {
                 return Err(error(
                     region.clone(),
                     format!(
-                        "tried to index into collection withh non int type, {:?}",
+                        "tried to index into collection with non int type, {:?}",
                         index_type
                     ),
                 ));
@@ -428,7 +478,7 @@ impl<'a> Checker {
                 return Err(error(
                     region.clone(),
                     format!(
-                        "type mismatch in list, list includes types {:?} and {:?}",
+                        "type mismatch in list, list includes types {} and {}",
                         inner_type, expression_type
                     ),
                 ));
@@ -480,7 +530,7 @@ impl<'a> Checker {
                 return Err(error(
                     region.clone(),
                     format!(
-                        "variable declaration type mismatch (specified: {:?}; got: {:?})",
+                        "variable declaration type mismatch (specified: {}, got: {})",
                         specifier, expression
                     ),
                 ));
@@ -646,7 +696,7 @@ impl<'a> Checker {
         } else {
             return Err(error(
                 each.right.region.clone(),
-                format!("expected to loop over list, found {:?}", right_type),
+                format!("expected to loop over list, found {}", right_type),
             ));
         }
 
@@ -776,13 +826,7 @@ impl<'a> Checker {
 
     pub fn new() -> Self {
         Checker {
-            scopes: vec![Scope::Identifier(Identifier {
-                identifier: "puts".to_string(),
-                type_: Type::Function {
-                    parameters: vec![Type::String],
-                    return_type: Box::new(Some(Type::String)),
-                },
-            })],
+            scopes: builtins::checker_scopes(),
             function_bodies: vec![],
         }
     }

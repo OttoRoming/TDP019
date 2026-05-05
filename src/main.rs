@@ -7,42 +7,36 @@ mod parser;
 mod token;
 mod util;
 
+use clap::Parser;
 use evaluator::{eval, values::Value};
-use std::{env, fs, io::Read, path::PathBuf, process::exit};
+use std::{fs, io::Read, path::PathBuf, process::exit};
+
+// https://rust-cli.github.io/book/tutorial/cli-args.html
+// https://docs.rs/clap/latest/clap/
+/// The Oeno language interpreter
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    /// The path for the source code file to execute
+    path: PathBuf,
+}
 
 fn main() {
     color_backtrace::install();
 
-    let filepath_string = env::args()
-        .nth(1)
-        .expect("no filename provided with cli arguments");
+    let args = Cli::parse();
 
-    let filepath = PathBuf::from(filepath_string);
-
-    let mut file = fs::File::open(&filepath).expect("failed to open source file");
+    let mut file = match fs::File::open(&args.path) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("failed to open file, ({})", e);
+            exit(1);
+        }
+    };
 
     let mut source = String::new();
     file.read_to_string(&mut source)
         .expect("failed to read source file content");
-
-    // match lexer::lex(&source) {
-    //     Ok(tokens) => {
-    //         dbg!(tokens);
-    //     }
-    //     Err(err) => {
-    //         err.print(&source);
-    //     }
-    // };
-
-    // match parser::parse(&source) {
-    //     Ok(ast) => {
-    //         dbg!(&ast);
-    //     }
-    //     Err(err) => {
-    //         err.print(&source);
-    //         panic!()
-    //     }
-    // };
 
     match eval(&source) {
         Ok(result) => match result {

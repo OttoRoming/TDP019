@@ -48,6 +48,7 @@ pub enum Value {
     OrAssign,           // |=
     Increment,          // ++
     Decrement,          // --
+    Arrow,              // <-
 
     // 1 char tokens
     OpenBracket,      // [

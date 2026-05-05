@@ -7,6 +7,9 @@ use crate::{
 #[cfg(test)]
 mod test;
 
+// https://compile7.org/special-characters/how-to-use-null-0-in-rust
+const NULL_CHAR: char = '\0';
+
 fn error(region: Region, message: String) -> Error {
     Error {
         message,
@@ -15,144 +18,120 @@ fn error(region: Region, message: String) -> Error {
     }
 }
 
-struct Lexer {
-    location: Location,
-    index: usize,
-    source: Vec<char>,
+fn is_letter(c: char) -> bool {
+    c.is_alphabetic() || c == '_'
 }
 
-impl Lexer {
-    fn current_region(&self) -> Region {
-        Region::new(self.location.clone(), self.location.clone())
+fn is_number(c: char) -> bool {
+    c.is_digit(10) || c == '.'
+}
+
+struct Lexer<'a> {
+    location: Location,
+    position: usize,
+    read_position: usize,
+    source: &'a str,
+    char: char,
+}
+
+impl<'a> Lexer<'a> {
+    pub fn new(source: &'a str) -> Self {
+        let mut lexer = Self {
+            location: Location::new(1, 0),
+            position: 0,
+            read_position: 0,
+            source,
+            char: NULL_CHAR,
+        };
+
+        lexer.read_char();
+
+        lexer
     }
 
-    fn advance(&mut self) {
-        if self.peek(0) == '\n' {
+    fn read_char(&mut self) {
+        if self.read_position >= self.source.len() {
+            self.char = NULL_CHAR;
+            self.position = self.read_position;
+            self.read_position += 1;
+            self.location.column += 1;
+            return;
+        }
+
+        let mut iter = self.source[self.read_position..].chars();
+        let next_char = iter.next().unwrap_or(NULL_CHAR);
+
+        self.char = next_char;
+        self.position = self.read_position;
+        self.read_position += next_char.len_utf8();
+
+        if self.char == '\n' {
             self.location.line += 1;
-            self.location.column = 1;
+            self.location.column = 0;
         } else {
             self.location.column += 1;
         }
-
-        self.index += 1;
     }
 
-    fn peek(&self, ahead: usize) -> char {
-        match self.source.get(self.index + ahead) {
-            Some(char) => *char,
-            None => ' ',
+    fn peek(&self) -> char {
+        if self.read_position >= self.source.len() {
+            return NULL_CHAR;
         }
-    }
 
-    fn is_finished(&self) -> bool {
-        self.index >= self.source.len()
+        self.source[self.read_position..]
+            .chars()
+            .next()
+            .unwrap_or(NULL_CHAR)
     }
 
     fn skip_whitespace(&mut self) {
-        while self.peek(0).is_whitespace() && !self.is_finished() {
-            self.advance();
+        while self.char.is_whitespace() {
+            self.read_char();
         }
     }
 
-    fn skip_comments(&mut self) {
-        while self.peek(0) == '#' {
-            while self.peek(0) != '\n' && !self.is_finished() {
-                self.advance();
-            }
-            self.advance();
+    fn skip_comment(&mut self) {
+        if self.char != '#' {
+            return;
         }
-        self.skip_whitespace();
+
+        let start_line = self.location.line;
+
+        while self.location.line == start_line && self.char != NULL_CHAR {
+            self.read_char();
+        }
     }
 
-    fn tokenize_string(&mut self) -> Result<Token, Error> {
-        let start = self.location.clone();
-        self.advance(); // skip the first "
+    fn skip_whitespace_and_comments(&mut self) {
+        let mut previous = self.location.clone();
 
-        let mut contents = String::new();
-        while self.peek(0) != '"' {
-            if self.peek(0) == '\\' {
-                // Escape sequences taken from https://en.wikipedia.org/wiki/Escape_sequences_in_C
-                // Correct assci value taken from https://www.asciitable.com/
-                let escaped_char = match self.peek(1) {
-                    'a' => '\u{7}',   // bell
-                    'b' => '\u{101}', // backspace
-                    'e' => '\u{33}',  // escape
-                    'f' => '\u{12}',  // form feed
-                    'n' => '\n',      // newline
-                    'r' => '\r',      // carrige return
-                    't' => '\t',      // horizontal tab
-                    'v' => '\u{11}',  // vertical tab
-                    '\\' => '\\',
-                    '"' => '"',
-                    _ => {
-                        return Err(error(
-                            Region::new(start, self.location.clone()),
-                            format!("unknown string escape sequence (\\{})", self.peek(1)),
-                        ));
-                    }
-                };
+        loop {
+            self.skip_whitespace();
+            self.skip_comment();
 
-                contents.push(escaped_char);
-                self.advance();
-                self.advance();
+            if self.location == previous {
+                break;
             } else {
-                contents.push(self.peek(0));
-                self.advance();
+                previous = self.location.clone();
             }
         }
-
-        self.advance(); // skip the second "
-        let end = self.location.clone();
-
-        Ok(Token {
-            value: Value::String(contents),
-            region: Region::new(start, end),
-        })
     }
 
-    fn tokenize_int_or_float(&mut self) -> Result<Token, Error> {
-        let start = self.location.clone();
-        let mut content = String::new();
+    fn read_identifier_or_type_or_keyword(&mut self) -> Token {
+        let start_location = self.location.clone();
+        let start_position = self.position;
 
-        while self.peek(0).is_ascii_digit() || self.peek(0) == '.' {
-            content.push(self.peek(0));
-            self.advance();
+        while is_letter(self.char) || self.char.is_numeric() {
+            self.read_char()
         }
 
-        let end = self.location.clone();
-        let region = Region::new(start, end);
+        let end_position = self.position;
+        let end_location = self.location.clone();
 
-        let is_float = content.contains('.');
-        let value =
-            if is_float {
-                Value::Float(content.parse::<f64>().map_err(|e| {
-                    error(
-                        region.clone(),
-                        format!("failed to parse float token ({})", e),
-                    )
-                })?)
-            } else {
-                Value::Int(content.parse::<i64>().map_err(|e| {
-                    error(region.clone(), format!("failed to parse int token ({})", e))
-                })?)
-            };
+        let region = Region::new(start_location, end_location);
+        let string = self.source[start_position..end_position].to_string();
 
-        Ok(Token { value, region })
-    }
-
-    fn tokenize_mutlichar(&mut self) -> Result<Token, Error> {
-        let start = self.location.clone();
-
-        let mut content = String::new();
-        while self.peek(0).is_alphanumeric() || self.peek(0) == '_' {
-            content.push(self.peek(0));
-            self.advance();
-        }
-
-        let end = self.location.clone();
-        let region = Region::new(start, end);
-
-        let value = match content.as_str() {
+        let value = match string.as_str() {
             "if" => Value::KeywordIf,
             "elif" => Value::KeywordElif,
             "else" => Value::KeywordElse,
@@ -174,114 +153,173 @@ impl Lexer {
             "Bool" => Value::TypeBool,
             "List" => Value::TypeList,
             "Ref" => Value::TypeRef,
-            _ => Value::Identifier(content),
+            _ => Value::Identifier(string),
+        };
+
+        Token { value, region }
+    }
+
+    fn read_number(&mut self) -> Result<Token, Error> {
+        let start_location = self.location.clone();
+        let start_position = self.position;
+
+        while is_number(self.char) {
+            self.read_char()
+        }
+
+        let end_position = self.position;
+        let end_location = self.location.clone();
+
+        let region = Region::new(start_location, end_location);
+        let string = &self.source[start_position..end_position];
+
+        let value = if let Ok(int) = string.parse::<i64>() {
+            Value::Int(int)
+        } else if let Ok(float) = string.parse::<f64>() {
+            Value::Float(float)
+        } else {
+            return Err(error(region.clone(), "failed to parse number".to_string()));
         };
 
         Ok(Token { value, region })
     }
 
-    fn tokenize(&mut self) -> Result<Token, Error> {
-        let two_chars = (self.peek(0), self.peek(1));
-        let mut token_value = match two_chars {
-            ('&', '&') => Some(Value::And),
-            ('|', '|') => Some(Value::Or),
-            ('+', '=') => Some(Value::AddAssign),
-            ('-', '=') => Some(Value::SubtractAssign),
-            ('*', '=') => Some(Value::MultiplyAssign),
-            ('/', '=') => Some(Value::DivideAssign),
-            ('%', '=') => Some(Value::ModAssign),
-            ('!', '=') => Some(Value::NotEquals),
-            ('=', '=') => Some(Value::DoubleEquals),
-            ('<', '=') => Some(Value::LessThanOrEqual),
-            ('>', '=') => Some(Value::GreaterThanOrEqual),
-            ('&', '=') => Some(Value::AndAssign),
-            ('|', '=') => Some(Value::OrAssign),
-            ('+', '+') => Some(Value::Increment),
-            ('-', '-') => Some(Value::Decrement),
-            _ => None,
-        };
-        if let Some(value) = token_value {
-            let start = self.location.clone();
-            self.advance();
-            self.advance();
-            let end = self.location.clone();
-            let region = Region::new(start, end);
+    fn read_string(&mut self) -> Result<Token, Error> {
+        let start_location = self.location.clone();
 
-            return Ok(Token { value, region });
-        }
+        self.read_char();
+        let mut contents = "".to_string();
+        while self.char != '"' && self.char != '\0' {
+            if self.char == '\\' {
+                // Escape sequences taken from https://en.wikipedia.org/wiki/Escape_sequences_in_C
+                // Correct assci value taken from https://www.ascii-code.com/
+                let escaped_char = match self.peek() {
+                    'a' => '\u{07}', // bell
+                    'b' => '\u{08}', // backspace
+                    'e' => '\u{1B}', // escape
+                    'f' => '\u{0C}', // form feed
+                    'n' => '\n',     // newline
+                    'r' => '\r',     // carriage return
+                    't' => '\t',     // horizontal tab
+                    'v' => '\u{0B}', // vertical tab
+                    '\\' => '\\',
+                    '"' => '"',
+                    _ => {
+                        return Err(error(
+                            Region::new(start_location, self.location.clone()),
+                            format!("unknown string escape sequence (\\{})", self.peek()),
+                        ));
+                    }
+                };
 
-        token_value = match self.peek(0) {
-            '[' => Some(Value::OpenBracket),
-            ']' => Some(Value::CloseBracket),
-            '{' => Some(Value::OpenBrace),
-            '}' => Some(Value::CloseBrace),
-            '(' => Some(Value::OpenParenthesis),
-            ')' => Some(Value::CloseParenthesis),
-            '=' => Some(Value::SingleEquals),
-            '+' => Some(Value::Add),
-            '-' => Some(Value::Subtract),
-            '*' => Some(Value::Multiply),
-            '/' => Some(Value::Divide),
-            '%' => Some(Value::Mod),
-            '!' => Some(Value::Not),
-            '<' => Some(Value::LessThan),
-            '>' => Some(Value::GreaterThan),
-            '&' => Some(Value::Ampersand),
-            ';' => Some(Value::Semicolon),
-            ':' => Some(Value::Colon),
-            ',' => Some(Value::Comma),
-            _ => None,
-        };
-        if let Some(value) = token_value {
-            let start = self.location.clone();
-            self.advance();
-            let end = self.location.clone();
-            let region = Region::new(start, end);
-            return Ok(Token { value, region });
+                contents.push(escaped_char);
+                self.read_char();
+                self.read_char();
+            } else {
+                contents.push(self.char);
+                self.read_char();
+            }
         }
+        self.read_char();
 
-        if self.peek(0) == '"' {
-            self.tokenize_string()
-        } else if self.peek(0).is_ascii_digit() {
-            self.tokenize_int_or_float()
-        } else if self.peek(0).is_alphabetic() || self.peek(0) == '_' {
-            self.tokenize_mutlichar()
-        } else {
-            Err(error(
-                self.current_region(),
-                format!("unexpceted character found ({})", self.peek(0)),
-            ))
-        }
+        let end_location = self.location.clone();
+
+        let region = Region::new(start_location, end_location);
+        let value = Value::String(contents);
+
+        Ok(Token { value, region })
     }
 
-    fn run_analysis(&mut self) -> Result<Vec<Token>, Error> {
-        let mut tokens: Vec<Token> = vec![];
+    pub fn next_token(&mut self) -> Result<Token, Error> {
+        self.skip_whitespace_and_comments();
 
-        self.skip_whitespace();
-        self.skip_comments();
-        while !self.is_finished() {
-            tokens.push(self.tokenize()?);
-            self.skip_whitespace();
-            self.skip_comments();
+        let mut length: usize = 2;
+
+        let value = match (self.char, self.peek()) {
+            ('&', '&') => Value::And,
+            ('|', '|') => Value::Or,
+            ('+', '=') => Value::AddAssign,
+            ('-', '=') => Value::SubtractAssign,
+            ('*', '=') => Value::MultiplyAssign,
+            ('/', '=') => Value::DivideAssign,
+            ('%', '=') => Value::ModAssign,
+            ('!', '=') => Value::NotEquals,
+            ('=', '=') => Value::DoubleEquals,
+            ('<', '=') => Value::LessThanOrEqual,
+            ('>', '=') => Value::GreaterThanOrEqual,
+            ('&', '=') => Value::AndAssign,
+            ('|', '=') => Value::OrAssign,
+            ('+', '+') => Value::Increment,
+            ('-', '-') => Value::Decrement,
+            ('<', '-') => Value::Arrow,
+
+            _ => {
+                length = 1;
+
+                match self.char {
+                    '[' => Value::OpenBracket,
+                    ']' => Value::CloseBracket,
+                    '{' => Value::OpenBrace,
+                    '}' => Value::CloseBrace,
+                    '(' => Value::OpenParenthesis,
+                    ')' => Value::CloseParenthesis,
+                    '=' => Value::SingleEquals,
+                    '+' => Value::Add,
+                    '-' => Value::Subtract,
+                    '*' => Value::Multiply,
+                    '/' => Value::Divide,
+                    '%' => Value::Mod,
+                    '!' => Value::Not,
+                    '<' => Value::LessThan,
+                    '>' => Value::GreaterThan,
+                    '&' => Value::Ampersand,
+                    ';' => Value::Semicolon,
+                    ':' => Value::Colon,
+                    ',' => Value::Comma,
+                    NULL_CHAR => Value::Eof,
+
+                    _ => {
+                        if is_letter(self.char) {
+                            return Ok(self.read_identifier_or_type_or_keyword());
+                        } else if is_number(self.char) {
+                            return self.read_number();
+                        } else if self.char == '"' {
+                            return self.read_string();
+                        } else {
+                            return Err(error(
+                                Region::new(self.location.clone(), self.location.clone() + 1),
+                                format!("illegal character ({})", self.char),
+                            ));
+                        }
+                    }
+                }
+            }
+        };
+
+        if value == Value::Eof {
+            length = 0;
         }
 
-        tokens.push(Token {
-            value: Value::Eof,
-            region: self.current_region(),
-        });
-        Ok(tokens)
-    }
-
-    pub fn new(source: &str) -> Self {
-        Self {
-            location: Location::new(1, 1),
-            index: 0,
-            source: source.chars().collect(),
+        let start_location = self.location.clone();
+        for _ in 0..length {
+            self.read_char();
         }
+        let end_location = self.location.clone();
+
+        let region = Region::new(start_location, end_location);
+
+        return Ok(Token { value, region });
     }
 }
 
 pub fn lex(source: &str) -> Result<Vec<Token>, Error> {
     let mut lexer = Lexer::new(source);
-    lexer.run_analysis()
+
+    let mut tokens: Vec<Token> = vec![];
+
+    while tokens.last().map(|t| &t.value) != Some(&Value::Eof) {
+        tokens.push(lexer.next_token()?);
+    }
+
+    Ok(tokens)
 }

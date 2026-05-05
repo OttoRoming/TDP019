@@ -437,6 +437,7 @@ impl Parser {
                 Value::ModAssign => AssignmentOperator::Modulo,
                 Value::AndAssign => AssignmentOperator::And,
                 Value::OrAssign => AssignmentOperator::Or,
+                Value::Arrow => AssignmentOperator::Append,
                 _ => break,
             };
             self.advance();

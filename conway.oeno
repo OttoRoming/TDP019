@@ -1,0 +1,99 @@
+var board_size = 100
+var board_width = board_size
+var board_height = board_size
+
+var board: List<List<Bool>> = []
+
+fun random_bool(): Bool {
+    return random() < 0.5
+}
+
+fun setup() {
+    each x : range(board_width) {
+        var col: List<Bool> = []
+        each y : range(board_height) {
+            col <- random_bool();
+        }
+        board <- col;
+    }
+}
+
+fun get_cell(x: Int, y: Int): Bool {
+    x += board_width;
+    x %= board_width;
+    y += board_width;
+    y %= board_height;
+
+    return board[x][y]
+}
+
+fun neighbours(x: Int, y: Int): Int {
+    var count = 0
+
+    each dx : [-1, 0, 1] {
+        each dy : [-1, 0, 1] {
+            if dx == 0 && dy == 0 {
+                continue
+            } 
+
+            if get_cell(x + dx, y + dy) {
+                count++;
+            }
+        }
+    }
+
+    return count
+}
+
+fun generation() {
+    var new = board
+
+    each x : range(board_height) {
+        each y : range(board_width) {
+            var count = neighbours(x, y)
+
+            if count < 2 {
+                # 1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+                new[x][y] = false;
+            } elif count == 3 {
+                # 4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+                new[x][y] = true;
+            } elif count > 3 {
+                # 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
+                new[x][y] = false;
+            }
+        }
+    }
+
+    board = new;
+}
+
+fun display() {
+    each y : range(board_height) {
+        var row = ""
+
+        each x : range(board_width) {
+            var value = board[x][y]
+
+            if value {
+                row += "██";
+            } else {
+                row += "  ";
+            }
+        }
+
+        puts(row);
+    }
+}
+
+fun main() {
+    setup();
+
+    while true {
+        generation();
+        clear();
+        display();
+    } 
+}
+
+main();
