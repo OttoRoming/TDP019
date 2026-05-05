@@ -123,3 +123,19 @@ Slutförde type checker och stora delar av evaluatorn för binära och unära op
 ## 2026-04-27
 
 Implementerade while och each-loopar samt utökad kontrollflödeshantering. Lade till och rättade stringkonkatenering, förbättrade referens och dereference-typkontroll, stöd för underscore i identifierare och uppdaterade tester samt README.
+
+## 2026-04-28
+
+Lade till stöd för att lägga till element i listor och experimenterade med commit-stöd; mindre experimentell kod (Conway).
+
+## 2026-04-29
+
+Förbättrade kodkvalitet och refaktorerade delar av koden.
+
+## 2026-05-04
+
+Omskrev lexer, fixade lexing för unicode, förbättrade CLI-parsning och visning av typer i felmeddelanden.
+
+## 2026-05-05
+
+Småändringar och merges; uppdaterade utvecklarbloggen.
