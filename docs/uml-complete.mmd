@@ -1,0 +1,508 @@
+classDiagram
+direction TB
+    class Level {
+	    IO
+	    Lexer
+	    Parse
+	    Check
+    }
+
+    class Error {
+	    +String message
+	    +Level level
+	    +Region region
+	    -print_message()
+	    +print()
+    }
+
+    class Location {
+	    +usize line
+	    +usize col
+	    +bool contains(location: Location)
+    }
+
+    class Region {
+	    +Location start
+	    +Location end
+	    +bool contains(location: Location)
+    }
+
+    class Token {
+	    +Value value
+	    +Region region
+    }
+
+    class Value {
+	    KeywordIf
+	    KeywordIf
+	    KeywordElif
+	    KeywordElse
+	    KeywordFun
+	    KeywordWhile
+	    KeywordEach
+	    KeywordReturn
+	    KeywordTrue
+	    KeywordFalse
+	    KeywordVar
+	    KeywordThrow
+	    KeywordTry
+	    KeywordCatch
+	    KeywordContinue
+	    KeywordBreak
+	    TypeInt
+	    TypeFloat
+	    TypeString
+	    TypeBool
+	    TypeList
+	    TypeRef
+	    And
+	    Or
+	    AddAssign
+	    SubtractAssign
+	    MultiplyAssign
+	    DivideAssign
+	    ModAssign
+	    NotEquals
+	    DoubleEquals
+	    LessThanOrEqual
+	    GreaterThanOrEqual
+	    AndAssign
+	    OrAssign
+	    Increment
+	    Decrement
+	    Arrow
+	    OpenBracket
+	    CloseBracket
+	    OpenBrace
+	    CloseBrace
+	    OpenParenthesis
+	    CloseParenthesis
+	    SingleEquals
+	    Add
+	    Subtract
+	    Multiply
+	    Divide
+	    Mod
+	    Not
+	    LessThan
+	    GreaterThan
+	    Ampersand
+	    Semicolon
+	    Colon
+	    Comma
+	    String String
+	    i64 Int
+	    f64 Float
+	    String Identifier
+	    Eof
+    }
+
+    class `Lexer&lt;'a&gt;` {
+	    -Location location
+	    -usize position
+	    -usize read_position
+	    -&'a str source
+	    -char char
+	    -read_char()
+	    -char peek()
+	    -skip_whitespace()
+	    -skip_comment()
+	    -skip_whitespace_and_comments()
+	    -Token read_identifier_or_type_or_keyword()
+	    -Result&lt;Token, Error&gt; read_number()
+	    -Result&lt;Token, Error&gt; read_string()
+	    +Result&lt;Token, Error&gt; next_token()
+    }
+
+    class Block {
+	    +Vec&lt;Statement&gt; statements
+    }
+
+    class IfStatement {
+	    +Expression test
+	    +Block block
+	    +Option&lt;IfBranch&gt; branch
+    }
+
+    class IfBranch {
+	    ElifPart Elif
+	    ElsePart Else
+    }
+
+    class ElifPart {
+	    +Expression test
+	    +Block block
+	    +Box&lt;Option&lt;IfBranch&gt;&gt; branch
+    }
+
+    class ElsePart {
+	    +Block block
+    }
+
+    class WhileStatement {
+	    +Expression test
+	    +Block bloc
+    }
+
+    class EachStatement {
+	    +String left
+	    +right Expression
+	    +Block body
+    }
+
+    class VariableDeclarationStatement {
+	    +String identifier
+	    +Option&lt;TypeSpecifier&gt; type_specifier
+	    +Expression expression
+    }
+
+    class Parameter {
+	    +String identifier
+	    +TypeSpecifier type_specifier
+    }
+
+    class FunctionDeclarationStatement {
+	    +String identifier
+	    +Vec&lt;Parameter&gt; parameters
+	    +Option&lt;TypeSpecifier&gt; return_type
+	    +Block body
+    }
+
+    class ReturnStatement {
+	    +Option&lt;Expression&gt; expression
+    }
+
+    class Throw {
+	    +Expression message
+    }
+
+    class TryCatch {
+	    +Block try_block
+	    +Option&lt;String&gt; exception_identifier
+	    +Block catch_block
+    }
+
+    class StatementValue {
+	    Block Block
+	    IfStatement If
+	    WhileStatement While
+	    EachStatement Each
+	    VariableDeclarationStatement VariableDeclaration
+	    FunctionDeclarationStatement FunctionDeclaration
+	    ReturnStatement Return
+	    Throw Throw
+	    TryCatch TryCatch
+	    Continue
+	    Break
+	    Expression Expression
+    }
+
+    class Statement {
+	    +StatementValue value
+	    +Region region
+    }
+
+    class AssignmentOperator {
+	    Equals
+	    Add
+	    Subtract
+	    Multiply
+	    Divide
+	    Modulo
+	    And
+	    Or
+	    Append
+    }
+
+    class AssignmentExpression {
+	    +Expression assignee
+	    +AssignmentOperator operator
+	    +Expression right
+    }
+
+    class UpdateOperator {
+	    Increment
+	    Decrement
+    }
+
+    class UpdateExpression {
+	    +Expression updatee
+	    +UpdateOperator operator
+    }
+
+    class BinaryOperator {
+	    Add
+	    Subtract
+	    Multiply
+	    Divide
+	    Modulo
+	    And
+	    Or
+	    LessThan
+	    GreaterThan
+	    LessThanOrEqual
+	    GreaterThanOrEqual
+	    Equals
+	    NotEquals
+    }
+
+    class BinaryExpression {
+	    +Expression left
+	    +BinaryOperator operator
+	    +Expression right
+    }
+
+    class UnaryOperator {
+	    Not
+	    Negate
+	    Dereference
+	    Reference
+    }
+
+    class UnaryExpression {
+	    +UnaryOperator operator
+	    +Expression right
+    }
+
+    class IdentifierExpression {
+	    +String identifier
+    }
+
+    class FunctionCallExpression {
+	    +Expression callee
+	    +Vec&lt;Expression&gt; arguments
+    }
+
+    class IndexExpression {
+	    +Expression collection
+	    +Expression index
+    }
+
+    class ExpressionValue {
+	    Box&lt;AssignmentExpression&gt; Assign
+	    Box&lt;UpdateExpression&gt; Update
+	    Box&lt;BinaryExpression&gt; Binary
+	    Box&lt;UnaryExpression&gt; Unary
+	    IdentifierExpression Identifier
+	    Box&lt;FunctionCallExpression&gt; FunctionCall
+	    Box&lt;IndexExpression&gt; Index
+	    String String
+	    i64 Int
+	    f64 Float
+	    bool Bool
+	    Vec&lt;Expression&gt; List
+    }
+
+    class Expression {
+	    +ExpressionValue value
+	    +Region region
+    }
+
+    class TypeSpecifier {
+	    Int
+	    Float
+	    String
+	    Bool
+	    Box&lt;TypeSpecifier&gt; List
+	    Box&lt;TypeSpecifier&gt; Ref
+    }
+
+    class Parser {
+	    -i32 index
+	    -Vec~Token~ tokens
+	    -&Token peek(i32 ahead)
+	    -advance()
+	    -Result&lt;(), Error&gt; expect(Value expected_value, &str at_msg)
+	    -Result&lt;TypeSpecifier, Error&gt; parse_type_specifier()
+	    -Result&lt;Vec&lt;Expression&gt;, Error&gt; parse_comma_separated_expressions()
+	    -Result&lt;Expression, Error&gt; parse_primary()
+	    -Result&lt;Expression, Error&gt; parse_call()
+	    -Result&lt;Expression, Error&gt; parse_index()
+	    -Result&lt;Expression, Error&gt; parse_unary()
+	    -Result&lt;Expression, Error&gt; parse_multiplicative()
+	    -Result&lt;Expression, Error&gt; parse_additive()
+	    -Result&lt;Expression, Error&gt; parse_comparative()
+	    -Result&lt;Expression, Error&gt; parse_equality()
+	    -Result&lt;Expression, Error&gt; parse_logical_and()
+	    -Result&lt;Expression, Error&gt; parse_logical_or()
+	    -Result&lt;Expression, Error&gt; parse_update()
+	    -Result&lt;Expression, Error&gt; parse_assignment()
+	    -Result&lt;Expression, Error&gt; parse_expression()
+	    -Result&lt;StatementValue, Error&gt; parse_expression_statement()
+	    -Result&lt;VariableDeclarationStatement, Error&gt; parse_variable_declaration()
+	    -Result&lt;ElifPart, Error&gt; parse_elif_part()
+	    -Result&lt;ElsePart, Error&gt; parse_else_part()
+	    -Result&lt;Option&lt;IfBranch&gt;, Error&gt; parse_if_branch()
+	    -Result&lt;IfStatement, Error&gt; parse_if_statement()
+	    -Result&lt;WhileStatement, Error&gt; parse_while_statement()
+	    -Result&lt;EachStatement, Error&gt; parse_each_statement()
+	    -Result&lt;ReturnStatement, Error&gt; parse_return()
+	    -Result&lt;Block, Error&gt; parse_block()
+	    -Result&lt;FunctionDeclarationStatement, Error&gt; prase_function_declaration()
+	    -Result&lt;Throw, Error&gt; parse_throw()
+	    -Result&lt;TryCatch, Error&gt; parse_try_catch()
+	    -Result&lt;Statement, Error&gt; parse_statement()
+	    -Result&lt;Vec&lt;Statement&gt;, Error&gt; parse_program()
+    }
+
+    class Type {
+		Int
+		Float
+		Bool
+		String
+		Option&lt;Box&lt;Type&gt;&gt; List
+		Box&lt;Type&gt; Ref
+		parameters: Vec&lt;Type&gt; return_type: Box&lt;Type&gt; Function
+
+		-bool is_matching(&Self other)
+		-bool is_ambigous()
+		-Self unwrap_ref()
+    }
+
+	class `checker&semi;&semi;Identifier` {
+		+String identifier
+		+Type type_
+	}
+
+	class `checker&semi;&semi;Scope` {
+		Block
+		checker&semi;&semi;Identifier Identifier
+	}
+
+	class Checker {
+		-Vec&lt;Option&lt;Type&gt;&gt; type_stack
+		-Vec&lt;checker&semi;&semi;Scope&gt; scopes
+
+		-exit_block()
+		-enter_block()
+		-declare_identifier(Identifier identifier)
+		-Option&lt'a Type&gt;> get_identifier(&str id)
+		-enter_function_body(Option&lt;Type&gt; fun)
+		-exit_function_body()
+		-Option&lt;&'a Option&lt;Type&gt;gt; get_current_return_type()
+		-Result&lt;Type, Error&gt; check_binary(&BinaryExpression binary, &Region region)
+		-Result&lt;Option&lt;Type&gt;, Error&gt; check_function_call(&FunctionCallExpression call, &Region region)
+		-Result&lt;Type, Error&gt; check_assign(&AssignmentExpression assign, &Region region)
+		-Result&lt;Type, Error&gt; check_update(&UpdateExpression update, &Region region)
+		-Result&lt;Type, Error&gt; check_unary(&UnaryExpression unary, &Region region)
+		-Result&lt;Type, Error&gt; check_unary(&IdentifierExpression identifier, &Region region)
+		-Result&lt;Option&lt;Type&gt;, Error&gt; check_index(&IndexExpression index, &Region region)
+		-Result&lt;Type, Error&gt; check_list(&[Expression] list, &Region region)
+		-Result&lt;Option&lt;Type&gt;, Error&gt; check_expression(&Expression expression)
+		-Result&lt;Type, Error&gt; get_variable_declaration_type(&VariableDeclarationStatement variable_declaration, &Region region)
+		-Result&lt;(), Error&gt; check_variable_declaration(&VariableDeclarationStatement variable_declaration, &Region region)
+		-Result&lt;(), Error&gt; check_function_declaration(&FunctionDeclarationStatement function, &Region region)
+		-Result&lt;(), Error&gt; check_if_branch(&IfBranch if_branch)
+		-Result&lt;(), Error&gt; check_if_branch(&IfStatement if_statement)
+		-Result&lt;(), Error&gt; check_while_statement(&WhileStatement while_statement)
+		-Result&lt;(), Error&gt; check_each(&EachStatement each)
+		-Result&lt;(), Error&gt; check_return(&ReturnStatement return_statement, &Region region)
+		-Result&lt;(), Error&gt; check_throw(&Throw throw)
+		-Result&lt;(), Error&gt; check_try_catch(&TryCatch try_catch)
+		-Result&lt;(), Error&gt; check_statement(&Statement statement)
+		-Result&lt;bool, Error&gt; check_block(&Block block)
+		-Result&lt;(), Error&gt; check(&Vec&lt;Statement&gt; program)
+	}
+
+	class `evaluator&semi;&semi;Identifier` {
+		+String identifier	
+		+Rc&lt;RefCell&lt;Value&gt;&gt; value
+	}
+
+	class `evaluator&semi;&semi;Scope` {
+		+Option&lt;Rc&lt;Scope&gt;&gt; upper	
+		+`evaluator&semi;&semi;Identifier` identifier
+	}
+
+	class Function {
+		scope: Rc&lt;evaluator&semi;&semi;Scope&gt;, parameters: Vec&lt;Parameter&gt;, body: Rc&lt;Block&gt; Custom
+		fn(args: Vec&lt;Rc&lt;RefCell&lt;Value&gt;&gt;&gt;) -&gt; Rc&lt;RefCell&lt;Value&gt;&gt; Builtin
+	}
+
+	class Value {
+		i64 Int
+		f64 Float
+		bool Bool
+		Rc&lt;RefCell&lt;Value&gt;&gt; Reference
+		String String
+		Rc&lt;RefCell&lt;Vec&lt;Value&gt;&gt;&gt; List
+		Function Function
+		Void
+	}
+
+	<<enum>> Level
+	<<enum>> Value
+	<<enum>> IfBranch
+	<<enum>> StatementValue
+	<<enum>> AssignmentOperator
+	<<enum>> UpdateOperator
+	<<enum>> BinaryOperator
+	<<enum>> UnaryOperator
+	<<enum>> ExpressionValue
+	<<enum>> TypeSpecifier
+	<<enum>> Type
+	<<enum>> `checker&semi;&semi;Scope`
+	<<enum>> Function
+	<<enum>> Value
+
+    Value --o Token
+    Token --o Region
+    Region --o Location
+    Error --o Level
+    `Lexer&lt;'a&gt;` --o Location
+    Statement --o StatementValue
+    StatementValue --o TryCatch
+    StatementValue --o Throw
+    StatementValue --o ReturnStatement
+    StatementValue --o FunctionDeclarationStatement
+    FunctionDeclarationStatement --o Parameter
+    StatementValue --o VariableDeclarationStatement
+    StatementValue --o EachStatement
+    StatementValue --o WhileStatement
+    StatementValue --o IfStatement
+    IfStatement --o IfBranch
+    IfBranch --o ElsePart
+    IfBranch --o ElifPart
+    IfStatement --o Block
+    WhileStatement --o Block
+    ElsePart --o Block
+    ElifPart --o Block
+    EachStatement --o Block
+    FunctionDeclarationStatement --o Block
+    TryCatch --o Block
+    Block --o Statement
+    Statement --o Region
+    FunctionDeclarationStatement --o TypeSpecifier
+    VariableDeclarationStatement --o TypeSpecifier
+    Expression --o ExpressionValue
+    Expression --o Region
+    ExpressionValue --o AssignmentExpression
+    ExpressionValue --o UpdateExpression
+    AssignmentExpression --o AssignmentOperator
+    UpdateExpression --o UpdateOperator
+    BinaryExpression --o BinaryOperator
+    ExpressionValue --o BinaryExpression
+    ExpressionValue --o UnaryExpression
+    ExpressionValue --o IdentifierExpression
+    ExpressionValue --o FunctionCallExpression
+    Parameter --o TypeSpecifier
+    ExpressionValue --o IndexExpression
+    UnaryExpression --o UnaryOperator
+    AssignmentExpression --o Expression
+    ReturnStatement --o Expression
+    UpdateExpression --o Expression
+    BinaryExpression --o Expression
+    FunctionCallExpression --o Expression
+    IndexExpression --o Expression
+	`checker&semi;&semi;Scope` --o `checker&semi;&semi;Identifier`
+	`checker&semi;&semi;Identifier` --o Type
+
+	Checker --o Scope
+	Checker --o Type
+	`evalutor&semi;&semi;Scope` --o Type
+
+	Value --o Function
+	Function --o Block
+	Function --o Parameter
+	Function --o `evalutor&semi;&semi;Scope`
+	Function --o Value

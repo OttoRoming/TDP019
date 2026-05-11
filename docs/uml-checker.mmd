@@ -1,0 +1,53 @@
+classDiagram
+direction TB
+    class Type {
+		Int
+		Float
+		Bool
+		String
+		Option&lt;Box&lt;Type&gt;&gt; List
+		Box&lt;Type&gt; Ref
+		parameters: Vec&lt;Type&gt; return_type: Box&lt;Type&gt; Function
+
+		-bool is_matching(&Self other)
+		-bool is_ambigous()
+		-Self unwrap_ref()
+    }
+
+	class Checker {
+		-Vec&lt;Option&lt;Type&gt;&gt; type_stack
+		-Vec&lt;checker&colon;&colon;Scope&gt; scopes
+
+		-exit_block()
+		-enter_block()
+		-declare_identifier(Identifier identifier)
+		-Option&lt'a Type&gt;> get_identifier(&str id)
+		-enter_function_body(Option&lt;Type&gt; fun)
+		-exit_function_body()
+		-Option&lt;&'a Option&lt;Type&gt;gt; get_current_return_type()
+		-Result&lt;Type, Error&gt; check_binary(&BinaryExpression binary, &Region region)
+		-Result&lt;Option&lt;Type&gt;, Error&gt; check_function_call(&FunctionCallExpression call, &Region region)
+		-Result&lt;Type, Error&gt; check_assign(&AssignmentExpression assign, &Region region)
+		-Result&lt;Type, Error&gt; check_update(&UpdateExpression update, &Region region)
+		-Result&lt;Type, Error&gt; check_unary(&UnaryExpression unary, &Region region)
+		-Result&lt;Type, Error&gt; check_unary(&IdentifierExpression identifier, &Region region)
+		-Result&lt;Option&lt;Type&gt;, Error&gt; check_index(&IndexExpression index, &Region region)
+		-Result&lt;Type, Error&gt; check_list(&[Expression] list, &Region region)
+		-Result&lt;Option&lt;Type&gt;, Error&gt; check_expression(&Expression expression)
+		-Result&lt;Type, Error&gt; get_variable_declaration_type(&VariableDeclarationStatement variable_declaration, &Region region)
+		-Result&lt;(), Error&gt; check_variable_declaration(&VariableDeclarationStatement variable_declaration, &Region region)
+		-Result&lt;(), Error&gt; check_function_declaration(&FunctionDeclarationStatement function, &Region region)
+		-Result&lt;(), Error&gt; check_if_branch(&IfBranch if_branch)
+		-Result&lt;(), Error&gt; check_if_branch(&IfStatement if_statement)
+		-Result&lt;(), Error&gt; check_while_statement(&WhileStatement while_statement)
+		-Result&lt;(), Error&gt; check_each(&EachStatement each)
+		-Result&lt;(), Error&gt; check_return(&ReturnStatement return_statement, &Region region)
+		-Result&lt;(), Error&gt; check_throw(&Throw throw)
+		-Result&lt;(), Error&gt; check_try_catch(&TryCatch try_catch)
+		-Result&lt;(), Error&gt; check_statement(&Statement statement)
+		-Result&lt;bool, Error&gt; check_block(&Block block)
+		-Result&lt;(), Error&gt; check(&Vec&lt;Statement&gt; program)
+	}
+
+
+	Checker --o Type

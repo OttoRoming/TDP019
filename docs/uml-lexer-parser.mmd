@@ -1,0 +1,148 @@
+classDiagram
+direction TB
+    class Location {
+	    +usize line
+	    +usize col
+	    +bool contains(location: Location)
+    }
+
+    class Region {
+	    +Location start
+	    +Location end
+	    +bool contains(location: Location)
+    }
+
+    class Token {
+	    +Value value
+	    +Region region
+    }
+
+    class `token&colon;&colon;Value` {
+	    KeywordIf
+	    KeywordIf
+	    KeywordElif
+	    KeywordElse
+	    KeywordFun
+	    KeywordWhile
+	    KeywordEach
+	    KeywordReturn
+	    KeywordTrue
+	    KeywordFalse
+	    KeywordVar
+	    KeywordThrow
+	    KeywordTry
+	    KeywordCatch
+	    KeywordContinue
+	    KeywordBreak
+	    TypeInt
+	    TypeFloat
+	    TypeString
+	    TypeBool
+	    TypeList
+	    TypeRef
+	    And
+	    Or
+	    AddAssign
+	    SubtractAssign
+	    MultiplyAssign
+	    DivideAssign
+	    ModAssign
+	    NotEquals
+	    DoubleEquals
+	    LessThanOrEqual
+	    GreaterThanOrEqual
+	    AndAssign
+	    OrAssign
+	    Increment
+	    Decrement
+	    Arrow
+	    OpenBracket
+	    CloseBracket
+	    OpenBrace
+	    CloseBrace
+	    OpenParenthesis
+	    CloseParenthesis
+	    SingleEquals
+	    Add
+	    Subtract
+	    Multiply
+	    Divide
+	    Mod
+	    Not
+	    LessThan
+	    GreaterThan
+	    Ampersand
+	    Semicolon
+	    Colon
+	    Comma
+	    String String
+	    i64 Int
+	    f64 Float
+	    String Identifier
+	    Eof
+    }
+
+    class `Lexer&lt;'a&gt;` {
+	    -Location location
+	    -usize position
+	    -usize read_position
+	    -&'a str source
+	    -char char
+	    -read_char()
+	    -char peek()
+	    -skip_whitespace()
+	    -skip_comment()
+	    -skip_whitespace_and_comments()
+	    -Token read_identifier_or_type_or_keyword()
+	    -Result&lt;Token, Error&gt; read_number()
+	    -Result&lt;Token, Error&gt; read_string()
+	    +Result&lt;Token, Error&gt; next_token()
+    }
+
+    class Parser {
+	    -i32 index
+	    -Vec~Token~ tokens
+	    -&Token peek(i32 ahead)
+	    -advance()
+	    -Result&lt;(), Error&gt; expect(Value expected_value, &str at_msg)
+	    -Result&lt;TypeSpecifier, Error&gt; parse_type_specifier()
+	    -Result&lt;Vec&lt;Expression&gt;, Error&gt; parse_comma_separated_expressions()
+	    -Result&lt;Expression, Error&gt; parse_primary()
+	    -Result&lt;Expression, Error&gt; parse_call()
+	    -Result&lt;Expression, Error&gt; parse_index()
+	    -Result&lt;Expression, Error&gt; parse_unary()
+	    -Result&lt;Expression, Error&gt; parse_multiplicative()
+	    -Result&lt;Expression, Error&gt; parse_additive()
+	    -Result&lt;Expression, Error&gt; parse_comparative()
+	    -Result&lt;Expression, Error&gt; parse_equality()
+	    -Result&lt;Expression, Error&gt; parse_logical_and()
+	    -Result&lt;Expression, Error&gt; parse_logical_or()
+	    -Result&lt;Expression, Error&gt; parse_update()
+	    -Result&lt;Expression, Error&gt; parse_assignment()
+	    -Result&lt;Expression, Error&gt; parse_expression()
+	    -Result&lt;StatementValue, Error&gt; parse_expression_statement()
+	    -Result&lt;VariableDeclarationStatement, Error&gt; parse_variable_declaration()
+	    -Result&lt;ElifPart, Error&gt; parse_elif_part()
+	    -Result&lt;ElsePart, Error&gt; parse_else_part()
+	    -Result&lt;Option&lt;IfBranch&gt;, Error&gt; parse_if_branch()
+	    -Result&lt;IfStatement, Error&gt; parse_if_statement()
+	    -Result&lt;WhileStatement, Error&gt; parse_while_statement()
+	    -Result&lt;EachStatement, Error&gt; parse_each_statement()
+	    -Result&lt;ReturnStatement, Error&gt; parse_return()
+	    -Result&lt;Block, Error&gt; parse_block()
+	    -Result&lt;FunctionDeclarationStatement, Error&gt; prase_function_declaration()
+	    -Result&lt;Throw, Error&gt; parse_throw()
+	    -Result&lt;TryCatch, Error&gt; parse_try_catch()
+	    -Result&lt;Statement, Error&gt; parse_statement()
+	    -Result&lt;Vec&lt;Statement&gt;, Error&gt; parse_program()
+    }
+
+
+	<<enum>> `token&colon;&colon;Value`
+
+    Token --o Parser
+    `token&colon;&colon;Value` --o Token
+    Region --o Token
+    Location --o Region
+	Location --o `Lexer&lt;'a&gt;`
+

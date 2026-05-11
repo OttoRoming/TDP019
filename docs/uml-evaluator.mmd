@@ -1,0 +1,34 @@
+classDiagram
+direction TB
+	class `evaluator&colon;&colon;Identifier` {
+		+String identifier	
+		+Rc&lt;RefCell&lt;Value&gt;&gt; value
+	}
+
+	class `evaluator&colon;&colon;Scope` {
+		+Option&lt;Rc&lt;Scope&gt;&gt; upper	
+		+`evaluator&colon;&colon;Identifier` identifier
+	}
+
+	class Function {
+		scope: Rc&lt;evaluator&colon;&colon;Scope&gt;, parameters: Vec&lt;Parameter&gt;, body: Rc&lt;Block&gt; Custom
+		fn&lpar;args: Vec&lt;Rc&lt;RefCell&lt;Value&gt;&gt;&gt;&rpar; -&gt; Rc&lt;RefCell&lt;Value&gt;&gt; Builtin
+	}
+
+	class Value {
+		i64 Int
+		f64 Float
+		bool Bool
+		Rc&lt;RefCell&lt;Value&gt;&gt; Reference
+		String String
+		Rc&lt;RefCell&lt;Vec&lt;Value&gt;&gt;&gt; List
+		Function Function
+		Void
+	}
+
+	<<enum>> Function
+	<<enum>> Value
+
+	`evaluator&colon;&colon;Identifier` --o `evaluator&colon;&colon;Scope`
+	Value --o `evaluator&colon;&colon;Identifier`
+	Function --o Value

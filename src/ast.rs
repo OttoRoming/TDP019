@@ -82,7 +82,6 @@ pub struct TryCatch {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-#[allow(dead_code)]
 pub enum StatementValue {
     Block(Block),
     If(IfStatement),
@@ -192,7 +191,6 @@ pub struct IndexExpression {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-#[allow(dead_code)]
 pub enum ExpressionValue {
     Assign(Box<AssignmentExpression>),
     Update(Box<UpdateExpression>),

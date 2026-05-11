@@ -19,7 +19,6 @@ impl Region {
         Self { start, end }
     }
 
-    #[allow(dead_code)]
     pub fn newi(
         start_line: usize,
         start_column: usize,

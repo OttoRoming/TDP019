@@ -10,7 +10,6 @@ pub enum Level {
     Lexer,
     Parse,
     Check,
-    Evaluation,
 }
 
 impl fmt::Display for Level {
