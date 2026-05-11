@@ -24,6 +24,7 @@ Ver. & Revisionsbeskrivning & Datum \\\hline
 
 \section{Översikt}
 Språket \textit{Oeno} (namngivet efter den afrikanska musarten rostnosråttan även känd som oenomys\cite{renaud_size_1999}) ska utvecklas för att lösa generella problem i en proceduriell stil. Interpretator kommer att skrivas i programspråket \textit{Rust} med egen parser skriven specifikt för ändamålet att läsa \textit{Oeno} källkod. Språket kommer att vara typat, det vill säga att när en variabel eller parameter är deklarerad kommer den inte kunna byta typ senare i koden.  Denna typning kommer att hanteras av en \textit{type checker} som går igenom syntaxträdet innan exekvering.
+Språket \textit{Oeno} (namngivet efter den afrikanska musarten rostnosråttan även känd som oenomys\cite{renaud_size_1999}) ska utvecklas för att lösa generella problem i en proceduriell stil. Interpretator kommer att skrivas i programspråket \textit{Rust} med egen parser skriven specifikt för ändamålet att läsa \textit{Oeno} källkod. Språket kommer att vara typat, det vill säga att när en variabel eller parameter är deklarerad kommer den inte kunna byta typ senare i koden.  Denna typning kommer att hanteras av en \textit{type checker} som går igenom syntaxträdet innan exekvering.
 
 \section{Typning}
 Språket kommer att vara statiskt typat så att när en variabel deklareras anges den en klass som den sedan ej kan bytas. Denna typkontrollering görs av interpretatorn innan evalueringen av programkoden så att utvecklaren snabbt kan hitta problem i hens programkod.

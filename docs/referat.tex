@@ -11,7 +11,7 @@
 \large Can programming be liberated from the von neumann style? \\ a functional
 style and its algebra of program}
 % TODO: ska jag ha "av John Backus" här?
-\date{2026-03-18}
+\date{2026-03-20}
 \rhead{Otto Roming}
 
 \begin{document}
@@ -22,14 +22,14 @@ style and its algebra of program}
 \hline
 Ver. & Revisionsbeskrivning & Datum \\\hline
 1.0 & Första version av referatet & 2025-03-01 \\\hline
-1.1 & Komplettering av referatet & 2025-03-18 \\\hline
+1.1 & Komplettering av referatet & 2025-03-20 \\\hline
 \end{tabularx}
 \end{table}
 
 \section{Referat}
 I den mycket inflytelserika artikeln \textit{''Can programming be liberated from the von neumann style? a functional style and its algebra of program''} beskriver Backus \cite{backus_can_1978} ett fenomen som han kallar för Von Neumann-programspråk. Dessa programspråk är byggda för att köras på Von Neumann-datorer, som kännetecknas av att de består av processorer och minne där endast ett ord av data kan fraktas mellan processorn och minnet åt gången. Detta ger dessa system en flaskhals som kan betydligt sakta ned processer. För att undvika detta anser Backus\cite{backus_can_1978} att det är kritiskt att vi avgår från att använda dessa Von Neumann-programspråk och Von Neumann-system.
 
-Backus \cite{backus_can_1978} anser att de flesta konventionella programspråk så som bland annat \textit{Fortran} och \textit{Algol} är Von Neumann-programspråk. Backus \cite{backus_can_1978} kritiserar dessa programspråk för bland annat att de är komplexa, oflexibla, mångordiga i programkoden och att de saknar många av de användbara matematiska operatorer inom algebra. En av de större nackdelarna med Von Neumann-programspråk menar Backus \cite{backus_can_1978} är att de gör skillnad på uttryck som gör beräkningar och satser som hanterar kontrollflöde och tilldelningar. Backus \cite{backus_can_1978} menar med detta att uppdelningen lägger till onödig komplexitet i ett system som hade kunnat vara betydligt enklare.
+Backus \cite{backus_can_1978} anser att de flesta konventionella programspråk, såsom bland annat \textit{Fortran} och \textit{Algol} , är Von Neumann-programspråk. Backus \cite{backus_can_1978} kritiserar dessa programspråk för bland annat att de är komplexa, oflexibla, mångordiga i programkoden och att de saknar många av de användbara matematiska operatorer inom algebra. En av de större nackdelarna med Von Neumann-programspråk menar Backus \cite{backus_can_1978} är att de gör skillnad på uttryck som gör beräkningar och satser som hanterar kontrollflöde och tilldelningar. Backus \cite{backus_can_1978} menar med detta att uppdelningen lägger till onödig komplexitet i ett system som hade kunnat vara betydligt enklare.
 
 Backus\cite{backus_can_1978} använder ett kodexempel på Von Neumann-programspråk (se figur \ref{fig:vonneumann}) där han påpekar att läsaren av programkoden måste mentalt exekvera koden för att förstå den. Koden är ickegenerell på grund av användningen av \texttt{a}, \texttt{b}, och \texttt{c} vilket innebär att den skulle behöva omringas av en procedurdeklaration för att återanvändas. Att koden är så mångordig beror på att den bygger på Von Neumann-datorers idé av att hantera statusuppdateringar ett ord åt gången (på grund av processor-minnes flaskhalsen), detta tvingar utvecklaren att använda sig av loop-satser där ett block av satser exekveras flertal gånger. Detta kodexempel består också till stor del av administrativ kod, exempel på detta är hur variabeln \texttt{c} måste nollställas manuellt och att variabeln i måste initialiseras och användas för att indexera i datastrukturerna som variablerna \texttt{a} och \texttt{b} innehåller. Backus \cite{backus_can_1978} menar att denna typ av administrativa kod inte behövs inom funktionell programmering till samma grad.
 
