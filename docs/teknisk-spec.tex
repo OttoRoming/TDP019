@@ -7,7 +7,7 @@
 \newcommand{\version}{Version 3.0}
 \author{Otto Roming, \url{ottro821@student.liu.se}}
 \title{Teknisk specifikation för Oeno}
-\date{2026-03-10}
+\date{2026-05-12}
 \rhead{Otto Roming}
 \begin{document}
 \projectpage
@@ -21,14 +21,73 @@ Ver. & Revisionsbeskrivning & Datum \\\hline
 \end{table}
 
 \section{Specifikation}
-\section{UML}
-%    \includesvg[width=0.5\linewidth]{docs/uml}
+Oeno är ett interpreterat och typkontrollerat språk med statiskbindning skrivet i språket Rust. Språket har stöd för att deklarera och kalla på funktioner, kasta (\texttt{throw}) och fånga undantag (\texttt{try} och \texttt{catch}), deklarera och modifiera variabler (\texttt{var} och \texttt{=}), matematiska uttryck med fungerande prioriteringsregler, loopar med \texttt{while} och \texttt{each}, returvärden ur funktioner med nyckelordet \texttt{return}, och styrstrukturer med \texttt{if}, \texttt{elif} och \texttt{else}.
+
+För att kompilera interpretatorn så måste Oenos Git \textit{repository} klonas ner lokalt och projektet byggas med verktyget Cargo och Rustc. Om Rustup är installerat på systemet bör dessa komponenter laddas ned automatiskt. Se figur \ref{fig:build_instructions} för kommandoradinstruktioner för att bygga interpretatorn. Exekverbara filen skall nu finnas i katalogen \texttt{./target/release/}. Kör \texttt{oeno skriptfil.oeno} från terminalen för att exekvera oenofilen \texttt{skriptfil.oeno}. För exempel på Oenokod kika på figur \ref{fig:example_program} och \texttt{conway.oeno} filen i repositoryt.
+
 \begin{figure}[H]
     \centering
-    \includesvg[width=1\linewidth]{uml.svg}
-    \caption{Enter Caption}
-    \label{fig:placeholder}
+    \begin{minipage}{0.6\linewidth}
+    \begin{minted}[frame=single]{bash}
+$ git clone https://github.com/OttoRoming/TDP019
+$ cd TDP019
+$ cargo build --release
+    \end{minted}
+    \end{minipage}
+    \caption{Bygginstruktioner för Oeno interpretatorn}
+    \label{fig:build_instructions}
 \end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.6\linewidth}
+    \begin{minted}[frame=single]{text}
+fun greet(entity: String) {
+    puts("Hello " + entity + "!");
+}
+
+greet("World");
+    \end{minted}
+    \end{minipage}
+    \caption{Exempelprogram i Oeno}
+    \label{fig:example_program}
+\end{figure}
+
+\section{Kodstruktur och UML diagram}
+
+\subsection{\textit{Lexer} och \textit{parser}}
+För att representera Tokens i interpretatorn används \textit{enum} typen \texttt{token::Value}. Rust \textit{enums} fungerar liknande \textit{unions} i andra språk på det sättet att den kan innehålla olika datatyper beroende på dess värde. På detta sätt kan \texttt{token::Value} till exempel innehålla en \texttt{f64} (64 bitars flyttal) om den är av typ \texttt{token::Value::Float}. \texttt{Token} \textit{struct} datatypen används för att hålla reda på positionen för de individuella \textit{tokens}, detta ger möjlighet till mer detaljerade felmeddelanden vid \textit{parsing}. Strukturen på \textit{lexer} koden är i stora drag inspirerad av den som presenteras i \cite{ball_writing_2019}. \textit{Parser} koden använder sig av modellen \textit{recursive descent parsing} som är presenterad i \cite{nystrom_crafting_2021}.
+
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{docs/uml-lexer-parser.png}
+    \caption{UML diagram för \textit{parser} och \textit{lexer}}
+    \label{fig:uml_lexer}
+\end{figure}
+
+\subsection{\textit{Type-checker}}
+\textit{Type-checker} koden använder sig av ett mycket enkelt miljöhanteringssysemt system som egentligen bara är en lista. Detta är tillräckligt för att göra den enkla typkontrolleringen som krävs av Oeno.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{docs/uml-checker.png}
+    \caption{UML diagram för \textit{type-checker}}
+    \label{fig:uml_checker}
+\end{figure}
+
+\subsection{Evalueraren}
+I evaluatorn används ingen Rust \textit{struct} eftersom att ingen ''global'' stat behöver sparas för detta steg, därför är koden för att evaluera AST noderna i funfristäende funktioner. miljöhantering sker genom att ha en länkad lista av olika \textit{scope} som pekar på varandra med hjälp av referenshanterade pekare (\texttt{Rc}). Detta används för att uppnå den statiska bindningen i Oeno. Intressant att notera är att varje variabel har eget \textit{scope} och funktioner sparar på det \textit{scope} där de blev definierade. \cite{nystrom_crafting_2021} presenterar denna metod som ett sätt att lösa den svåra utmaningen att implementera statisk bindning.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{docs/uml-evaluator.png}
+    \caption{UML diagram för evalueraren}
+    \label{fig:uml_eval}
+\end{figure}
+
+
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
