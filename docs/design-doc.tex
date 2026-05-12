@@ -1,0 +1,44 @@
+\documentclass{TDP003mall}
+
+\usepackage{float}
+\usepackage{minted}
+\usepackage[inkscapelatex=false]{svg}
+
+\newcommand{\version}{Version 3.0}
+\author{Otto Roming, \url{ottro821@student.liu.se}}
+\title{Design för Oeno}
+\date{2026-03-10}
+\rhead{Otto Roming}
+\begin{document}
+\projectpage
+\section{Revisionshistorik}
+\begin{table}[!h]
+\begin{tabularx}{\linewidth}{|l|X|l|}
+\hline
+Ver. & Revisionsbeskrivning & Datum \\\hline
+1.0 & Första version av design dokumentet & 2026-05-12 \\\hline
+\end{tabularx}
+\end{table}
+
+\section{Översikt}
+Oeno är designat för att vara ett imperativt språk med hård typning. Syftet med att ha ett sådant språk är att kunna snabbt prototypa fram kod, samtidigt som det också finns en typkontrollerare som kan hitta problem innan användaren kör koden. Denna kombination av egenskaper är ganska ovanlig men delas bland annat med Microsoft Typescript.
+
+=
+
+\section{Typning}
+Att språket är typat var ett personligt val som jag formade från att ha arbetat med ett flertal olika språk. Typkontrolleringen fungerar liknande evalueringen fast den endast kör igenom all kod en endaste gång. Att endast gå igenom koden en endaste gång (till skillnad från exekvering där det ofta stös på loopa och dylikt) gör det mycket lätt att hantera saker så som scope i typkontrolleraren. Typkontrolleringen sker bottom-up med att varje nod kollar på sina barn och försöker utifrån de se om ett prolbem har uppstått och om det ej är fallet så väljer noden vilken typ den ska vara av själv.
+
+\section{Scope}
+Jag valde att designa scopehanteringssystemet för språket på det vis att varje variabel hamnar i ett eget scope och pekar på det över, liknande en länkad lista (se figur \ref{fig:scheme_environment}). Detta underlättar statisk bindning eftersom att varje funktion kan peka på det scope de blev definierade ifrån och när exekvering av funktionen ska ske kan det byggas nya scope utifrån detta. Den här lösningen på att hantera scope är en som presenteras i \cite{nystrom_crafting_2021}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{docs/scheme-environment.png}
+    \caption{Nystroms exempel på miljö med varje variabel i eget \textit{scope} \cite{nystrom_crafting_2021}}
+    \label{fig:scheme_environment}
+\end{figure}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
