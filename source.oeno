@@ -1,0 +1,16 @@
+each i : range(5) {
+  puts("inside each: " + i_to_s(i));
+}
+
+var i = 0
+while i < 5 {
+  puts("inisde while: " + i_to_s(i));
+
+  i++;
+}
+
+if 6/2*(1+2) == 9 {
+  puts("it works!");
+} else {
+  throw "something is wrong"
+}

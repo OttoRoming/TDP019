@@ -1,0 +1,3 @@
+# https://stackoverflow.com/questions/70105096/how-to-use-rustup-to-install-use-a-specific-history-version-of-the-component-lik
+[toolchain]
+channel = "1.91.0"
