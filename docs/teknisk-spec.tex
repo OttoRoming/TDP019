@@ -63,7 +63,7 @@ För att representera Tokens i interpretatorn används \textit{enum} typen \text
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.4\linewidth]{docs/uml-lexer-parser.png}
+    \includegraphics[width=0.6\linewidth]{docs/uml-lexer-parser.png}
     \caption{UML diagram för \textit{parser} och \textit{lexer}}
     \label{fig:uml_lexer}
 \end{figure}
@@ -73,7 +73,7 @@ För att representera Tokens i interpretatorn används \textit{enum} typen \text
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{docs/uml-checker.png}
+    \includegraphics[width=0.7\linewidth]{docs/uml-checker.png}
     \caption{UML diagram för \textit{type-checker}}
     \label{fig:uml_checker}
 \end{figure}
@@ -82,7 +82,7 @@ För att representera Tokens i interpretatorn används \textit{enum} typen \text
 I evaluatorn används ingen Rust \textit{struct} eftersom att ingen ''global'' stat behöver sparas för detta steg, därför är koden för att evaluera AST noderna i funfristäende funktioner. miljöhantering sker genom att ha en länkad lista av olika \textit{scope} som pekar på varandra med hjälp av referenshanterade pekare (\texttt{Rc}). Detta används för att uppnå den statiska bindningen i Oeno. Intressant att notera är att varje variabel har eget \textit{scope} och funktioner sparar på det \textit{scope} där de blev definierade. \cite{nystrom_crafting_2021} presenterar denna metod som ett sätt att lösa den svåra utmaningen att implementera statisk bindning.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{docs/uml-evaluator.png}
+    \includegraphics[width=0.7\linewidth]{docs/uml-evaluator.png}
     \caption{UML diagram för evalueraren}
     \label{fig:uml_eval}
 \end{figure}
